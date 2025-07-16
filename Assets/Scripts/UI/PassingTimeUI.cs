@@ -9,19 +9,19 @@ namespace Yamigisa
         [SerializeField] private Text timeText;
         private void OnEnable()
         {
-            PassingTime.OnMinuteChanged += UpdateTime;
-            PassingTime.OnHourChanged += UpdateTime;
+            PassingTime.Instance.OnMinuteChanged += UpdateTime;
+            PassingTime.Instance.OnHourChanged += UpdateTime;
         }
 
         private void OnDisable()
         {
-            PassingTime.OnMinuteChanged -= UpdateTime;
-            PassingTime.OnHourChanged -= UpdateTime;
+            PassingTime.Instance.OnMinuteChanged -= UpdateTime;
+            PassingTime.Instance.OnHourChanged -= UpdateTime;
         }
 
         private void UpdateTime()
         {
-            timeText.text = $"{PassingTime.Hour:00}:{PassingTime.Minute:00}";
+            timeText.text = $"{PassingTime.Instance.Hour:00}:{PassingTime.Instance.Minute:00}";
         }
     }
 }

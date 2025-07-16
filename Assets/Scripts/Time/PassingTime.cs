@@ -1,43 +1,69 @@
-using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Yamigisa
 {
     public class PassingTime : MonoBehaviour
     {
-        public static event Action OnMinuteChanged;
-        public static event Action OnHourChanged;
+        public event System.Action OnMinuteChanged;
+        public event System.Action OnHourChanged;
 
         [Header("Time Settings")]
-        [SerializeField] private float minuteToRealTime = 2f;
+        [SerializeField] private float minuteToRealTimeSeconds = 2f;
         [Range(0, 59)][SerializeField] private int startingMinute = 0;
         [Range(0, 23)][SerializeField] private int startingHour = 0;
 
-        private float elapsedTime;
+        public int Minute { get; private set; }
+        public int Hour { get; private set; }
 
-        public static int Minute { get; private set; }
-        public static int Hour { get; private set; }
+        public static PassingTime Instance { get; private set; }
 
-        private void Start()
+        private Coroutine coroutine;
+
+        private void Awake()
         {
-            Minute = startingMinute;
-            Hour = startingHour;
-
-            elapsedTime = 0f;
-        }
-
-        private void Update()
-        {
-            elapsedTime += Time.deltaTime;
-
-            while (elapsedTime >= minuteToRealTime)
+            if (Instance == null)
             {
-                elapsedTime -= minuteToRealTime;
-                AdvanceMinute();
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
             }
         }
 
-        private void AdvanceMinute()
+        private void Start()
+        {
+            StartTime(startingMinute, startingHour);
+        }
+
+        public IEnumerator StartPassTime()
+        {
+            while (true)
+            {
+                yield return new WaitForSecondsRealtime(minuteToRealTimeSeconds);
+                AdvanceTimeNormal();
+            }
+        }
+
+        public void StopTime()
+        {
+            if (coroutine != null)
+            {
+                StopCoroutine(coroutine);
+                coroutine = null;
+            }
+        }
+
+        public void StartTime(int _minute, int _hour)
+        {
+            Minute = _minute;
+            Hour = _hour;
+            coroutine = StartCoroutine(StartPassTime());
+        }
+
+        private void AdvanceTimeNormal()
         {
             Minute++;
             OnMinuteChanged?.Invoke();

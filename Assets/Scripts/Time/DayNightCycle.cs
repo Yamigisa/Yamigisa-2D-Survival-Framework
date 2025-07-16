@@ -15,31 +15,39 @@ namespace Yamigisa
 
         private void OnEnable()
         {
-            if (!changeEveryMinute)
+            if (changeEveryMinute)
             {
-                PassingTime.OnHourChanged += UpdateDayNightHour;
+                PassingTime.Instance.OnMinuteChanged += UpdateDayNightMinute;
+                UpdateDayNightMinute();
+            }
+            else
+            {
+                PassingTime.Instance.OnHourChanged += UpdateDayNightHour;
                 UpdateDayNightHour();
             }
         }
 
         private void OnDisable()
         {
-            if (!changeEveryMinute)
-                PassingTime.OnHourChanged -= UpdateDayNightHour;
-        }
-
-        private void Update()
-        {
             if (changeEveryMinute)
             {
-                float normalizedTime = (PassingTime.Hour * 60 + PassingTime.Minute) / 1440f;
-                dayNightLight.color = dayNightGradient.Evaluate(normalizedTime);
+                PassingTime.Instance.OnMinuteChanged -= UpdateDayNightMinute;
             }
+            else
+            {
+                PassingTime.Instance.OnHourChanged -= UpdateDayNightHour;
+            }
+        }
+
+        private void UpdateDayNightMinute()
+        {
+            float normalizedTime = (PassingTime.Instance.Hour * 60 + PassingTime.Instance.Minute) / 1440f;
+            dayNightLight.color = dayNightGradient.Evaluate(normalizedTime);
         }
 
         private void UpdateDayNightHour()
         {
-            float normalizedTime = PassingTime.Hour / 24f;
+            float normalizedTime = PassingTime.Instance.Hour / 24f;
             dayNightLight.color = dayNightGradient.Evaluate(normalizedTime);
         }
     }

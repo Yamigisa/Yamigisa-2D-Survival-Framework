@@ -12,14 +12,14 @@ namespace Yamigisa
 
         private void OnEnable()
         {
-            PassingTime.OnMinuteChanged += SetDepletingAttributes;
-            PassingTime.OnMinuteChanged += SetRegeneratingAttributes;
+            PassingTime.Instance.OnMinuteChanged += SetDepletingAttributes;
+            PassingTime.Instance.OnMinuteChanged += SetRegeneratingAttributes;
         }
 
         private void OnDisable()
         {
-            PassingTime.OnMinuteChanged -= SetDepletingAttributes;
-            PassingTime.OnMinuteChanged -= SetRegeneratingAttributes;
+            PassingTime.Instance.OnMinuteChanged -= SetDepletingAttributes;
+            PassingTime.Instance.OnMinuteChanged -= SetRegeneratingAttributes;
         }
 
         void Start()

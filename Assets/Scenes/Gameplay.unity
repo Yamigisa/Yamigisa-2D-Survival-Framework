@@ -891,6 +891,7 @@ GameObject:
   - component: {fileID: 699390585}
   - component: {fileID: 699390587}
   - component: {fileID: 699390586}
+  - component: {fileID: 699390588}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -993,6 +994,23 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6f3f887e7f385604e801153293b12e1c, type: 2}
   - {fileID: 11400000, guid: 4b8c20c2806899b418b2fac035a8ca71, type: 2}
   - {fileID: 11400000, guid: 9ffefb1527e11e84ab4f554aa231e7da, type: 2}
+--- !u!114 &699390588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699390582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34b250045e9694b45a84b1e7c846de4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveUpKey: 1101000077000000
+  moveDownKey: 1201000073000000
+  moveLeftKey: 1401000061000000
+  moveRightKey: 1301000064000000
+  sprintKey: 30010000
 --- !u!1 &736767208
 GameObject:
   m_ObjectHideFlags: 0
@@ -1168,53 +1186,6 @@ MonoBehaviour:
   itemPrefab: {fileID: 5075952715406114901, guid: e4f8937dfa1d1cc4baf84927f13fa683, type: 3}
   inventoryContent: {fileID: 2052996129}
   inventoryPanel: {fileID: 107728419}
---- !u!1 &855901723
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 855901725}
-  - component: {fileID: 855901724}
-  m_Layer: 0
-  m_Name: Passing Time
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &855901724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 855901723}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92c78168064471f40a5cf6d06ed42cd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  minuteToRealTime: 1
-  startingMinute: 39
-  startingHour: 23
---- !u!4 &855901725
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 855901723}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -8.45}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &989554621
 GameObject:
   m_ObjectHideFlags: 0
@@ -2245,7 +2216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92c78168064471f40a5cf6d06ed42cd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minuteToRealTime: 1
+  minuteToRealTimeSeconds: 2
   startingMinute: 0
   startingHour: 6
 --- !u!1 &1814293401
@@ -2783,5 +2754,4 @@ SceneRoots:
   - {fileID: 2063393255}
   - {fileID: 1476811045}
   - {fileID: 339835826}
-  - {fileID: 855901725}
   - {fileID: 1780920465}
