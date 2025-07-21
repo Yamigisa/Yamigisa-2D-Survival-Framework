@@ -13,7 +13,7 @@ namespace Yamigisa
         [Tooltip("Disable if change every hour")]
         [SerializeField] private bool changeEveryMinute = true;
 
-        private void OnEnable()
+        private void Start()
         {
             if (changeEveryMinute)
             {

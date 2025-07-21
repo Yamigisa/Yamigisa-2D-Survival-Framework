@@ -11,6 +11,7 @@ namespace Yamigisa
         public List<KeyCode> moveLeftKey;
         public List<KeyCode> moveRightKey;
         public List<KeyCode> sprintKey;
+        public List<KeyCode> inventoryKey;
 
         /// <summary>
         /// Returns true if any key in the provided list is currently pressed.
@@ -20,6 +21,16 @@ namespace Yamigisa
             foreach (KeyCode key in keyList)
             {
                 if (Input.GetKey(key))
+                    return true;
+            }
+            return false;
+        }
+
+        public bool IsAnyKeyPressedDown(List<KeyCode> keyList)
+        {
+            foreach (KeyCode key in keyList)
+            {
+                if (Input.GetKeyDown(key))
                     return true;
             }
             return false;

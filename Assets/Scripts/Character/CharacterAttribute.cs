@@ -10,12 +10,6 @@ namespace Yamigisa
 
         private CharacterUI characterUI;
 
-        private void OnEnable()
-        {
-            PassingTime.Instance.OnMinuteChanged += SetDepletingAttributes;
-            PassingTime.Instance.OnMinuteChanged += SetRegeneratingAttributes;
-        }
-
         private void OnDisable()
         {
             PassingTime.Instance.OnMinuteChanged -= SetDepletingAttributes;
@@ -30,6 +24,9 @@ namespace Yamigisa
             {
                 characterUI.InitializeAttributeBar(_attributeInfo);
             }
+
+            PassingTime.Instance.OnMinuteChanged += SetDepletingAttributes;
+            PassingTime.Instance.OnMinuteChanged += SetRegeneratingAttributes;
         }
 
         private void SetDepletingAttributes()

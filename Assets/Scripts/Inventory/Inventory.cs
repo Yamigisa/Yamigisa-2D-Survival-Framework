@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Yamigisa
 {
@@ -13,8 +15,18 @@ namespace Yamigisa
         [SerializeField] private GameObject inventoryPanel;
         public GameObject InventoryPanel => inventoryPanel;
 
+        [Header("Description Panel")]
+        [SerializeField] private bool showDescriptionPanel = true;
+        [SerializeField] private GameObject descriptionPanel;
+        [SerializeField] private Text itemNameText;
+        [SerializeField] private Text itemDescriptionText;
+        [SerializeField] private Image itemIcon;
+
         private List<InventoryItemData> inventoryItems = new();
 
+        private CharacterControls controls;
+
+        public static Action OnInventoryToggle;
         public static Inventory Instance { get; private set; }
 
         private void Awake()
@@ -26,6 +38,47 @@ namespace Yamigisa
             else
             {
                 Destroy(gameObject);
+            }
+        }
+
+        private void Start()
+        {
+            controls = FindObjectOfType<CharacterControls>();
+
+
+            itemNameText.text = "";
+            itemDescriptionText.text = "";
+            itemIcon.sprite = null;
+        }
+
+        // private void Update()
+        // {
+        //     if (controls == null) return;
+
+        //     controls.IsAnyKeyPressedDown(controls.inventoryKey);
+        //     foreach (KeyCode key in controls.inventoryKey)
+        //     {
+        //         if (Input.GetKeyDown(key))
+        //         {
+        //             if (inventoryPanel.activeSelf)
+        //                 HideInventory();
+        //             else
+        //                 ShowInventory();
+        //             break;
+        //         }
+        //     }
+        // }
+
+        private void Update()
+        {
+            if (controls == null) return;
+
+            if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
+            {
+                if (inventoryPanel.activeSelf)
+                    HideInventory();
+                else
+                    ShowInventory();
             }
         }
 
@@ -41,20 +94,54 @@ namespace Yamigisa
 
         public void AddItem(ItemData data, int amountToAdd = 1)
         {
-            InventoryItemData existingItem = inventoryItems.Find(i => i.itemData == data);
-
-            if (existingItem != null)
+            if (data.isStackable)
             {
-                existingItem.amount += amountToAdd;
+                var existingItem = inventoryItems.Find(i => i.itemData == data);
+                if (existingItem != null)
+                {
+                    existingItem.amount += amountToAdd;
+                }
+                else
+                {
+                    inventoryItems.Add(new InventoryItemData
+                    {
+                        itemData = data,
+                        amount = amountToAdd
+                    });
+                }
             }
             else
             {
-                InventoryItemData newItem = new InventoryItemData
+                for (int i = 0; i < amountToAdd; i++)
                 {
-                    itemData = data,
-                    amount = amountToAdd
-                };
-                inventoryItems.Add(newItem);
+                    inventoryItems.Add(new InventoryItemData
+                    {
+                        itemData = data,
+                        amount = 1
+                    });
+                }
+            }
+
+            RefreshUI();
+        }
+
+        public void RemoveItem(InventoryItemData itemToRemove, int amountToRemove = 1)
+        {
+            if (itemToRemove == null || !inventoryItems.Contains(itemToRemove))
+                return;
+
+            if (itemToRemove.itemData.isStackable)
+            {
+                itemToRemove.amount -= amountToRemove;
+
+                if (itemToRemove.amount <= 0)
+                {
+                    inventoryItems.Remove(itemToRemove);
+                }
+            }
+            else
+            {
+                inventoryItems.Remove(itemToRemove);
             }
 
             RefreshUI();
@@ -68,8 +155,27 @@ namespace Yamigisa
             foreach (var item in inventoryItems)
             {
                 InventoryItem uiItem = Instantiate(inventoryItemPrefab, inventoryContent);
-                uiItem.Initialize(item.itemData);
+                uiItem.Initialize(item);
             }
+        }
+
+        public void ShowDescription(InventoryItemData itemData)
+        {
+            if (showDescriptionPanel)
+            {
+                descriptionPanel.SetActive(true);
+                itemNameText.text = itemData.itemData.itemName;
+                itemDescriptionText.text = itemData.itemData.description;
+                itemIcon.sprite = itemData.itemData.iconInventory;
+            }
+        }
+
+        public void HideDescription()
+        {
+            descriptionPanel.SetActive(false);
+            itemNameText.text = "";
+            itemDescriptionText.text = "";
+            itemIcon.sprite = null;
         }
     }
 }

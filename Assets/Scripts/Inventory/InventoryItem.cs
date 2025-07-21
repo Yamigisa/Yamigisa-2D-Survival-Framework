@@ -1,33 +1,137 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using Yamigisa;
+using UnityEngine.EventSystems;
 
 namespace Yamigisa
 {
-    public class InventoryItem : MonoBehaviour
+    public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
+        [Header("Item UI")]
         [SerializeField] private Image icon;
-        [SerializeField] private TextMeshProUGUI nameText;
-        [SerializeField] private TextMeshProUGUI amountText;
-        [SerializeField] private GameObject descriptionPanel;
-        [SerializeField] private TextMeshProUGUI descriptionText;
+        [SerializeField] private Text amountText;
+        [SerializeField] private Button itemButton;
 
-        public ItemData itemData;
-        private int amount;
+        [Header("Buttons")]
+        [SerializeField] private GameObject buttonsPanel;
+        [SerializeField] private Button useButton;
+        [SerializeField] private Button dropButton;
 
-        public void Initialize(ItemData _item)
+        private InventoryItemData itemInstance;
+
+        private void OnEnable()
         {
-            itemData = _item;
-            icon.sprite = itemData.iconInventory;
-            nameText.text = itemData.itemName;
-            amountText.text = $"x{amount}";
-            descriptionText.text = itemData.description;
+            itemButton.onClick.AddListener(ToggleDropdown);
         }
 
-        // Optional hover UI
-        public void OnPointerEnter() => descriptionPanel.SetActive(true);
-        public void OnPointerExit() => descriptionPanel.SetActive(false);
+        private void OnDisable()
+        {
+            itemButton.onClick.RemoveListener(ToggleDropdown);
+
+            buttonsPanel.SetActive(false);
+
+            dropButton.onClick.RemoveAllListeners();
+            useButton.onClick.RemoveAllListeners();
+        }
+
+        public void Initialize(InventoryItemData itemData)
+        {
+            itemInstance = itemData;
+
+            icon.sprite = itemData.itemData.iconInventory;
+
+            if (itemData.amount <= 1)
+            {
+                amountText.text = "";
+            }
+            else
+            {
+                amountText.text = $"x{itemData.amount}";
+            }
+
+            buttonsPanel.SetActive(false);
+
+            dropButton.onClick.RemoveAllListeners();
+            useButton.onClick.RemoveAllListeners();
+
+            if (itemData.itemData.isDroppable)
+            {
+                dropButton.gameObject.SetActive(true);
+                dropButton.onClick.AddListener(DropItem);
+            }
+            else
+            {
+                dropButton.gameObject.SetActive(false);
+            }
+
+            if (itemData.itemData.itemType == ItemType.Consumable)
+            {
+                useButton.gameObject.SetActive(true);
+                useButton.onClick.AddListener(UseItem);
+            }
+            else
+            {
+                useButton.gameObject.SetActive(false);
+            }
+        }
+
+        private void ToggleDropdown()
+        {
+            buttonsPanel.SetActive(!buttonsPanel.activeSelf);
+        }
+
+        private void DropItem()
+        {
+            buttonsPanel.SetActive(false);
+
+            Vector2 dropPosition = Vector2.zero; // placeholder position
+
+            // Create an empty GameObject
+            GameObject drop = new GameObject(itemInstance.itemData.itemName);
+
+            // Position it in the world
+            drop.transform.position = dropPosition;
+
+            // Add visual representation (sprite)
+            SpriteRenderer renderer = drop.AddComponent<SpriteRenderer>();
+            renderer.sprite = itemInstance.itemData.iconWorld;
+
+            // Optional: Add 2D collider (so it can be detected)
+            CircleCollider2D collider = drop.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+
+            // Optional: Add Rigidbody2D (if you want physics interaction)
+            drop.AddComponent<Rigidbody2D>().gravityScale = 0;
+
+            // Add the collectible behavior
+            CollectibleItem runtimeCollectible = drop.AddComponent<CollectibleItem>();
+
+            // Initialize item data
+            runtimeCollectible.Initialize(itemInstance.itemData, itemInstance.amount);
+
+            // Remove from inventory
+            Inventory.Instance.RemoveItem(itemInstance);
+        }
+
+        private void UseItem()
+        {
+            buttonsPanel.SetActive(false);
+            Debug.Log("Using item: " + itemInstance.itemData.itemName);
+
+            // TODO: implement your own logic here
+            // Inventory.Instance.UseItem(itemInstance); ← optional
+        }
+
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            Inventory.Instance.ShowDescription(itemInstance);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            Inventory.Instance.HideDescription();
+        }
     }
 }
 

@@ -10,13 +10,15 @@ namespace Yamigisa
         public Sprite iconInventory;
         public string description;
         public ItemType itemType;
-        public int amount;
-        public int maxAmount;
+        public int maxAmount = 99;
+        public bool isDroppable = true;
+        public bool isStackable = true;
     }
 
     public enum ItemType
     {
         Resource,
         Equipment,
+        Consumable,
     }
 }

@@ -1,4 +1,3 @@
-using System.Net;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +6,7 @@ namespace Yamigisa
     public class PassingTimeUI : MonoBehaviour
     {
         [SerializeField] private Text timeText;
-        private void OnEnable()
+        private void Start()
         {
             PassingTime.Instance.OnMinuteChanged += UpdateTime;
             PassingTime.Instance.OnHourChanged += UpdateTime;
