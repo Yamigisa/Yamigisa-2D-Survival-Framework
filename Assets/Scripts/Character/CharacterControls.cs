@@ -13,9 +13,9 @@ namespace Yamigisa
         public List<KeyCode> sprintKey;
         public List<KeyCode> inventoryKey;
 
-        /// <summary>
-        /// Returns true if any key in the provided list is currently pressed.
-        /// </summary>
+        public LayerMask selectable_layer = ~0;
+        private HashSet<Selectable> raycast_list = new HashSet<Selectable>();
+
         public bool IsAnyKeyPressed(List<KeyCode> keyList)
         {
             foreach (KeyCode key in keyList)
@@ -34,6 +34,28 @@ namespace Yamigisa
                     return true;
             }
             return false;
+        }
+
+        public Ray GetMouseCameraRay()
+        {
+            return Camera.main.ScreenPointToRay(Input.mousePosition);
+        }
+
+        public void RaycastSelectable()
+        {
+            RaycastHit[] hits = Physics.RaycastAll(GetMouseCameraRay(), 99f, selectable_layer.value);
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    Selectable select = hit.collider.GetComponentInParent<Selectable>();
+                    if (select != null)
+                    {
+                        raycast_list.Add(select);
+                        select.OnHover(true);
+                    }
+                }
+            }
         }
     }
 }

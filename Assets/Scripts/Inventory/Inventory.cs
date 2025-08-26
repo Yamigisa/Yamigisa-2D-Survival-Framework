@@ -8,6 +8,9 @@ namespace Yamigisa
     public class Inventory : MonoBehaviour
     {
         [Header("Item Prefab")]
+        public int maxItems = 20;
+
+        [Header("Item Prefab")]
         [SerializeField] private InventoryItem inventoryItemPrefab;
 
         [Header("Inventory UI")]
@@ -15,17 +18,18 @@ namespace Yamigisa
         [SerializeField] private GameObject inventoryPanel;
         public GameObject InventoryPanel => inventoryPanel;
 
-        [Header("Description Panel")]
-        [SerializeField] private bool showDescriptionPanel = true;
-        [SerializeField] private GameObject descriptionPanel;
+        [Header("Tooltip Panel")]
+        [SerializeField] private bool showTooltipPanel = true;
+        [SerializeField] private GameObject tooltipPanel;
         [SerializeField] private Text itemNameText;
         [SerializeField] private Text itemDescriptionText;
-        [SerializeField] private Image itemIcon;
 
+        [Header("Buttons")]
+        [SerializeField] private Button closeButton;
         private List<InventoryItemData> inventoryItems = new();
 
         private CharacterControls controls;
-
+        private CharacterAttribute characterAttribute;
         public static Action OnInventoryToggle;
         public static Inventory Instance { get; private set; }
 
@@ -41,33 +45,21 @@ namespace Yamigisa
             }
         }
 
+        private void OnEnable()
+        {
+            closeButton.onClick.AddListener(HideInventory);
+        }
+
+        private void OnDisable()
+        {
+            closeButton.onClick.RemoveListener(HideInventory);
+        }
+
         private void Start()
         {
             controls = FindObjectOfType<CharacterControls>();
-
-
-            itemNameText.text = "";
-            itemDescriptionText.text = "";
-            itemIcon.sprite = null;
+            characterAttribute = FindObjectOfType<CharacterAttribute>();
         }
-
-        // private void Update()
-        // {
-        //     if (controls == null) return;
-
-        //     controls.IsAnyKeyPressedDown(controls.inventoryKey);
-        //     foreach (KeyCode key in controls.inventoryKey)
-        //     {
-        //         if (Input.GetKeyDown(key))
-        //         {
-        //             if (inventoryPanel.activeSelf)
-        //                 HideInventory();
-        //             else
-        //                 ShowInventory();
-        //             break;
-        //         }
-        //     }
-        // }
 
         private void Update()
         {
@@ -79,6 +71,19 @@ namespace Yamigisa
                     HideInventory();
                 else
                     ShowInventory();
+            }
+
+            if (tooltipPanel.activeSelf)
+            {
+                Vector2 pos;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    inventoryPanel.GetComponentInParent<Canvas>().transform as RectTransform,
+                    Input.mousePosition,
+                    null, // if canvas is Overlay; replace with canvas.worldCamera if Screen Space - Camera
+                    out pos);
+
+                // offset upwards instead of downwards
+                tooltipPanel.GetComponent<RectTransform>().anchoredPosition = pos + new Vector2(0f, 30f);
             }
         }
 
@@ -147,6 +152,10 @@ namespace Yamigisa
             RefreshUI();
         }
 
+        public bool InventoryFull()
+        {
+            return inventoryItems.Count >= maxItems;
+        }
         private void RefreshUI()
         {
             foreach (Transform child in inventoryContent)
@@ -159,23 +168,28 @@ namespace Yamigisa
             }
         }
 
-        public void ShowDescription(InventoryItemData itemData)
+        public void ShowTooltip(InventoryItemData itemData)
         {
-            if (showDescriptionPanel)
+            if (showTooltipPanel)
             {
-                descriptionPanel.SetActive(true);
+                tooltipPanel.SetActive(true);
                 itemNameText.text = itemData.itemData.itemName;
                 itemDescriptionText.text = itemData.itemData.description;
-                itemIcon.sprite = itemData.itemData.iconInventory;
+                //itemIcon.sprite = itemData.itemData.iconInventory;
             }
         }
 
-        public void HideDescription()
+        public void HideTooltip()
         {
-            descriptionPanel.SetActive(false);
+            tooltipPanel.SetActive(false);
             itemNameText.text = "";
             itemDescriptionText.text = "";
-            itemIcon.sprite = null;
+            //itemIcon.sprite = null;
+        }
+
+        public void UseItem(ItemData data)
+        {
+            data.ApplyEffect(characterAttribute);
         }
     }
 }

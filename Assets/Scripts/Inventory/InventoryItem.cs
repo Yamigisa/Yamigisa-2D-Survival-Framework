@@ -116,21 +116,21 @@ namespace Yamigisa
         private void UseItem()
         {
             buttonsPanel.SetActive(false);
-            Debug.Log("Using item: " + itemInstance.itemData.itemName);
-
-            // TODO: implement your own logic here
-            // Inventory.Instance.UseItem(itemInstance); ← optional
+            Inventory.Instance.UseItem(itemInstance.itemData);
+            Inventory.Instance.RemoveItem(itemInstance);
         }
-
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            Inventory.Instance.ShowDescription(itemInstance);
+            if (buttonsPanel.activeSelf)
+                return;
+
+            Inventory.Instance.ShowTooltip(itemInstance);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            Inventory.Instance.HideDescription();
+            Inventory.Instance.HideTooltip();
         }
     }
 }

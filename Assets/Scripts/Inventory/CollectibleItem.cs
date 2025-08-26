@@ -4,26 +4,26 @@ namespace Yamigisa
 {
     public class CollectibleItem : CollectibleBase
     {
-        [SerializeField] private ItemData itemData;
+        public ItemData ItemData;
         [SerializeField] private SpriteRenderer spriteRenderer;
-        [SerializeField] private int amount = 1;
+        public int Amount = 1;
 
         private void Start()
         {
-            spriteRenderer.sprite = itemData.iconInventory;
+            spriteRenderer.sprite = ItemData.iconInventory;
         }
 
         // For dropping Items
         public void Initialize(ItemData data, int amt)
         {
-            itemData = data;
-            amount = amt;
-            spriteRenderer.sprite = itemData.iconInventory;
+            ItemData = data;
+            Amount = amt;
+            spriteRenderer.sprite = ItemData.iconInventory;
         }
 
         public override void Collect()
         {
-            Inventory.Instance.AddItem(itemData, amount);
+            Inventory.Instance.AddItem(ItemData, Amount);
             Destroy(gameObject);
         }
 

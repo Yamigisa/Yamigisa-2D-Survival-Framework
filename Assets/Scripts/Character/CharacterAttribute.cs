@@ -59,5 +59,32 @@ namespace Yamigisa
                 }
             }
         }
+
+        public void AddMaxAttributeValue(AttributeType type, float value)
+        {
+            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            {
+                if (_attributeInfo.type == type)
+                {
+                    _attributeInfo.MaxValue += value;
+                    characterUI.GetAttributeBar(_attributeInfo).SetMaxValue(_attributeInfo.MaxValue);
+                }
+            }
+        }
+
+        public void AddCurrentAttributeValue(AttributeType type, float value)
+        {
+            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            {
+                if (_attributeInfo.type == type)
+                {
+                    _attributeInfo.CurrentValue += value;
+                    if (_attributeInfo.CurrentValue > _attributeInfo.MaxValue)
+                        _attributeInfo.CurrentValue = _attributeInfo.MaxValue;
+
+                    characterUI.GetAttributeBar(_attributeInfo).SetCurrentValue(_attributeInfo.CurrentValue);
+                }
+            }
+        }
     }
 }

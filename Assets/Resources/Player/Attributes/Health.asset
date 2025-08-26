@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 0
   MaxValue: 100
-  CurrentValue: 100
+  CurrentValue: 49.6
   DepleteValuePerMinute: 0
-  RegenerateValuePerHour: 2
+  RegenerateValuePerMinute: 1
   HealthLossValue: 0
   MoveSpeedLossValue: 0
   FillImage: {fileID: 21300000, guid: d2575a9d633a79544838a6fa1453c20f, type: 3}
