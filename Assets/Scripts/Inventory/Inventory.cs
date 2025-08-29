@@ -7,16 +7,22 @@ namespace Yamigisa
 {
     public class Inventory : MonoBehaviour
     {
-        [Header("Item Prefab")]
-        public int maxItems = 20;
+        [Header("Inventory Settings")]
+        public int maxItems = 32;
 
-        [Header("Item Prefab")]
+        [Header("Inventory Items")]
         [SerializeField] private InventoryItem inventoryItemPrefab;
+
+        private List<InventoryItem> inventoryItemSlots = new();
 
         [Header("Inventory UI")]
         [SerializeField] private Transform inventoryContent;
         [SerializeField] private GameObject inventoryPanel;
-        public GameObject InventoryPanel => inventoryPanel;
+
+        [Header("Quick Inventory")]
+        [SerializeField] private int quickSlotCount = 8;
+        [SerializeField] private Transform quickInventoryContent;
+        private List<InventoryItem> quickInventoryItemSlots = new();
 
         [Header("Tooltip Panel")]
         [SerializeField] private bool showTooltipPanel = true;
@@ -24,13 +30,10 @@ namespace Yamigisa
         [SerializeField] private Text itemNameText;
         [SerializeField] private Text itemDescriptionText;
 
-        [Header("Buttons")]
-        [SerializeField] private Button closeButton;
         private List<InventoryItemData> inventoryItems = new();
 
         private CharacterControls controls;
         private CharacterAttribute characterAttribute;
-        public static Action OnInventoryToggle;
         public static Inventory Instance { get; private set; }
 
         private void Awake()
@@ -45,20 +48,24 @@ namespace Yamigisa
             }
         }
 
-        private void OnEnable()
-        {
-            closeButton.onClick.AddListener(HideInventory);
-        }
-
-        private void OnDisable()
-        {
-            closeButton.onClick.RemoveListener(HideInventory);
-        }
-
         private void Start()
         {
             controls = FindObjectOfType<CharacterControls>();
             characterAttribute = FindObjectOfType<CharacterAttribute>();
+
+            inventoryItemSlots.Clear();
+            for (int i = 0; i < maxItems; i++)
+            {
+                InventoryItem newSlot = Instantiate(inventoryItemPrefab, inventoryContent);
+                inventoryItemSlots.Add(newSlot);
+            }
+
+            quickInventoryItemSlots.Clear();
+            for (int i = 0; i < quickSlotCount; i++)
+            {
+                InventoryItem quickSlot = Instantiate(inventoryItemPrefab, quickInventoryContent);
+                quickInventoryItemSlots.Add(quickSlot);
+            }
         }
 
         private void Update()
@@ -79,11 +86,22 @@ namespace Yamigisa
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     inventoryPanel.GetComponentInParent<Canvas>().transform as RectTransform,
                     Input.mousePosition,
-                    null, // if canvas is Overlay; replace with canvas.worldCamera if Screen Space - Camera
+                    null,
                     out pos);
 
-                // offset upwards instead of downwards
                 tooltipPanel.GetComponent<RectTransform>().anchoredPosition = pos + new Vector2(0f, 30f);
+            }
+
+            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            {
+                if (i < 9 && Input.GetKeyDown(KeyCode.Alpha1 + i))
+                {
+                    UseQuickSlot(i);
+                }
+                else if (i == 9 && Input.GetKeyDown(KeyCode.Alpha0))
+                {
+                    UseQuickSlot(i);
+                }
             }
         }
 
@@ -99,83 +117,148 @@ namespace Yamigisa
 
         public void AddItem(ItemData data, int amountToAdd = 1)
         {
+            if (InventoryFull() && QuickInventoryFull())
+                return;
+
             if (data.isStackable)
             {
-                var existingItem = inventoryItems.Find(i => i.itemData == data);
-                if (existingItem != null)
+                InventoryItem existingQuick = quickInventoryItemSlots.Find(i => i.HasItem && i.ItemInstance.itemData == data);
+                if (existingQuick != null)
                 {
-                    existingItem.amount += amountToAdd;
+                    existingQuick.ItemInstance.amount += amountToAdd;
+                    existingQuick.Initialize(existingQuick.ItemInstance);
+                    return;
                 }
+
+                InventoryItem existingMain = inventoryItemSlots.Find(i => i.HasItem && i.ItemInstance.itemData == data);
+                if (existingMain != null)
+                {
+                    existingMain.ItemInstance.amount += amountToAdd;
+                    existingMain.Initialize(existingMain.ItemInstance);
+                    return;
+                }
+
+                InventoryItemData newItem = new InventoryItemData
+                {
+                    itemData = data,
+                    amount = amountToAdd
+                };
+
+                if (!QuickInventoryFull())
+                    AddItemToQuickInventory(newItem);
                 else
-                {
-                    inventoryItems.Add(new InventoryItemData
-                    {
-                        itemData = data,
-                        amount = amountToAdd
-                    });
-                }
+                    AddItemToMainInventory(newItem);
             }
             else
             {
                 for (int i = 0; i < amountToAdd; i++)
                 {
-                    inventoryItems.Add(new InventoryItemData
+                    InventoryItemData newItem = new InventoryItemData
                     {
                         itemData = data,
                         amount = 1
-                    });
+                    };
+
+                    if (!QuickInventoryFull())
+                        AddItemToQuickInventory(newItem);
+                    else if (!InventoryFull())
+                        AddItemToMainInventory(newItem);
                 }
             }
-
-            RefreshUI();
         }
 
-        public void RemoveItem(InventoryItemData itemToRemove, int amountToRemove = 1)
+        private void AddItemToMainInventory(InventoryItemData itemData)
         {
-            if (itemToRemove == null || !inventoryItems.Contains(itemToRemove))
-                return;
-
-            if (itemToRemove.itemData.isStackable)
+            for (int i = 0; i < inventoryItemSlots.Count; i++)
             {
-                itemToRemove.amount -= amountToRemove;
-
-                if (itemToRemove.amount <= 0)
+                InventoryItem slot = inventoryItemSlots[i];
+                if (!slot.HasItem)
                 {
-                    inventoryItems.Remove(itemToRemove);
+                    slot.Initialize(itemData);
+                    return;
                 }
             }
-            else
+        }
+
+        public void RemoveItem(InventoryItem itemSlot)
+        {
+            if (quickInventoryItemSlots.Contains(itemSlot))
             {
-                inventoryItems.Remove(itemToRemove);
+                quickInventoryItemSlots.Remove(itemSlot);
+                return;
             }
 
-            RefreshUI();
+            if (inventoryItemSlots.Contains(itemSlot))
+            {
+                inventoryItemSlots.Remove(itemSlot);
+                return;
+            }
+        }
+
+
+        private void UseQuickSlot(int index)
+        {
+            if (index < 0 || index >= quickInventoryItemSlots.Count) return;
+
+            InventoryItem quickSlot = quickInventoryItemSlots[index];
+
+            if (quickSlot != null && quickSlot.HasItem)
+            {
+                ItemData itemData = quickSlot.ItemInstance.itemData;
+
+                UseItem(itemData);
+
+                RemoveItem(quickSlot);
+            }
+        }
+
+        public void AddItemToQuickInventory(InventoryItemData itemData)
+        {
+            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            {
+                InventoryItem quickSlot = quickInventoryItemSlots[i];
+
+                if (!quickSlot.HasItem)
+                {
+                    quickSlot.Initialize(itemData);
+                    return;
+                }
+            }
         }
 
         public bool InventoryFull()
         {
-            return inventoryItems.Count >= maxItems;
-        }
-        private void RefreshUI()
-        {
-            foreach (Transform child in inventoryContent)
-                Destroy(child.gameObject);
-
-            foreach (var item in inventoryItems)
+            for (int i = 0; i < inventoryItemSlots.Count; i++)
             {
-                InventoryItem uiItem = Instantiate(inventoryItemPrefab, inventoryContent);
-                uiItem.Initialize(item);
+                if (!inventoryItemSlots[i].HasItem)
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
-        public void ShowTooltip(InventoryItemData itemData)
+        private bool QuickInventoryFull()
         {
-            if (showTooltipPanel)
+            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            {
+                InventoryItem quickSlot = quickInventoryItemSlots[i];
+
+                if (!quickSlot.HasItem)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void ShowTooltip(ItemData itemData)
+        {
+            if (showTooltipPanel && itemData != null)
             {
                 tooltipPanel.SetActive(true);
-                itemNameText.text = itemData.itemData.itemName;
-                itemDescriptionText.text = itemData.itemData.description;
-                //itemIcon.sprite = itemData.itemData.iconInventory;
+                itemNameText.text = itemData.itemName;
+                itemDescriptionText.text = itemData.description;
             }
         }
 
@@ -184,7 +267,6 @@ namespace Yamigisa
             tooltipPanel.SetActive(false);
             itemNameText.text = "";
             itemDescriptionText.text = "";
-            //itemIcon.sprite = null;
         }
 
         public void UseItem(ItemData data)

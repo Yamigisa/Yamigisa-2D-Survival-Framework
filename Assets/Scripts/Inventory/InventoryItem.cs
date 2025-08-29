@@ -17,7 +17,10 @@ namespace Yamigisa
         [SerializeField] private Button useButton;
         [SerializeField] private Button dropButton;
 
-        private InventoryItemData itemInstance;
+        [SerializeField] private InventoryItemData itemInstance;
+        public InventoryItemData ItemInstance => itemInstance;
+        private bool hasItem;
+        public bool HasItem => hasItem;
 
         private void OnEnable()
         {
@@ -34,12 +37,16 @@ namespace Yamigisa
             useButton.onClick.RemoveAllListeners();
         }
 
+        private void Start()
+        {
+            amountText.text = "";
+        }
+
         public void Initialize(InventoryItemData itemData)
         {
             itemInstance = itemData;
 
             icon.sprite = itemData.itemData.iconInventory;
-
             if (itemData.amount <= 1)
             {
                 amountText.text = "";
@@ -50,33 +57,37 @@ namespace Yamigisa
             }
 
             buttonsPanel.SetActive(false);
-
             dropButton.onClick.RemoveAllListeners();
             useButton.onClick.RemoveAllListeners();
 
             if (itemData.itemData.isDroppable)
             {
                 dropButton.gameObject.SetActive(true);
+                dropButton.interactable = true;
                 dropButton.onClick.AddListener(DropItem);
             }
             else
             {
-                dropButton.gameObject.SetActive(false);
+                dropButton.interactable = false;
             }
 
             if (itemData.itemData.itemType == ItemType.Consumable)
             {
                 useButton.gameObject.SetActive(true);
+                useButton.interactable = true;
                 useButton.onClick.AddListener(UseItem);
             }
             else
             {
-                useButton.gameObject.SetActive(false);
+                useButton.interactable = false;
             }
         }
 
         private void ToggleDropdown()
         {
+            if (itemInstance == null)
+                return;
+
             buttonsPanel.SetActive(!buttonsPanel.activeSelf);
         }
 
@@ -84,40 +95,37 @@ namespace Yamigisa
         {
             buttonsPanel.SetActive(false);
 
-            Vector2 dropPosition = Vector2.zero; // placeholder position
-
-            // Create an empty GameObject
-            GameObject drop = new GameObject(itemInstance.itemData.itemName);
-
-            // Position it in the world
-            drop.transform.position = dropPosition;
-
-            // Add visual representation (sprite)
-            SpriteRenderer renderer = drop.AddComponent<SpriteRenderer>();
-            renderer.sprite = itemInstance.itemData.iconWorld;
-
-            // Optional: Add 2D collider (so it can be detected)
-            CircleCollider2D collider = drop.AddComponent<CircleCollider2D>();
-            collider.isTrigger = true;
-
-            // Optional: Add Rigidbody2D (if you want physics interaction)
-            drop.AddComponent<Rigidbody2D>().gravityScale = 0;
-
-            // Add the collectible behavior
-            CollectibleItem runtimeCollectible = drop.AddComponent<CollectibleItem>();
-
-            // Initialize item data
-            runtimeCollectible.Initialize(itemInstance.itemData, itemInstance.amount);
-
-            // Remove from inventory
-            Inventory.Instance.RemoveItem(itemInstance);
+            Inventory.Instance.RemoveItem(this);
         }
 
         private void UseItem()
         {
             buttonsPanel.SetActive(false);
             Inventory.Instance.UseItem(itemInstance.itemData);
-            Inventory.Instance.RemoveItem(itemInstance);
+        }
+
+        public void ReduceAmount(int amount)
+        {
+            itemInstance.amount -= amount;
+
+            if (itemInstance.amount <= 0)
+            {
+                ResetSlot();
+                Inventory.Instance.RemoveItem(this);
+            }
+        }
+
+        public void ResetSlot()
+        {
+            itemInstance = null;
+            icon.sprite = null;
+            amountText.text = "";
+            buttonsPanel.SetActive(false);
+
+            dropButton.onClick.RemoveAllListeners();
+            useButton.onClick.RemoveAllListeners();
+
+            Debug.Log("Reset Slot");
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -125,7 +133,10 @@ namespace Yamigisa
             if (buttonsPanel.activeSelf)
                 return;
 
-            Inventory.Instance.ShowTooltip(itemInstance);
+            if (itemInstance == null || itemInstance.itemData == null)
+                return;
+
+            Inventory.Instance.ShowTooltip(itemInstance.itemData);
         }
 
         public void OnPointerExit(PointerEventData eventData)

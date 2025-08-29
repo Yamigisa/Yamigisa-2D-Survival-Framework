@@ -28,7 +28,7 @@ namespace Yamigisa
         public void ApplyEffect(CharacterAttribute target)
         {
             if (!target) return;
-
+            
             switch (itemType)
             {
 
@@ -45,6 +45,11 @@ namespace Yamigisa
                 default:
                     break;
             }
+        }
+
+        public void ChangeDroppableState(bool state)
+        {
+            isDroppable = state;
         }
     }
 
