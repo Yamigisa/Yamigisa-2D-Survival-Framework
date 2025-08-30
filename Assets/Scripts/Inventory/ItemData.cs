@@ -28,7 +28,7 @@ namespace Yamigisa
         public void ApplyEffect(CharacterAttribute target)
         {
             if (!target) return;
-            
+
             switch (itemType)
             {
 

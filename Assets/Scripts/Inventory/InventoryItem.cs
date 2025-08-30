@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Yamigisa;
 using UnityEngine.EventSystems;
 
 namespace Yamigisa
@@ -17,8 +16,15 @@ namespace Yamigisa
         [SerializeField] private Button useButton;
         [SerializeField] private Button dropButton;
 
-        [SerializeField] private InventoryItemData itemInstance;
-        public InventoryItemData ItemInstance => itemInstance;
+        [Header("Slot Flags")]
+        [SerializeField] private bool isQuickSlot = false;
+
+        [Header("Highlight")]
+        [SerializeField] private Color selectedColor = Color.red;
+        [SerializeField] private Color normalColor = Color.white;
+
+        public ItemData ItemData;
+        public int Amount;
         private bool hasItem;
         public bool HasItem => hasItem;
 
@@ -30,9 +36,7 @@ namespace Yamigisa
         private void OnDisable()
         {
             itemButton.onClick.RemoveListener(ToggleDropdown);
-
             buttonsPanel.SetActive(false);
-
             dropButton.onClick.RemoveAllListeners();
             useButton.onClick.RemoveAllListeners();
         }
@@ -40,27 +44,46 @@ namespace Yamigisa
         private void Start()
         {
             amountText.text = "";
+            if (icon) icon.enabled = false;
+            if (itemButton && itemButton.image) itemButton.image.color = normalColor;
         }
 
-        public void Initialize(InventoryItemData itemData)
+        public void MarkAsQuickSlot(bool value)
         {
-            itemInstance = itemData;
+            isQuickSlot = value;
+        }
 
-            icon.sprite = itemData.itemData.iconInventory;
-            if (itemData.amount <= 1)
+        public void SetSelectedVisual(bool selected)
+        {
+            if (itemButton && itemButton.image) itemButton.image.color = selected ? selectedColor : normalColor;
+            if (icon && icon.enabled) icon.color = selected ? selectedColor : normalColor;
+        }
+
+        public void SetItem(ItemData data, int _amount = 1)
+        {
+            ItemData = data;
+            hasItem = true;
+
+            icon.sprite = data.iconInventory;
+            icon.enabled = true;
+
+            if (!data.isStackable)
             {
-                amountText.text = "";
+                Amount = 1;
+                amountText.text = "1";
             }
             else
             {
-                amountText.text = $"x{itemData.amount}";
+                int cap = Mathf.Max(1, data.maxAmount);
+                Amount = Mathf.Clamp(_amount, 1, cap);
+                amountText.text = Amount <= 1 ? "" : $"{Amount}";
             }
 
             buttonsPanel.SetActive(false);
             dropButton.onClick.RemoveAllListeners();
             useButton.onClick.RemoveAllListeners();
 
-            if (itemData.itemData.isDroppable)
+            if (ItemData.isDroppable)
             {
                 dropButton.gameObject.SetActive(true);
                 dropButton.interactable = true;
@@ -71,7 +94,7 @@ namespace Yamigisa
                 dropButton.interactable = false;
             }
 
-            if (itemData.itemData.itemType == ItemType.Consumable)
+            if (ItemData.itemType == ItemType.Consumable)
             {
                 useButton.gameObject.SetActive(true);
                 useButton.interactable = true;
@@ -85,58 +108,45 @@ namespace Yamigisa
 
         private void ToggleDropdown()
         {
-            if (itemInstance == null)
-                return;
-
+            if (isQuickSlot) return;
+            if (ItemData == null) return;
             buttonsPanel.SetActive(!buttonsPanel.activeSelf);
         }
 
         private void DropItem()
         {
             buttonsPanel.SetActive(false);
-
-            Inventory.Instance.RemoveItem(this);
+            ResetSlot();
         }
 
         private void UseItem()
         {
             buttonsPanel.SetActive(false);
-            Inventory.Instance.UseItem(itemInstance.itemData);
-        }
-
-        public void ReduceAmount(int amount)
-        {
-            itemInstance.amount -= amount;
-
-            if (itemInstance.amount <= 0)
-            {
-                ResetSlot();
-                Inventory.Instance.RemoveItem(this);
-            }
+            Inventory.Instance.UseItem(this);
         }
 
         public void ResetSlot()
         {
-            itemInstance = null;
+            ItemData = null;
+            Amount = 0;
+            hasItem = false;
+
             icon.sprite = null;
+            icon.enabled = false;
+            icon.color = normalColor;
+
             amountText.text = "";
             buttonsPanel.SetActive(false);
 
             dropButton.onClick.RemoveAllListeners();
             useButton.onClick.RemoveAllListeners();
-
-            Debug.Log("Reset Slot");
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (buttonsPanel.activeSelf)
-                return;
-
-            if (itemInstance == null || itemInstance.itemData == null)
-                return;
-
-            Inventory.Instance.ShowTooltip(itemInstance.itemData);
+            if (buttonsPanel.activeSelf) return;
+            if (ItemData == null) return;
+            Inventory.Instance.ShowTooltip(ItemData);
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -144,11 +154,4 @@ namespace Yamigisa
             Inventory.Instance.HideTooltip();
         }
     }
-}
-
-[System.Serializable]
-public class InventoryItemData
-{
-    public ItemData itemData;
-    public int amount;
 }

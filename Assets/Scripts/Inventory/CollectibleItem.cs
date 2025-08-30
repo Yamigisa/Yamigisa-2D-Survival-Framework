@@ -13,7 +13,6 @@ namespace Yamigisa
             spriteRenderer.sprite = ItemData.iconInventory;
         }
 
-        // For dropping Items
         public void Initialize(ItemData data, int amt)
         {
             ItemData = data;
@@ -30,7 +29,7 @@ namespace Yamigisa
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (collision.CompareTag("Player"))
-            {
+            {   
                 Collect();
             }
         }
