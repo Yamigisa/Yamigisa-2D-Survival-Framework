@@ -35,10 +35,6 @@ namespace Yamigisa
         [SerializeField] private GraphicRaycaster raycaster;
         [SerializeField] private float holdToPickSeconds = 0.25f;
 
-        private CharacterControls controls;
-        private CharacterAttribute characterAttribute;
-        public static Inventory Instance { get; private set; }
-
         private int selectedQuickIndex = -1;
 
         private bool isDragging;
@@ -56,6 +52,10 @@ namespace Yamigisa
         public bool IsDragging => isDragging;
         public bool IsInventoryOpen => inventoryPanel != null && inventoryPanel.activeSelf;
 
+        private CharacterControls controls;
+        public Character Character;
+
+        public static Inventory Instance { get; private set; }
         private void Awake()
         {
             if (Instance == null) Instance = this;
@@ -65,7 +65,7 @@ namespace Yamigisa
         private void Start()
         {
             controls = FindObjectOfType<CharacterControls>();
-            characterAttribute = FindObjectOfType<CharacterAttribute>();
+            Character = FindObjectOfType<Character>();
 
             if (rootCanvas == null) rootCanvas = inventoryPanel.GetComponentInParent<Canvas>();
             if (raycaster == null && rootCanvas != null) raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
@@ -236,11 +236,52 @@ namespace Yamigisa
             return false;
         }
 
+        public void UseSlot(InventoryItem slot)
+        {
+            if (slot == null || slot.ItemData == null) return;
+
+            Debug.Log("Using item: " + slot.ItemData.itemName);
+
+            // Prefer actions defined on the ItemData
+            var actions = slot.ItemData.itemActions;
+            if (actions != null && actions.Count > 0)
+            {
+                foreach (var action in actions)
+                {
+                    if (action == null) continue;
+                    action.DoItemAction(Character, slot);
+                }
+            }
+            else
+            {
+                // Fallback if no actions configured
+                if (Character != null)
+                {
+                    if (slot.ItemData.itemType == ItemType.Consumable)
+                    {
+                        Character.ConsumeItem(slot.ItemData);
+                    }
+                    else if (slot.ItemData.itemType == ItemType.Equipment)
+                    {
+                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Health, slot.ItemData.increaseMaxHealth);
+                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Hunger, slot.ItemData.increaseMaxHunger);
+                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Thirst, slot.ItemData.increaseMaxThirst);
+                    }
+                }
+            }
+
+            slot.Amount--;
+            if (slot.Amount <= 0) slot.ResetSlot();
+            else slot.SetItem(slot.ItemData, slot.Amount);
+
+            UpdateQuickIndicators();
+        }
+
         private void UseQuickSlot(int index)
         {
             if (index < 0 || index >= quickInventoryItemSlots.Count) return;
-            InventoryItem quickSlot = quickInventoryItemSlots[index];
-            if (quickSlot.HasItem) UseItem(quickSlot);
+            var quickSlot = quickInventoryItemSlots[index];
+            if (quickSlot.HasItem) UseSlot(quickSlot);
         }
 
         public void ShowTooltip(ItemData itemData)
@@ -258,15 +299,6 @@ namespace Yamigisa
             tooltipPanel.SetActive(false);
             itemNameText.text = "";
             itemDescriptionText.text = "";
-        }
-
-        public void UseItem(InventoryItem item)
-        {
-            item.ItemData.ApplyEffect(characterAttribute);
-            item.Amount--;
-            if (item.Amount <= 0) item.ResetSlot();
-            else item.SetItem(item.ItemData, item.Amount);
-            UpdateQuickIndicators();
         }
 
         public void BeginDrag(InventoryItem origin)

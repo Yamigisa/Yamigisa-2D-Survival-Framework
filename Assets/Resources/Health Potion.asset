@@ -20,6 +20,8 @@ MonoBehaviour:
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
+  itemActions:
+  - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
   increaseMaxHealth: 10
   increaseMaxHunger: 5
   increaseMaxThirst: 5

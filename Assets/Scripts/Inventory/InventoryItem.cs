@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 namespace Yamigisa
 {
@@ -10,6 +11,9 @@ namespace Yamigisa
         [SerializeField] private Image icon;
         [SerializeField] private Text amountText;
         [SerializeField] private Button itemButton;
+
+        [Header("Item Actions")]
+        public List<ActionBase> itemActions;
 
         [Header("Buttons")]
         [SerializeField] private GameObject buttonsPanel;
@@ -83,6 +87,9 @@ namespace Yamigisa
             dropButton.onClick.RemoveAllListeners();
             useButton.onClick.RemoveAllListeners();
 
+            dropButton.onClick.RemoveAllListeners();
+            useButton.onClick.RemoveAllListeners();
+
             if (ItemData.isDroppable)
             {
                 dropButton.gameObject.SetActive(true);
@@ -98,7 +105,7 @@ namespace Yamigisa
             {
                 useButton.gameObject.SetActive(true);
                 useButton.interactable = true;
-                useButton.onClick.AddListener(UseItem);
+                useButton.onClick.AddListener(() => Inventory.Instance.UseSlot(this));
             }
             else
             {
@@ -117,12 +124,6 @@ namespace Yamigisa
         {
             buttonsPanel.SetActive(false);
             ResetSlot();
-        }
-
-        private void UseItem()
-        {
-            buttonsPanel.SetActive(false);
-            Inventory.Instance.UseItem(this);
         }
 
         public void ResetSlot()

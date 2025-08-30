@@ -10,24 +10,24 @@ namespace Yamigisa
         {
             serializedObject.Update();
 
-            SerializedProperty itemName = serializedObject.FindProperty("itemName");
-            SerializedProperty iconWorld = serializedObject.FindProperty("iconWorld");
-            SerializedProperty iconInventory = serializedObject.FindProperty("iconInventory");
-            SerializedProperty description = serializedObject.FindProperty("description");
-            SerializedProperty itemType = serializedObject.FindProperty("itemType");
-            SerializedProperty maxAmount = serializedObject.FindProperty("maxAmount");
-            SerializedProperty isDroppable = serializedObject.FindProperty("isDroppable");
-            SerializedProperty isStackable = serializedObject.FindProperty("isStackable");
+            var itemName = serializedObject.FindProperty("itemName");
+            var iconWorld = serializedObject.FindProperty("iconWorld");
+            var iconInventory = serializedObject.FindProperty("iconInventory");
+            var description = serializedObject.FindProperty("description");
+            var itemType = serializedObject.FindProperty("itemType");
+            var maxAmount = serializedObject.FindProperty("maxAmount");
+            var isDroppable = serializedObject.FindProperty("isDroppable");
+            var isStackable = serializedObject.FindProperty("isStackable");
+            var itemActions = serializedObject.FindProperty("itemActions");   // <-- add this
 
-            SerializedProperty increaseMaxHealth = serializedObject.FindProperty("increaseMaxHealth");
-            SerializedProperty increaseMaxHunger = serializedObject.FindProperty("increaseMaxHunger");
-            SerializedProperty increaseMaxThirst = serializedObject.FindProperty("increaseMaxThirst");
+            var increaseMaxHealth = serializedObject.FindProperty("increaseMaxHealth");
+            var increaseMaxHunger = serializedObject.FindProperty("increaseMaxHunger");
+            var increaseMaxThirst = serializedObject.FindProperty("increaseMaxThirst");
 
-            SerializedProperty increaseHealth = serializedObject.FindProperty("increaseHealth");
-            SerializedProperty increaseHunger = serializedObject.FindProperty("increaseHunger");
-            SerializedProperty increaseThirst = serializedObject.FindProperty("increaseThirst");
+            var increaseHealth = serializedObject.FindProperty("increaseHealth");
+            var increaseHunger = serializedObject.FindProperty("increaseHunger");
+            var increaseThirst = serializedObject.FindProperty("increaseThirst");
 
-            // Draw base fields
             EditorGUILayout.PropertyField(itemName);
             EditorGUILayout.PropertyField(iconWorld);
             EditorGUILayout.PropertyField(iconInventory);
@@ -37,9 +37,12 @@ namespace Yamigisa
             EditorGUILayout.PropertyField(isDroppable);
             EditorGUILayout.PropertyField(isStackable);
 
-            // Conditional effect fields
-            ItemType type = (ItemType)itemType.enumValueIndex;
+            // Draw the actions list
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Item Actions", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(itemActions, includeChildren: true);     // <-- draw it
 
+            var type = (ItemType)itemType.enumValueIndex;
             if (type == ItemType.Equipment)
             {
                 EditorGUILayout.Space();

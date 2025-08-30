@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4634b4ff13755049a10bc119d4a7e25, type: 3}
-  m_Name: Pick
+  m_Script: {fileID: 11500000, guid: d9242a78033f269408f590a05e29e82e, type: 3}
+  m_Name: Eat
   m_EditorClassIdentifier: 
-  title: Pick
+  title: Eat
