@@ -264,6 +264,7 @@ namespace Yamigisa
                         action.DoAction(Character, slot);
                     }
                 }
+
                 slot.Amount--;
                 if (slot.Amount <= 0) slot.ResetSlot();
                 else slot.SetItem(slot.ItemData, slot.Amount);
@@ -438,6 +439,24 @@ namespace Yamigisa
                 if (slot != null) return slot;
             }
             return null;
+        }
+
+        public InventoryItem GetSelectedQuickSlot()
+        {
+            if (selectedQuickIndex < 0) return null;
+            if (selectedQuickIndex >= quickInventoryItemSlots.Count) return null;
+
+            InventoryItem slot = quickInventoryItemSlots[selectedQuickIndex];
+            return slot;
+        }
+
+        public ItemData GetSelectedQuickItemData()
+        {
+            InventoryItem slot = GetSelectedQuickSlot();
+            if (slot == null) return null;
+            if (!slot.HasItem) return null;
+
+            return slot.ItemData;
         }
     }
 }

@@ -16,13 +16,8 @@ namespace Yamigisa
         public bool isDroppable = true;
         public bool isStackable = true;
 
-        // Item Actions
+        public GroupData groupData;
         public List<ActionBase> itemActions;
-
-        // Equipment Effects
-        public int increaseMaxHealth = 0;
-        public int increaseMaxHunger = 0;
-        public int increaseMaxThirst = 0;
 
         // Consumable Effects
         public int increaseHealth = 0;

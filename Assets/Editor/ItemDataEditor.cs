@@ -20,10 +20,6 @@ namespace Yamigisa
             var isStackable = serializedObject.FindProperty("isStackable");
             var itemActions = serializedObject.FindProperty("itemActions");   // <-- add this
 
-            var increaseMaxHealth = serializedObject.FindProperty("increaseMaxHealth");
-            var increaseMaxHunger = serializedObject.FindProperty("increaseMaxHunger");
-            var increaseMaxThirst = serializedObject.FindProperty("increaseMaxThirst");
-
             var increaseHealth = serializedObject.FindProperty("increaseHealth");
             var increaseHunger = serializedObject.FindProperty("increaseHunger");
             var increaseThirst = serializedObject.FindProperty("increaseThirst");
@@ -46,10 +42,6 @@ namespace Yamigisa
             if (type == ItemType.Equipment)
             {
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Equipment Effect", EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(increaseMaxHealth);
-                EditorGUILayout.PropertyField(increaseMaxHunger);
-                EditorGUILayout.PropertyField(increaseMaxThirst);
             }
             else if (type == ItemType.Consumable)
             {

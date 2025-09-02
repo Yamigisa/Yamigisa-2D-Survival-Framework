@@ -10,20 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: New Item Data
+  m_Name: Pickaxe
   m_EditorClassIdentifier: 
-  characterAttribute: {fileID: 0}
-  itemName: 
+  itemName: Axe
   iconWorld: {fileID: 0}
   iconInventory: {fileID: 0}
   description: 
-  itemType: 0
-  maxAmount: 99
+  itemType: 1
+  maxAmount: 1
   isDroppable: 1
-  isStackable: 1
-  increaseMaxHealth: 10
-  increaseMaxHunger: 5
-  increaseMaxThirst: 5
+  isStackable: 0
+  itemActions:
+  - {fileID: 11400000, guid: 1118ff21da5ebfe4486e45e026c6eb1b, type: 2}
   increaseHealth: 10
   increaseHunger: 5
   increaseThirst: 5

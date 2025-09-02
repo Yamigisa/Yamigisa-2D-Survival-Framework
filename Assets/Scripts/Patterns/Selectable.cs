@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Yamigisa
 {
@@ -134,7 +133,7 @@ namespace Yamigisa
         public void PerformAction(ActionBase action)
         {
             if (action == null) return;
-            if (!action.CanDoAction(this)) return;  
+            if (!action.CanDoAction(this)) return;
             action.DoAction(character, this);
             ShowSelectableButtons(false);
         }
