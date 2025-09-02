@@ -55,6 +55,8 @@ namespace Yamigisa
         private CharacterControls controls;
         public Character Character;
 
+        private bool isUsingSlot;
+
         public static Inventory Instance { get; private set; }
         private void Awake()
         {
@@ -97,6 +99,25 @@ namespace Yamigisa
         {
             if (controls == null) return;
 
+            // Toggle inventory always available
+            if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
+            {
+                if (inventoryPanel.activeSelf) HideInventory();
+                else ShowInventory();
+            }
+
+            // QUICK SLOT NUMBER KEYS — must work even when inventory is closed
+            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                    SelectQuickSlot(i);
+            }
+
+            // USE KEY (e.g., E) — also should work when inventory is closed
+            if (!isDragging && controls.IsAnyKeyPressedDown(controls.useItemKey) && selectedQuickIndex >= 0)
+                UseQuickSlot(selectedQuickIndex);
+
+            // From here, skip the rest if inventory isn't open (drag/tooltip logic is only when open)
             if (!IsInventoryOpen)
             {
                 CancelPendingPick();
@@ -104,6 +125,7 @@ namespace Yamigisa
                 return;
             }
 
+            // Drag & drop
             if (isDragging)
             {
                 UpdateDragIconPosition();
@@ -134,12 +156,7 @@ namespace Yamigisa
 
             if (Input.GetMouseButtonUp(0)) CancelPendingPick();
 
-            if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
-            {
-                if (inventoryPanel.activeSelf) HideInventory();
-                else ShowInventory();
-            }
-
+            // Tooltip follows cursor when inventory open
             if (tooltipPanel.activeSelf)
             {
                 Vector2 pos;
@@ -150,15 +167,6 @@ namespace Yamigisa
                     out pos);
                 tooltipPanel.GetComponent<RectTransform>().anchoredPosition = pos + new Vector2(0f, 30f);
             }
-
-            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
-            {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
-                    SelectQuickSlot(i);
-            }
-
-            if (controls.IsAnyKeyPressedDown(controls.useItemKey) && selectedQuickIndex >= 0)
-                UseQuickSlot(selectedQuickIndex);
         }
 
         private void CancelPendingPick()
@@ -239,42 +247,33 @@ namespace Yamigisa
         public void UseSlot(InventoryItem slot)
         {
             if (slot == null || slot.ItemData == null) return;
+            if (isUsingSlot) return;
 
-            Debug.Log("Using item: " + slot.ItemData.itemName);
+            isUsingSlot = true;
+            try
+            {
+                Debug.Log("Using item: " + slot.ItemData.itemName);
 
-            // Prefer actions defined on the ItemData
-            var actions = slot.ItemData.itemActions;
-            if (actions != null && actions.Count > 0)
-            {
-                foreach (var action in actions)
+                List<ActionBase> actions = slot.ItemData.itemActions;
+                if (actions != null && actions.Count > 0)
                 {
-                    if (action == null) continue;
-                    action.DoItemAction(Character, slot);
-                }
-            }
-            else
-            {
-                // Fallback if no actions configured
-                if (Character != null)
-                {
-                    if (slot.ItemData.itemType == ItemType.Consumable)
+                    for (int i = 0; i < actions.Count; i++)
                     {
-                        Character.ConsumeItem(slot.ItemData);
-                    }
-                    else if (slot.ItemData.itemType == ItemType.Equipment)
-                    {
-                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Health, slot.ItemData.increaseMaxHealth);
-                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Hunger, slot.ItemData.increaseMaxHunger);
-                        Character.characterAttribute.AddMaxAttributeValue(AttributeType.Thirst, slot.ItemData.increaseMaxThirst);
+                        ActionBase action = actions[i];
+                        if (action == null) continue;
+                        action.DoAction(Character, slot);
                     }
                 }
+                slot.Amount--;
+                if (slot.Amount <= 0) slot.ResetSlot();
+                else slot.SetItem(slot.ItemData, slot.Amount);
+
+                UpdateQuickIndicators();
             }
-
-            slot.Amount--;
-            if (slot.Amount <= 0) slot.ResetSlot();
-            else slot.SetItem(slot.ItemData, slot.Amount);
-
-            UpdateQuickIndicators();
+            finally
+            {
+                isUsingSlot = false;
+            }
         }
 
         private void UseQuickSlot(int index)

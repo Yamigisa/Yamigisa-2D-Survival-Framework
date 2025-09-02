@@ -6,9 +6,15 @@ namespace Yamigisa
     {
         public string title;
 
-        public virtual void DoItemAction(Character character, InventoryItem slot)
-        {
+        // Inventory Related
+        public virtual void DoAction(Character character, InventoryItem slot) { }
 
+        // Character Related
+        public virtual void DoAction(Character character, Component context) { }
+
+        public virtual bool CanDoAction(Component context = null)
+        {
+            return true;
         }
     }
 }

@@ -15,10 +15,6 @@ namespace Yamigisa
         [Header("Item Actions")]
         public List<ActionBase> itemActions;
 
-        [Header("Buttons")]
-        [SerializeField] private GameObject buttonsPanel;
-        [SerializeField] private Button useButton;
-        [SerializeField] private Button dropButton;
 
         [Header("Slot Flags")]
         [SerializeField] private bool isQuickSlot = false;
@@ -31,19 +27,6 @@ namespace Yamigisa
         public int Amount;
         private bool hasItem;
         public bool HasItem => hasItem;
-
-        private void OnEnable()
-        {
-            itemButton.onClick.AddListener(ToggleDropdown);
-        }
-
-        private void OnDisable()
-        {
-            itemButton.onClick.RemoveListener(ToggleDropdown);
-            buttonsPanel.SetActive(false);
-            dropButton.onClick.RemoveAllListeners();
-            useButton.onClick.RemoveAllListeners();
-        }
 
         private void Start()
         {
@@ -82,47 +65,10 @@ namespace Yamigisa
                 Amount = Mathf.Clamp(_amount, 1, cap);
                 amountText.text = Amount <= 1 ? "" : $"{Amount}";
             }
-
-            buttonsPanel.SetActive(false);
-            dropButton.onClick.RemoveAllListeners();
-            useButton.onClick.RemoveAllListeners();
-
-            dropButton.onClick.RemoveAllListeners();
-            useButton.onClick.RemoveAllListeners();
-
-            if (ItemData.isDroppable)
-            {
-                dropButton.gameObject.SetActive(true);
-                dropButton.interactable = true;
-                dropButton.onClick.AddListener(DropItem);
-            }
-            else
-            {
-                dropButton.interactable = false;
-            }
-
-            if (ItemData.itemType == ItemType.Consumable)
-            {
-                useButton.gameObject.SetActive(true);
-                useButton.interactable = true;
-                useButton.onClick.AddListener(() => Inventory.Instance.UseSlot(this));
-            }
-            else
-            {
-                useButton.interactable = false;
-            }
-        }
-
-        private void ToggleDropdown()
-        {
-            if (isQuickSlot) return;
-            if (ItemData == null) return;
-            buttonsPanel.SetActive(!buttonsPanel.activeSelf);
         }
 
         private void DropItem()
         {
-            buttonsPanel.SetActive(false);
             ResetSlot();
         }
 
@@ -137,15 +83,10 @@ namespace Yamigisa
             icon.color = normalColor;
 
             amountText.text = "";
-            buttonsPanel.SetActive(false);
-
-            dropButton.onClick.RemoveAllListeners();
-            useButton.onClick.RemoveAllListeners();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (buttonsPanel.activeSelf) return;
             if (ItemData == null) return;
             Inventory.Instance.ShowTooltip(ItemData);
         }
