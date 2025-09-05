@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Yamigisa
@@ -10,10 +11,11 @@ namespace Yamigisa
         public int hp = 100;
 
         [Header("Group Items Required")]
-        [SerializeField] private List<GroupData> requiredItems;
+        public GroupData requiredItem;
 
         [Header("Loot")]
         [SerializeField] private List<ItemData> loots;
+
         private Selectable select;
 
         private void Awake()
@@ -21,11 +23,10 @@ namespace Yamigisa
             select = GetComponent<Selectable>();
         }
 
-        
         public void TakeDamage(int damage)
         {
             hp -= damage;
-
+            Debug.Log("tkaing dmg");
             if (hp <= 0)
             {
                 Kill();
@@ -35,13 +36,19 @@ namespace Yamigisa
         private void Kill()
         {
             GetLoot();
+            Destroy(gameObject);
         }
 
         private void GetLoot()
         {
-            foreach (ItemData item in loots)
+            if (loots == null || loots.Count == 0) return;
+            if (Inventory.Instance == null) return;
+
+            for (int i = 0; i < loots.Count; i++)
             {
-                Inventory.Instance.AddItem(item);
+                ItemData item = loots[i];
+                if (item != null)
+                    Inventory.Instance.AddItem(item);
             }
         }
     }

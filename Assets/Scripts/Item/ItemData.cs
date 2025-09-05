@@ -16,7 +16,7 @@ namespace Yamigisa
         public bool isDroppable = true;
         public bool isStackable = true;
 
-        public GroupData groupData;
+        public GroupData GroupData;
         public List<ActionBase> itemActions;
 
         // Consumable Effects
@@ -24,6 +24,8 @@ namespace Yamigisa
         public int increaseHunger = 0;
         public int increaseThirst = 0;
 
+        // Equipment Effect
+        public int damage = 0;
         public void ChangeDroppableState(bool state)
         {
             isDroppable = state;

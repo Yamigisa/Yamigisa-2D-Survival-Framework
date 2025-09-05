@@ -1,12 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Yamigisa
 {
     public class Character : MonoBehaviour
     {
-        public CharacterAnimation characterAnimation;
-        public CharacterAttribute characterAttribute;
-        public CharacterMovement characterMovement;
+        [HideInInspector] public CharacterAnimation characterAnimation;
+        [HideInInspector] public CharacterAttribute characterAttribute;
+        [HideInInspector] public CharacterMovement characterMovement;
+
+        [Header("Starting Items")]
+        public List<ItemData> startingItems;
 
         private void Awake()
         {

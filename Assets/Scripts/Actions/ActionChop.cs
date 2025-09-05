@@ -1,25 +1,28 @@
-// using System.Collections.Generic;
-// using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 
-// namespace Yamigisa
-// {
-//     [CreateAssetMenu(fileName = "Action", menuName = "Yamigisa/Actions/Chop", order = 50)]
-//     public class ActionChop : ActionBase
-//     {
-//         public List<GroupData> choppableItems;
+namespace Yamigisa
+{
+    [CreateAssetMenu(fileName = "Action", menuName = "Yamigisa/Actions/Chop", order = 50)]
+    public class ActionChop : ActionBase
+    {
+        public override void DoAction(Character character, Component context)
+        {
+            Selectable selectable = context as Selectable;
 
-//         public override void DoAction(Character character, Component context)
-//         {
-//             if (CanDoAction(Inventory.Instance.GetSelectedQuickItemData()))
-//             {
-//                 Selectable selectable = context as Selectable;
-//                 ItemData item = selectable.ItemData;
+            Destructible destructible = selectable.GetComponent<Destructible>();
 
-//                 if (choppableItems.Contains(item.groupData))
-//                 {
-//                     Inventory.Instance.AddItem(item);
-//                 }
-//             }
-//         }
-//     }
-// }
+            ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
+
+            GroupData equippedGroup = equipped.GroupData;
+            GroupData requiredGroup = destructible.requiredItem;
+
+            if (equippedGroup == requiredGroup)
+            {
+                Debug.Log("[ActionChop] Correct tool group equipped. Applying damage.");
+                destructible.TakeDamage(equipped.damage);
+                return;
+            }
+        }
+    }
+}

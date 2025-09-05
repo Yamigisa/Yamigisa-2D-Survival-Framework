@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Runtime.Versioning;
 
 namespace Yamigisa
 {
@@ -80,12 +81,15 @@ namespace Yamigisa
             }
 
             quickInventoryItemSlots.Clear();
+
             for (int i = 0; i < quickSlotCount; i++)
             {
                 InventoryItem quickSlot = Instantiate(inventoryItemPrefab, quickInventoryContent);
                 quickSlot.MarkAsQuickSlot(true);
                 quickInventoryItemSlots.Add(quickSlot);
             }
+
+            SetStartingItems();
 
             if (quickInventoryItemSlots.Count > 0)
             {
@@ -99,25 +103,21 @@ namespace Yamigisa
         {
             if (controls == null) return;
 
-            // Toggle inventory always available
             if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
             {
                 if (inventoryPanel.activeSelf) HideInventory();
                 else ShowInventory();
             }
 
-            // QUICK SLOT NUMBER KEYS — must work even when inventory is closed
             for (int i = 0; i < quickInventoryItemSlots.Count; i++)
             {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                     SelectQuickSlot(i);
             }
 
-            // USE KEY (e.g., E) — also should work when inventory is closed
             if (!isDragging && controls.IsAnyKeyPressedDown(controls.useItemKey) && selectedQuickIndex >= 0)
                 UseQuickSlot(selectedQuickIndex);
 
-            // From here, skip the rest if inventory isn't open (drag/tooltip logic is only when open)
             if (!IsInventoryOpen)
             {
                 CancelPendingPick();
@@ -125,7 +125,6 @@ namespace Yamigisa
                 return;
             }
 
-            // Drag & drop
             if (isDragging)
             {
                 UpdateDragIconPosition();
@@ -156,7 +155,6 @@ namespace Yamigisa
 
             if (Input.GetMouseButtonUp(0)) CancelPendingPick();
 
-            // Tooltip follows cursor when inventory open
             if (tooltipPanel.activeSelf)
             {
                 Vector2 pos;
@@ -252,8 +250,6 @@ namespace Yamigisa
             isUsingSlot = true;
             try
             {
-                Debug.Log("Using item: " + slot.ItemData.itemName);
-
                 List<ActionBase> actions = slot.ItemData.itemActions;
                 if (actions != null && actions.Count > 0)
                 {
@@ -265,10 +261,12 @@ namespace Yamigisa
                     }
                 }
 
-                slot.Amount--;
-                if (slot.Amount <= 0) slot.ResetSlot();
-                else slot.SetItem(slot.ItemData, slot.Amount);
-
+                if (slot.ItemData.itemType == ItemType.Consumable)
+                {
+                    slot.Amount--;
+                    if (slot.Amount <= 0) slot.ResetSlot();
+                    else slot.SetItem(slot.ItemData, slot.Amount);
+                }
                 UpdateQuickIndicators();
             }
             finally
@@ -286,7 +284,7 @@ namespace Yamigisa
 
         public void ShowTooltip(ItemData itemData)
         {
-            if (showTooltipPanel && itemData != null)
+            if (showTooltipPanel && itemData != null && inventoryPanel.activeSelf)
             {
                 tooltipPanel.SetActive(true);
                 itemNameText.text = itemData.itemName;
@@ -457,6 +455,16 @@ namespace Yamigisa
             if (!slot.HasItem) return null;
 
             return slot.ItemData;
+        }
+
+        private void SetStartingItems()
+        {
+            for (int i = 0; i < Character.startingItems.Count; i++)
+            {
+                ItemData data = Character.startingItems[i];
+                if (data == null) continue;
+                AddItem(data, 1);
+            }
         }
     }
 }
