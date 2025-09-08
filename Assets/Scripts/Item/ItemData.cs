@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +15,8 @@ namespace Yamigisa
         public bool isDroppable = true;
         public bool isStackable = true;
 
-        public GroupData GroupData;
+        public List<GroupData> groups = new List<GroupData>();
+
         public List<ActionBase> itemActions;
 
         // Consumable Effects
@@ -26,6 +26,7 @@ namespace Yamigisa
 
         // Equipment Effect
         public int damage = 0;
+
         public void ChangeDroppableState(bool state)
         {
             isDroppable = state;

@@ -20,9 +20,11 @@ MonoBehaviour:
   maxAmount: 1
   isDroppable: 1
   isStackable: 0
-  GroupData: {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
+  groups:
+  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
   itemActions:
   - {fileID: 11400000, guid: 1118ff21da5ebfe4486e45e026c6eb1b, type: 2}
   increaseHealth: 10
   increaseHunger: 5
   increaseThirst: 5
+  damage: 100
