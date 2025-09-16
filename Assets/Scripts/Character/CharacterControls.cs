@@ -16,6 +16,8 @@ namespace Yamigisa
         public List<KeyCode> inventoryKey;
         public List<KeyCode> useItemKey;
 
+        [Header("Inventory / Items")]
+        public List<KeyCode> craftingKey;
         public bool IsAnyKeyPressed(List<KeyCode> keyList)
         {
             foreach (KeyCode key in keyList)

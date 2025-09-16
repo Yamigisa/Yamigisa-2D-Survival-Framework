@@ -15,7 +15,6 @@ namespace Yamigisa
         private SerializedProperty propIsDroppable;
         private SerializedProperty propIsStackable;
 
-        // CHANGED: now a list named "groups" in ItemData
         private SerializedProperty propGroups;
         private SerializedProperty propItemActions;
 
@@ -23,52 +22,71 @@ namespace Yamigisa
         private SerializedProperty propIncreaseHunger;
         private SerializedProperty propIncreaseThirst;
 
-        // NEW: damage field in ItemData
         private SerializedProperty propDamage;
+
+        // Crafting
+        private SerializedProperty propIsCraftable;
+        private SerializedProperty propCraftGroupsNeeded;
+        private SerializedProperty propCraftItemsNeeded;
+        private SerializedProperty propCraftResultAmount;
+
+        private SerializedProperty Find(string name)
+        {
+            var p = serializedObject.FindProperty(name);
+            if (p == null)
+                EditorGUILayout.HelpBox($"Missing serialized field: {name}", MessageType.Error);
+            return p;
+        }
 
         private void OnEnable()
         {
-            propItemName = serializedObject.FindProperty("itemName");
-            propIconWorld = serializedObject.FindProperty("iconWorld");
-            propIconInventory = serializedObject.FindProperty("iconInventory");
-            propDescription = serializedObject.FindProperty("description");
-            propItemType = serializedObject.FindProperty("itemType");
-            propMaxAmount = serializedObject.FindProperty("maxAmount");
-            propIsDroppable = serializedObject.FindProperty("isDroppable");
-            propIsStackable = serializedObject.FindProperty("isStackable");
+            propItemName = Find("itemName");
+            propIconWorld = Find("iconWorld");
+            propIconInventory = Find("iconInventory");
+            propDescription = Find("description");
+            propItemType = Find("itemType");
+            propMaxAmount = Find("maxAmount");
+            propIsDroppable = Find("isDroppable");
+            propIsStackable = Find("isStackable");
 
-            propGroups = serializedObject.FindProperty("groups");        // <-- updated name
-            propItemActions = serializedObject.FindProperty("itemActions");
+            propGroups = Find("groups");
+            propItemActions = Find("itemActions");
 
-            propIncreaseHealth = serializedObject.FindProperty("increaseHealth");
-            propIncreaseHunger = serializedObject.FindProperty("increaseHunger");
-            propIncreaseThirst = serializedObject.FindProperty("increaseThirst");
+            propIncreaseHealth = Find("increaseHealth");
+            propIncreaseHunger = Find("increaseHunger");
+            propIncreaseThirst = Find("increaseThirst");
 
-            propDamage = serializedObject.FindProperty("damage");        // <-- new
+            propDamage = Find("damage");
+
+            // Crafting (matches ItemData)
+            propIsCraftable = Find("isCraftable");
+            propCraftGroupsNeeded = Find("craftGroupsNeeded");
+            propCraftItemsNeeded = Find("craftItemsNeeded");
+            propCraftResultAmount = Find("craftResultAmount");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            // Base fields
+            // Base
             EditorGUILayout.PropertyField(propItemName);
             EditorGUILayout.PropertyField(propIconWorld);
             EditorGUILayout.PropertyField(propIconInventory);
             EditorGUILayout.PropertyField(propDescription);
 
-            // Groups (List<GroupData>)
+            // Groups
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Groups", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(propGroups, true);
 
+            // Type + stack rules
             EditorGUILayout.PropertyField(propItemType);
 
-            // Stackable / Max Amount logic
             EditorGUILayout.PropertyField(propIsStackable);
-            if (!propIsStackable.boolValue)
+            if (propIsStackable != null && !propIsStackable.boolValue)
             {
-                propMaxAmount.intValue = 1;
+                if (propMaxAmount != null) propMaxAmount.intValue = 1;
                 using (new EditorGUI.DisabledScope(true))
                 {
                     EditorGUILayout.IntField(new GUIContent("Max Amount"), 1);
@@ -76,36 +94,63 @@ namespace Yamigisa
             }
             else
             {
-                int currentMax = Mathf.Max(1, propMaxAmount.intValue);
-                currentMax = EditorGUILayout.IntField(new GUIContent("Max Amount"), currentMax);
-                propMaxAmount.intValue = Mathf.Max(1, currentMax);
+                if (propMaxAmount != null)
+                {
+                    int currentMax = Mathf.Max(1, propMaxAmount.intValue);
+                    currentMax = EditorGUILayout.IntField(new GUIContent("Max Amount"), currentMax);
+                    propMaxAmount.intValue = Mathf.Max(1, currentMax);
+                }
             }
 
             EditorGUILayout.PropertyField(propIsDroppable);
 
-            // Actions list
+            // Actions
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Item Actions", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(propItemActions, true);
 
-            // Type-specific fields
-            ItemType type = (ItemType)propItemType.enumValueIndex;
-
-            if (type == ItemType.Consumable)
+            // Type-specific
+            if (propItemType != null)
             {
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Consumable Effects", EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(propIncreaseHealth);
-                EditorGUILayout.PropertyField(propIncreaseHunger);
-                EditorGUILayout.PropertyField(propIncreaseThirst);
+                ItemType type = (ItemType)propItemType.enumValueIndex;
+
+                if (type == ItemType.Consumable)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Consumable Effects", EditorStyles.boldLabel);
+                    EditorGUILayout.PropertyField(propIncreaseHealth);
+                    EditorGUILayout.PropertyField(propIncreaseHunger);
+                    EditorGUILayout.PropertyField(propIncreaseThirst);
+                }
+
+                if (type == ItemType.Equipment)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Equipment Effects", EditorStyles.boldLabel);
+                    EditorGUILayout.PropertyField(propDamage);
+                    if (propDamage != null && propDamage.intValue < 0) propDamage.intValue = 0;
+                }
             }
 
-            if (type == ItemType.Equipment)
+            // Crafting
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Crafting", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(propIsCraftable, new GUIContent("Is Craftable"));
+
+            if (propIsCraftable != null && propIsCraftable.boolValue)
             {
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Equipment Effects", EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(propDamage);
-                if (propDamage.intValue < 0) propDamage.intValue = 0;
+                using (new EditorGUI.IndentLevelScope())
+                {
+                    EditorGUILayout.PropertyField(propCraftGroupsNeeded, new GUIContent("Groups Needed"), true);
+                    EditorGUILayout.PropertyField(propCraftItemsNeeded, new GUIContent("Specific Items Needed"), true);
+
+                    if (propCraftResultAmount != null)
+                    {
+                        int result = Mathf.Max(1, propCraftResultAmount.intValue);
+                        result = EditorGUILayout.IntField(new GUIContent("Crafted Amount"), result);
+                        propCraftResultAmount.intValue = Mathf.Max(1, result);
+                    }
+                }
             }
 
             serializedObject.ApplyModifiedProperties();

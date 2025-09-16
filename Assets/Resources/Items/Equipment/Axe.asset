@@ -28,3 +28,9 @@ MonoBehaviour:
   increaseHunger: 5
   increaseThirst: 5
   damage: 100
+  isCraftable: 1
+  craftGroupsNeeded:
+  - GroupData: {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
+    Amount: 1
+  craftItemsNeeded: []
+  craftResultAmount: 1

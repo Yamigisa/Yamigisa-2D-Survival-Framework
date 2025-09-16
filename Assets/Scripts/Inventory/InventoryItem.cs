@@ -17,7 +17,7 @@ namespace Yamigisa
 
 
         [Header("Slot Flags")]
-        [SerializeField] private bool isQuickSlot = false;
+        private bool isQuickSlot = false;
 
         [Header("Highlight")]
         [SerializeField] private Color selectedColor = Color.red;
@@ -31,7 +31,6 @@ namespace Yamigisa
         private void Start()
         {
             amountText.text = "";
-            if (icon) icon.enabled = false;
             if (itemButton && itemButton.image) itemButton.image.color = normalColor;
         }
 
@@ -51,13 +50,13 @@ namespace Yamigisa
             ItemData = data;
             hasItem = true;
 
-            icon.sprite = data.iconInventory;
             icon.enabled = true;
+            icon.sprite = data.iconInventory;
 
             if (!data.isStackable)
             {
                 Amount = 1;
-                amountText.text = "1";
+                amountText.text = "";
             }
             else
             {

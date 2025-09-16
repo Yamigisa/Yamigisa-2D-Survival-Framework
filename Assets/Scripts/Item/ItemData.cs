@@ -27,6 +27,13 @@ namespace Yamigisa
         // Equipment Effect
         public int damage = 0;
 
+        // ===== CRAFTING (NEW) =====
+        [Header("Crafting (Recipe)")]
+        public bool isCraftable = false;   // <--- NEW toggle
+        public List<CraftGroupData> craftGroupsNeeded = new List<CraftGroupData>();
+        public List<CraftItemData> craftItemsNeeded = new List<CraftItemData>();
+        [Min(1)] public int craftResultAmount = 1;
+
         public void ChangeDroppableState(bool state)
         {
             isDroppable = state;
@@ -38,5 +45,19 @@ namespace Yamigisa
         Resource,
         Equipment,
         Consumable,
+    }
+
+    [System.Serializable]
+    public class CraftGroupData
+    {
+        public GroupData GroupData;
+        public int Amount;
+    }
+
+    [System.Serializable]
+    public class CraftItemData
+    {
+        public ItemData itemData;
+        public int Amount;
     }
 }
