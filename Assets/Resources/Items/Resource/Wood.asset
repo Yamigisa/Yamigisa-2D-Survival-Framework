@@ -20,8 +20,14 @@ MonoBehaviour:
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
-  groupData: {fileID: 0}
+  groups:
+  - {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
   itemActions: []
   increaseHealth: 0
   increaseHunger: 0
   increaseThirst: 0
+  damage: 0
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

@@ -14,6 +14,8 @@ namespace Yamigisa
         [SerializeField] private CraftSlot slotPrefab;
 
         private Inventory inventory;
+
+        private CharacterControls controls;
         private readonly List<CraftSlot> slots = new List<CraftSlot>();
 
         private void OnEnable()
@@ -30,6 +32,21 @@ namespace Yamigisa
         private void OnDisable()
         {
             Inventory.OnChanged -= RefreshAll;
+        }
+
+        private void Awake()
+        {
+            if (controls == null) controls = FindObjectOfType<CharacterControls>();
+        }
+
+        void Update()
+        {
+            if (controls == null) return;
+
+            if (controls.IsAnyKeyPressedDown(controls.craftingKey))
+            {
+                ToggleCraftingInterface();
+            }
         }
 
         public void Rebuild()
@@ -58,6 +75,13 @@ namespace Yamigisa
                 slot.Init(item, inventory);
                 slots.Add(slot);
             }
+        }
+
+        private void ToggleCraftingInterface()
+        {
+            bool isActive = contentRoot != null && contentRoot.gameObject.activeSelf;
+            contentRoot.gameObject.SetActive(!isActive);
+            Rebuild();
         }
 
         private void RefreshAll()

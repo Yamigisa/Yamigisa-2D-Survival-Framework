@@ -986,6 +986,7 @@ MonoBehaviour:
   sprintKey: 30010000
   inventoryKey: 69000000
   useItemKey: 65000000
+  craftingKey: 75000000
 --- !u!95 &699390589
 Animator:
   serializedVersion: 7
@@ -1170,7 +1171,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &884000797
 RectTransform:
   m_ObjectHideFlags: 0
