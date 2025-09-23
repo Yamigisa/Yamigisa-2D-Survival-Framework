@@ -3,9 +3,8 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    public class CharacterUI : MonoBehaviour
+    public class AttributeUI : MonoBehaviour
     {
-        [Header("Attribute UI")]
         [SerializeField] private Transform AttributeUIContainer;
         [SerializeField] private AttributeBar attributeBarPrefab;
         [HideInInspector] public List<AttributeBar> attributeBars = new List<AttributeBar>();

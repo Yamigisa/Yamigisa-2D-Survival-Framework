@@ -9,6 +9,10 @@ namespace Yamigisa
         public void SetAttributeBar(AttributeInfo _attributeInfo)
         {
             AttributeInfo = _attributeInfo;
+
+            SliderFillImage.sprite = AttributeInfo.FillImage;
+            SliderBackgroundImage.sprite = AttributeInfo.BackgroundImage;
+
             SetMaxValue(AttributeInfo.MaxValue);
             SetMinValue(0);
             SetCurrentValue(AttributeInfo.CurrentValue);

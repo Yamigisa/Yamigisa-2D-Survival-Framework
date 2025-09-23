@@ -3,86 +3,85 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [RequireComponent(typeof(CharacterUI))]
+    [ExecuteAlways]
     public class CharacterAttribute : MonoBehaviour
     {
         [SerializeField] private List<AttributeInfo> attributeInfo;
+        private AttributeUI attributeUI;
 
-        private CharacterUI characterUI;
-
-        private void OnDisable()
+        void OnEnable()
         {
-            PassingTime.Instance.OnMinuteChanged -= SetDepletingAttributes;
-            PassingTime.Instance.OnMinuteChanged -= SetRegeneratingAttributes;
-        }
-
-        void Start()
-        {
-            characterUI = GetComponent<CharacterUI>();
-
-            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            attributeUI = FindObjectOfType<AttributeUI>();
+            if (attributeUI != null)
             {
-                characterUI.InitializeAttributeBar(_attributeInfo);
+                foreach (var a in attributeInfo)
+                    attributeUI.InitializeAttributeBar(a);
             }
 
-            PassingTime.Instance.OnMinuteChanged += SetDepletingAttributes;
-            PassingTime.Instance.OnMinuteChanged += SetRegeneratingAttributes;
+            if (Application.isPlaying && TimeClock.Instance != null)
+            {
+                TimeClock.Instance.OnMinuteChanged += SetDepletingAttributes;
+                TimeClock.Instance.OnMinuteChanged += SetRegeneratingAttributes;
+            }
+        }
+
+        void OnDisable()
+        {
+            if (Application.isPlaying && TimeClock.Instance != null)
+            {
+                TimeClock.Instance.OnMinuteChanged -= SetDepletingAttributes;
+                TimeClock.Instance.OnMinuteChanged -= SetRegeneratingAttributes;
+            }
         }
 
         private void SetDepletingAttributes()
         {
-            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            foreach (var a in attributeInfo)
             {
-                if (_attributeInfo.DepleteValuePerMinute != 0f)
+                if (a.DepleteValuePerMinute != 0f)
                 {
-                    _attributeInfo.CurrentValue += _attributeInfo.DepleteValuePerMinute;
-
-                    AttributeBar bar = characterUI.GetAttributeBar(_attributeInfo);
-                    bar.SetCurrentValue(_attributeInfo.CurrentValue);
+                    a.CurrentValue += a.DepleteValuePerMinute;
+                    var bar = attributeUI.GetAttributeBar(a);
+                    bar.SetCurrentValue(a.CurrentValue);
                 }
             }
         }
 
         private void SetRegeneratingAttributes()
         {
-            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            foreach (var a in attributeInfo)
             {
-                if (_attributeInfo.RegenerateValuePerMinute != 0f)
+                if (a.RegenerateValuePerMinute != 0f)
                 {
-                    if (_attributeInfo.CurrentValue > _attributeInfo.MaxValue)
-                        return;
-
-                    _attributeInfo.CurrentValue += _attributeInfo.RegenerateValuePerMinute;
-
-                    AttributeBar bar = characterUI.GetAttributeBar(_attributeInfo);
-                    bar.SetCurrentValue(_attributeInfo.CurrentValue);
+                    if (a.CurrentValue > a.MaxValue) return;
+                    a.CurrentValue += a.RegenerateValuePerMinute;
+                    var bar = attributeUI.GetAttributeBar(a);
+                    bar.SetCurrentValue(a.CurrentValue);
                 }
             }
         }
 
         public void AddMaxAttributeValue(AttributeType type, float value)
         {
-            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            foreach (var a in attributeInfo)
             {
-                if (_attributeInfo.type == type)
+                if (a.type == type)
                 {
-                    _attributeInfo.MaxValue += value;
-                    characterUI.GetAttributeBar(_attributeInfo).SetMaxValue(_attributeInfo.MaxValue);
+                    a.MaxValue += value;
+                    attributeUI.GetAttributeBar(a).SetMaxValue(a.MaxValue);
                 }
             }
         }
 
         public void AddCurrentAttributeValue(AttributeType type, float value)
         {
-            foreach (AttributeInfo _attributeInfo in attributeInfo)
+            foreach (var a in attributeInfo)
             {
-                if (_attributeInfo.type == type)
+                if (a.type == type)
                 {
-                    _attributeInfo.CurrentValue += value;
-                    if (_attributeInfo.CurrentValue > _attributeInfo.MaxValue)
-                        _attributeInfo.CurrentValue = _attributeInfo.MaxValue;
-
-                    characterUI.GetAttributeBar(_attributeInfo).SetCurrentValue(_attributeInfo.CurrentValue);
+                    a.CurrentValue += value;
+                    if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
+                    attributeUI.GetAttributeBar(a).SetCurrentValue(a.CurrentValue);
                 }
             }
         }
