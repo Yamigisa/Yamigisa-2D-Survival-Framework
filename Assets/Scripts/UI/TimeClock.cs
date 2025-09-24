@@ -43,7 +43,7 @@ namespace Yamigisa
             }
         }
 
-        void Start()
+        void OnEnable()
         {
             StartTime(startingMinute, startingHour, startingDay);
 

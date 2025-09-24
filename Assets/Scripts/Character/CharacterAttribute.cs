@@ -3,26 +3,21 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [ExecuteAlways]
+    [ExecuteAlways] 
     public class CharacterAttribute : MonoBehaviour
     {
         [SerializeField] private List<AttributeInfo> attributeInfo;
         private AttributeUI attributeUI;
 
-        void OnEnable()
+        void Start()
         {
             attributeUI = FindObjectOfType<AttributeUI>();
-            if (attributeUI != null)
-            {
-                foreach (var a in attributeInfo)
-                    attributeUI.InitializeAttributeBar(a);
-            }
 
-            if (Application.isPlaying && TimeClock.Instance != null)
-            {
-                TimeClock.Instance.OnMinuteChanged += SetDepletingAttributes;
-                TimeClock.Instance.OnMinuteChanged += SetRegeneratingAttributes;
-            }
+            foreach (var a in attributeInfo)
+                attributeUI.InitializeAttributeBar(a);
+
+            TimeClock.Instance.OnMinuteChanged += SetDepletingAttributes;
+            TimeClock.Instance.OnMinuteChanged += SetRegeneratingAttributes;
         }
 
         void OnDisable()
@@ -38,12 +33,9 @@ namespace Yamigisa
         {
             foreach (var a in attributeInfo)
             {
-                if (a.DepleteValuePerMinute != 0f)
-                {
-                    a.CurrentValue += a.DepleteValuePerMinute;
-                    var bar = attributeUI.GetAttributeBar(a);
-                    bar.SetCurrentValue(a.CurrentValue);
-                }
+                a.CurrentValue += a.DepleteValuePerMinute;
+                AttributeBar bar = attributeUI.GetAttributeBar(a);
+                bar.SetCurrentValue(a.CurrentValue);
             }
         }
 
@@ -51,13 +43,10 @@ namespace Yamigisa
         {
             foreach (var a in attributeInfo)
             {
-                if (a.RegenerateValuePerMinute != 0f)
-                {
-                    if (a.CurrentValue > a.MaxValue) return;
-                    a.CurrentValue += a.RegenerateValuePerMinute;
-                    var bar = attributeUI.GetAttributeBar(a);
-                    bar.SetCurrentValue(a.CurrentValue);
-                }
+                if (a.CurrentValue > a.MaxValue) return;
+                a.CurrentValue += a.RegenerateValuePerMinute;
+                AttributeBar bar = attributeUI.GetAttributeBar(a);
+                bar.SetCurrentValue(a.CurrentValue);
             }
         }
 

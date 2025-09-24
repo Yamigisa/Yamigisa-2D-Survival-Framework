@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace Yamigisa
 {
+    [ExecuteAlways]
     public class Inventory : MonoBehaviour
     {
         [Header("Inventory Settings")]

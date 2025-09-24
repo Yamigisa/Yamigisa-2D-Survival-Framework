@@ -11,6 +11,7 @@ namespace Yamigisa
 
         public void InitializeAttributeBar(AttributeInfo _attributeInfo)
         {
+            if (GetAttributeBar(_attributeInfo) != null) return;
             AttributeBar attributeBarInstance = Instantiate(attributeBarPrefab, AttributeUIContainer);
             attributeBarInstance.SetAttributeBar(_attributeInfo);
             attributeBars.Add(attributeBarInstance);

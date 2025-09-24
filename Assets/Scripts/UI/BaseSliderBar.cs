@@ -19,13 +19,12 @@ namespace Yamigisa
         public void SetMinValue(float _minValue)
         {
             SliderObject.minValue = _minValue;
-            SliderText.text = SliderObject.minValue.ToString();
         }
 
         public void SetCurrentValue(float _currentValue)
         {
             SliderObject.value = _currentValue;
-            SliderText.text = SliderObject.value.ToString();
+            SliderText.text = _currentValue.ToString("0");
         }
     }
 }
