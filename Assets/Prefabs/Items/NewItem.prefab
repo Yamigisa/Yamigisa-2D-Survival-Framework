@@ -248,7 +248,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35efdb9aa061a1040b1b84f286a49c8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actions: []
+  actions:
+  - {fileID: 11400000, guid: 1118ff21da5ebfe4486e45e026c6eb1b, type: 2}
+  - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
   buttonSelectablePrefab: {fileID: 0}
   buttonTransform: {fileID: 961505392939426645}
   screenClampPadding: 8

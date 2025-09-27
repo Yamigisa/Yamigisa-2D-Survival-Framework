@@ -66,7 +66,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -97,8 +97,7 @@ MonoBehaviour:
   actions:
   - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
   - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
-  buttonSelectablePrefab: {fileID: 4310269985758606278, guid: 2e11447fa86235b4eaddc977124af7ee, type: 3}
-  buttonTransform: {fileID: 561342941482284526}
+  screenClampPadding: 8
   spriteRenderer: {fileID: 2606387062411640539}
   itemData: {fileID: 11400000, guid: 7b2410fbb683fb3488b06e330b02b474, type: 2}
   amount: 1
