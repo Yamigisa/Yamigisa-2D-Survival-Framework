@@ -9,24 +9,6 @@ namespace Yamigisa
         public override void DoAction(Character character, Component context)
         {
             Selectable selectable = context as Selectable;
-            if (selectable == null)
-            {
-                Debug.LogWarning("[ActionChop] Context is not a Selectable.");
-                return;
-            }
-
-            Destructible destructible = selectable.GetComponent<Destructible>();
-            if (destructible == null)
-            {
-                Debug.LogWarning("[ActionChop] Target has no Destructible.");
-                return;
-            }
-
-            if (Inventory.Instance == null)
-            {
-                Debug.LogWarning("[ActionChop] No Inventory.Instance.");
-                return;
-            }
 
             ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
             if (equipped == null)
@@ -35,30 +17,33 @@ namespace Yamigisa
                 return;
             }
 
-            GroupData requiredGroup = destructible.requiredItem;
-
-            // If the destructible has no required group, allow any tool.
-            if (requiredGroup == null)
+            var targetData = selectable.GetItemData();
+            if (targetData == null)
             {
-                Debug.Log("[ActionChop] No required group on target. Applying damage.");
-                destructible.TakeDamage(equipped.damage);
+                Debug.LogWarning("[ActionChop] Target has no ItemData.");
                 return;
             }
 
-            // Check if the equipped item declares this group.
-            List<GroupData> equippedGroups = equipped.groups;
-            bool matches = equippedGroups != null && equippedGroups.Contains(requiredGroup);
+            // Only resources marked as destructible can be chopped
+            if (!(targetData.itemType == ItemType.Resource && targetData.destructible))
+            {
+                Debug.Log("[ActionChop] Target is not destructible.");
+                return;
+            }
 
-            if (matches)
+            // If the target requires groups, you must have at least one matching tool in QUICK SLOTS
+            List<GroupData> req = targetData.destructibleRequiredGroups;
+            if (req != null && req.Count > 0)
             {
-                Debug.Log("[ActionChop] Correct tool group found on equipped item. Applying damage.");
-                destructible.TakeDamage(equipped.damage);
+                if (!Inventory.Instance.HasAnyGroup(req))
+                {
+                    Debug.Log("[ActionChop] You don't have a required tool in your quick slots.");
+                    return;
+                }
             }
-            else
-            {
-                string eq = equippedGroups != null && equippedGroups.Count > 0 ? equippedGroups[0].name : "none";
-                Debug.Log($"[ActionChop] Equipped item does not contain required group: {requiredGroup.name}. (Equipped first group: {eq})");
-            }
+
+            int dmg = Mathf.Max(1, equipped.damage);
+            selectable.TakeDamage(dmg);
         }
     }
 }

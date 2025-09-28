@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: NewItem
+  m_Name: Tree
   m_EditorClassIdentifier: 
-  itemName: NewItem
-  iconWorld: {fileID: 0}
+  itemName: Tree
+  iconWorld: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
   iconInventory: {fileID: 0}
   description: 
   itemType: 0
@@ -21,7 +21,8 @@ MonoBehaviour:
   isDroppable: 1
   isStackable: 1
   groups: []
-  itemActions: []
+  itemActions:
+  - {fileID: 11400000, guid: 1118ff21da5ebfe4486e45e026c6eb1b, type: 2}
   increaseHealth: 0
   increaseHunger: 0
   increaseThirst: 0
@@ -30,3 +31,11 @@ MonoBehaviour:
   craftGroupsNeeded: []
   craftItemsNeeded: []
   craftResultAmount: 1
+  destructible: 1
+  destructibleHP: 100
+  destructibleRequiredGroups:
+  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
+  destructibleLoots:
+  - item: {fileID: 11400000, guid: 8f122fa209b4a3746b9b12fd6de5bc2a, type: 2}
+    amount: 1
+    dropChancePercent: 100

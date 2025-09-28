@@ -94,7 +94,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35efdb9aa061a1040b1b84f286a49c8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actions: []
   spriteRenderer: {fileID: 2606387062411640539}
   itemData: {fileID: 11400000, guid: 7b2410fbb683fb3488b06e330b02b474, type: 2}
   amount: 1

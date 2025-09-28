@@ -19,7 +19,7 @@ namespace Yamigisa
         private string objectName = "NewItem";
         private ObjectType objectType = ObjectType.Item;
 
-        // ItemData fields
+        // ItemData fields (minimal; extend as needed)
         private string itemDescription = "";
         private Sprite iconWorld;
         private Sprite iconInventory;
@@ -28,6 +28,7 @@ namespace Yamigisa
         private bool isDroppable = true;
         private bool isStackable = true;
 
+        // Optional data pools
         private List<GroupData> groups = new();
         private List<ActionBase> itemActions = new();
 
@@ -36,6 +37,7 @@ namespace Yamigisa
         private int increaseThirst = 0;
         private int damage = 0;
 
+        // Crafting
         private bool isCraftable = false;
         private int craftResultAmount = 1;
         private List<(GroupData group, int amount)> craftGroupsNeeded = new();
@@ -43,15 +45,7 @@ namespace Yamigisa
 
         // Selectable
         private int selectableAmount = 1;
-        private ButtonSelectable buttonSelectablePrefab;
-        private float screenClampPadding = 8f;
         private float autoHideDistance = 4f;
-        private List<ActionBase> selectableActions = new();
-
-        // Destructible
-        private int destructibleHP = 100;
-        private GroupData destructibleRequiredGroup;
-        private List<ItemData> destructibleLoots = new();
 
         [MenuItem(MenuPath, priority = 0)]
         public static void Open()
@@ -75,6 +69,7 @@ namespace Yamigisa
 
             EditorGUILayout.Space(6);
             selectableAmount = Mathf.Max(1, EditorGUILayout.IntField("Selectable Amount", selectableAmount));
+            autoHideDistance = EditorGUILayout.FloatField("Auto Hide Distance", autoHideDistance);
 
             EditorGUILayout.Space(10);
             if (GUILayout.Button("Create Prefab + ItemData", GUILayout.Height(32)))
@@ -89,7 +84,7 @@ namespace Yamigisa
             EnsureFolder(PREFABS);
             EnsureFolder(PREFABS_ITEMS);
 
-            // 1) ScriptableObject path based on ItemType
+            // 1) ItemData asset
             string typeFolder = $"{RES_ITEMS}/{itemType}";
             EnsureFolder(RES_ITEMS);
             EnsureFolder(typeFolder);
@@ -104,6 +99,7 @@ namespace Yamigisa
             so.isDroppable = isDroppable;
             so.isStackable = isStackable;
 
+            // Stats / crafting (if your ItemData defines these fields)
             so.increaseHealth = increaseHealth;
             so.increaseHunger = increaseHunger;
             so.increaseThirst = increaseThirst;
@@ -111,17 +107,21 @@ namespace Yamigisa
             so.isCraftable = isCraftable;
             so.craftResultAmount = craftResultAmount;
 
+            // If you want to persist authored actions:
+            // so.itemActions = new List<ActionBase>(itemActions);
+
             string safeName = MakeSafeFileName(objectName);
             string soPath = $"{typeFolder}/{safeName}.asset";
             AssetDatabase.CreateAsset(so, soPath);
 
-            // 2) Prefab
+            // 2) Prefab root
             GameObject root = new GameObject(objectName);
 
-            var col = root.AddComponent<BoxCollider2D>();
+            // Collider
+            var box = root.AddComponent<BoxCollider2D>();
 
-            var selectable = root.AddComponent<Selectable>();
-            var destructible = root.AddComponent<Destructible>();
+            // Components
+            var selectable = root.AddComponent<Selectable>(); // no Destructible; Selectable handles that
 
             // Child: Visual with SpriteRenderer
             var visualGO = new GameObject("Visual");
@@ -129,39 +129,32 @@ namespace Yamigisa
             var sr = visualGO.AddComponent<SpriteRenderer>();
             if (so.iconWorld) sr.sprite = so.iconWorld;
 
-            // Child: Outline
+            // Sorting for Visual: Background / order 2
+            sr.sortingLayerName = "Background";
+            sr.sortingOrder = 2;
+
+            // Child: Outline (with SpriteRenderer)
             var outlineGO = new GameObject("Outline");
             outlineGO.transform.SetParent(root.transform, false);
+            outlineGO.transform.localScale = Vector3.one * 1.3f;     // size 1.3
+            var outlineSR = outlineGO.AddComponent<SpriteRenderer>();
+            outlineSR.sprite = so.iconWorld;
+            outlineSR.color = Color.black;
+            outlineSR.sortingLayerName = "Background";
+            outlineSR.sortingOrder = 1;
             outlineGO.SetActive(false);
 
-            // Child: Buttons
-            var buttonsGO = new GameObject("Buttons", typeof(RectTransform));
-            buttonsGO.transform.SetParent(root.transform, false);
+            // Fit collider to the Visual sprite (size & offset from sprite bounds)
+            FitColliderToSprite(box, sr);
 
             // Fill Selectable
             var soSelectable = new SerializedObject(selectable);
             soSelectable.FindProperty("spriteRenderer").objectReferenceValue = sr;
             soSelectable.FindProperty("itemData").objectReferenceValue = so;
             soSelectable.FindProperty("amount").intValue = selectableAmount;
-            soSelectable.FindProperty("screenClampPadding").floatValue = screenClampPadding;
             soSelectable.FindProperty("autoHideDistance").floatValue = autoHideDistance;
-            soSelectable.FindProperty("buttonTransform").objectReferenceValue = buttonsGO.transform;
             soSelectable.FindProperty("outlineObject").objectReferenceValue = outlineGO;
-            soSelectable.FindProperty("buttonSelectablePrefab").objectReferenceValue = buttonSelectablePrefab;
             soSelectable.ApplyModifiedPropertiesWithoutUndo();
-
-            // Fill Destructible
-            var soDestructible = new SerializedObject(destructible);
-            soDestructible.FindProperty("hp").intValue = destructibleHP;
-            soDestructible.FindProperty("requiredItem").objectReferenceValue = destructibleRequiredGroup;
-            var lootsProp = soDestructible.FindProperty("loots");
-            lootsProp.ClearArray();
-            for (int i = 0; i < destructibleLoots.Count; i++)
-            {
-                lootsProp.InsertArrayElementAtIndex(i);
-                lootsProp.GetArrayElementAtIndex(i).objectReferenceValue = destructibleLoots[i];
-            }
-            soDestructible.ApplyModifiedPropertiesWithoutUndo();
 
             // Save prefab
             string prefabPath = $"{PREFABS_ITEMS}/{safeName}.prefab";
@@ -174,6 +167,26 @@ namespace Yamigisa
             Selection.activeObject = prefab;
             EditorGUIUtility.PingObject(prefab);
             ShowNotificationSafe($"Created Prefab at {prefabPath}\nItemData at {soPath}");
+        }
+
+        private static void FitColliderToSprite(BoxCollider2D col, SpriteRenderer targetSR)
+        {
+            if (col == null || targetSR == null) return;
+
+            var sp = targetSR.sprite;
+            if (sp == null)
+            {
+                col.size = Vector2.one;
+                col.offset = Vector2.zero;
+                return;
+            }
+
+            // Sprite bounds are in local units (respecting pixels-per-unit)
+            Bounds b = sp.bounds;
+
+            // If the SpriteRenderer has no scaling/rotation and is a child at (0,0), this fits nicely.
+            col.size = b.size;
+            col.offset = b.center;
         }
 
         private static void EnsureFolder(string path)

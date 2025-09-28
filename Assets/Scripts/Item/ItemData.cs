@@ -16,7 +16,6 @@ namespace Yamigisa
         public bool isStackable = true;
 
         public List<GroupData> groups = new List<GroupData>();
-
         public List<ActionBase> itemActions;
 
         // Consumable Effects
@@ -27,17 +26,21 @@ namespace Yamigisa
         // Equipment Effect
         public int damage = 0;
 
-        // ===== CRAFTING (NEW) =====
+        // ===== CRAFTING =====
         [Header("Crafting (Recipe)")]
-        public bool isCraftable = false;   // <--- NEW toggle
+        public bool isCraftable = false;
         public List<CraftGroupData> craftGroupsNeeded = new List<CraftGroupData>();
         public List<CraftItemData> craftItemsNeeded = new List<CraftItemData>();
         [Min(1)] public int craftResultAmount = 1;
 
-        public void ChangeDroppableState(bool state)
-        {
-            isDroppable = state;
-        }
+        // ===== DESTRUCTIBLE (Resource only) =====
+        [Header("Destructible (Resource only)")]
+        public bool destructible = false;
+        [Min(1)] public int destructibleHP = 100;
+        public List<GroupData> destructibleRequiredGroups = new List<GroupData>(); // MUST have at least one
+        public List<LootEntry> destructibleLoots = new List<LootEntry>();          // per-entry amount + chance
+
+        public void ChangeDroppableState(bool state) => isDroppable = state;
     }
 
     public enum ItemType
@@ -59,5 +62,14 @@ namespace Yamigisa
     {
         public ItemData itemData;
         public int Amount;
+    }
+
+    // ===== New Loot entry =====
+    [System.Serializable]
+    public class LootEntry
+    {
+        public ItemData item;
+        [Min(1)] public int amount = 1;
+        [Range(0f, 100f)] public float dropChancePercent = 100f; // 100 = always drops
     }
 }

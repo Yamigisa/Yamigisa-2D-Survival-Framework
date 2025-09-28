@@ -544,6 +544,38 @@ namespace Yamigisa
             return slot.ItemData;
         }
 
+        // ===================== GROUP CHECKS (QUICK SLOTS ONLY) =====================
+
+        /// <summary>
+        /// Returns true if ANY filled quick slot contains an item that belongs to the given group.
+        /// </summary>
+        public bool HasGroup(GroupData group)
+        {
+            if (group == null) return false;
+            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            {
+                var slot = quickInventoryItemSlots[i];
+                if (slot == null || !slot.HasItem || slot.ItemData == null) continue;
+                var groups = slot.ItemData.groups;
+                if (groups != null && groups.Contains(group))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if ANY of the provided groups is present in ANY filled quick slot.
+        /// </summary>
+        public bool HasAnyGroup(IList<GroupData> groups)
+        {
+            if (groups == null || groups.Count == 0) return false;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (HasGroup(groups[i])) return true;
+            }
+            return false;
+        }
+
         // ===================== STARTING ITEMS =====================
 
         private void SetStartingItems()

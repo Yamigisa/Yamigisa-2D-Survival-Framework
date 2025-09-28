@@ -30,6 +30,12 @@ namespace Yamigisa
         private SerializedProperty propCraftItemsNeeded;
         private SerializedProperty propCraftResultAmount;
 
+        // Destructible-for-Resource
+        private SerializedProperty propDestructible;
+        private SerializedProperty propDestructibleHP;
+        private SerializedProperty propDestructibleRequiredGroups;
+        private SerializedProperty propDestructibleLoots;
+
         private SerializedProperty Find(string name)
         {
             var p = serializedObject.FindProperty(name);
@@ -58,11 +64,15 @@ namespace Yamigisa
 
             propDamage = Find("damage");
 
-            // Crafting (matches ItemData)
             propIsCraftable = Find("isCraftable");
             propCraftGroupsNeeded = Find("craftGroupsNeeded");
             propCraftItemsNeeded = Find("craftItemsNeeded");
             propCraftResultAmount = Find("craftResultAmount");
+
+            propDestructible = Find("destructible");
+            propDestructibleHP = Find("destructibleHP");
+            propDestructibleRequiredGroups = Find("destructibleRequiredGroups");
+            propDestructibleLoots = Find("destructibleLoots");
         }
 
         public override void OnInspectorGUI()
@@ -129,6 +139,54 @@ namespace Yamigisa
                     EditorGUILayout.LabelField("Equipment Effects", EditorStyles.boldLabel);
                     EditorGUILayout.PropertyField(propDamage);
                     if (propDamage != null && propDamage.intValue < 0) propDamage.intValue = 0;
+                }
+
+                if (type == ItemType.Resource)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Destructible (Resource only)", EditorStyles.boldLabel);
+
+                    EditorGUILayout.PropertyField(propDestructible, new GUIContent("Destructible"));
+                    if (propDestructible != null && propDestructible.boolValue)
+                    {
+                        using (new EditorGUI.IndentLevelScope())
+                        {
+                            // Required groups (MANDATORY)
+                            EditorGUILayout.PropertyField(
+                                propDestructibleRequiredGroups,
+                                new GUIContent("Required Groups (MUST have at least one)"),
+                                true
+                            );
+                            if (propDestructibleRequiredGroups != null && propDestructibleRequiredGroups.arraySize == 0)
+                            {
+                                EditorGUILayout.HelpBox("At least one Required Group is mandatory for destructible Resources.", MessageType.Error);
+                            }
+
+                            // HP
+                            if (propDestructibleHP != null)
+                            {
+                                int hp = Mathf.Max(1, propDestructibleHP.intValue);
+                                hp = EditorGUILayout.IntField(new GUIContent("HP"), hp);
+                                propDestructibleHP.intValue = Mathf.Max(1, hp);
+                            }
+
+                            // Loots (LootEntry list)
+                            EditorGUILayout.PropertyField(propDestructibleLoots, new GUIContent("Loot Table"), true);
+
+                            // Clamp LootEntry fields (amount >=1, 0<=chance<=100)
+                            if (propDestructibleLoots != null && propDestructibleLoots.isArray)
+                            {
+                                for (int i = 0; i < propDestructibleLoots.arraySize; i++)
+                                {
+                                    var el = propDestructibleLoots.GetArrayElementAtIndex(i);
+                                    var amountProp = el.FindPropertyRelative("amount");
+                                    var chanceProp = el.FindPropertyRelative("dropChancePercent");
+                                    if (amountProp != null && amountProp.intValue < 1) amountProp.intValue = 1;
+                                    if (chanceProp != null) chanceProp.floatValue = Mathf.Clamp(chanceProp.floatValue, 0f, 100f);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
