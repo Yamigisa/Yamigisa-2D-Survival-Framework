@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems; // << needed
 
 namespace Yamigisa
 {
@@ -7,8 +8,8 @@ namespace Yamigisa
     public class Selectable : MonoBehaviour
     {
         [Header("Actions")]
-        [SerializeField] private List<ActionBase> actions = new();
-        public IReadOnlyList<ActionBase> Actions => actions;
+        private List<ActionBase> actions = new();
+        public List<ActionBase> Actions => actions;
 
         [Header("Item Settings")]
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -37,6 +38,11 @@ namespace Yamigisa
             cam = Camera.main;
             col2D = GetComponent<Collider2D>();
             if (spriteRenderer) spriteRenderer.sprite = itemData ? itemData.iconWorld : null;
+
+            foreach (ActionBase action in ItemData.itemActions)
+            {
+                actions.Add(action);
+            }
         }
 
         void Start()
@@ -61,6 +67,10 @@ namespace Yamigisa
 
             if (Input.GetMouseButtonDown(0))
             {
+                // If mouse is over ANY UI element, ignore world click handling
+                if (IsPointerOverAnyUI())
+                    return;
+
                 if (PointerOverOurPanel())
                     return;
 
@@ -79,15 +89,14 @@ namespace Yamigisa
 
         private void OnMouseDown()
         {
-            // If this selectable is already open, toggle it closed
+            // If pointer is currently over UI (e.g., clicking a button), do NOT toggle the panel
+            if (IsPointerOverAnyUI())
+                return;
+
             if (panelVisible)
-            {
                 ShowSelectableButtons(false);
-            }
             else
-            {
                 ShowSelectableButtons(true);
-            }
         }
 
         public void SetOutline(bool on)
@@ -154,6 +163,12 @@ namespace Yamigisa
 
             // Overlay => null camera
             return RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition, null);
+        }
+
+        private static bool IsPointerOverAnyUI()
+        {
+            // Works for mouse and touch; if you need touch-specific, use the overload with pointerId
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         }
     }
 }

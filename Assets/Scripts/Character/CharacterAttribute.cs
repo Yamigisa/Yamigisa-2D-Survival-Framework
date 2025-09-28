@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [ExecuteAlways] 
+    [ExecuteAlways]
     public class CharacterAttribute : MonoBehaviour
     {
         [SerializeField] private List<AttributeInfo> attributeInfo;
@@ -34,6 +34,7 @@ namespace Yamigisa
             foreach (var a in attributeInfo)
             {
                 a.CurrentValue += a.DepleteValuePerMinute;
+                if (a.CurrentValue < 0) a.CurrentValue = 0;
                 AttributeBar bar = attributeUI.GetAttributeBar(a);
                 bar.SetCurrentValue(a.CurrentValue);
             }
@@ -43,7 +44,7 @@ namespace Yamigisa
         {
             foreach (var a in attributeInfo)
             {
-                if (a.CurrentValue > a.MaxValue) return;
+                if (a.CurrentValue >= a.MaxValue) return;
                 a.CurrentValue += a.RegenerateValuePerMinute;
                 AttributeBar bar = attributeUI.GetAttributeBar(a);
                 bar.SetCurrentValue(a.CurrentValue);

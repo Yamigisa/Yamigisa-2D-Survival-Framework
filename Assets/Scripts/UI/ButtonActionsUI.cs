@@ -61,7 +61,7 @@ namespace Yamigisa
             // Build buttons
             foreach (ActionBase action in selectable.Actions)
             {
-                var selectableButton = Instantiate(buttonSelectablePrefab, buttonTransform);
+                ButtonSelectable selectableButton = Instantiate(buttonSelectablePrefab, buttonTransform);
                 selectableButton.SetText(action.title);
                 selectableButton.Button.onClick.AddListener(() => selectable.PerformAction(action));
             }
