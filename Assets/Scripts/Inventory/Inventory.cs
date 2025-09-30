@@ -12,9 +12,9 @@ namespace Yamigisa
         public int maxItems = 32;
 
         [Header("Inventory Items")]
-        [SerializeField] private InventoryItem inventoryItemPrefab;
+        [SerializeField] private ItemSlot ItemSlotPrefab;
 
-        private List<InventoryItem> inventoryItemSlots = new List<InventoryItem>();
+        private List<ItemSlot> ItemSlotSlots = new List<ItemSlot>();
 
         [Header("Inventory UI")]
         [SerializeField] private Transform inventoryContent;
@@ -23,7 +23,7 @@ namespace Yamigisa
         [Header("Quick Inventory")]
         [SerializeField] private int quickSlotCount = 8;
         [SerializeField] private Transform quickInventoryContent;
-        private List<InventoryItem> quickInventoryItemSlots = new List<InventoryItem>();
+        private List<ItemSlot> quickItemSlotSlots = new List<ItemSlot>();
 
         [Header("Tooltip Panel")]
         [SerializeField] private bool showTooltipPanel = true;
@@ -39,7 +39,7 @@ namespace Yamigisa
         private int selectedQuickIndex = -1;
 
         private bool isDragging;
-        private InventoryItem dragOrigin;
+        private ItemSlot dragOrigin;
         private ItemData dragData;
         private int dragAmount;
         private RectTransform dragIconRT;
@@ -48,7 +48,7 @@ namespace Yamigisa
 
         private bool pendingPickActive;
         private float pendingPickTimer;
-        private InventoryItem pendingPickSlot;
+        private ItemSlot pendingPickSlot;
 
         public bool IsDragging { get { return isDragging; } }
         public bool IsInventoryOpen { get { return inventoryPanel != null && inventoryPanel.activeSelf; } }
@@ -85,27 +85,27 @@ namespace Yamigisa
                 raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
 
             // Build main inventory slots
-            inventoryItemSlots.Clear();
+            ItemSlotSlots.Clear();
             for (int i = 0; i < maxItems; i++)
             {
-                InventoryItem newSlot = Instantiate(inventoryItemPrefab, inventoryContent);
-                inventoryItemSlots.Add(newSlot);
+                ItemSlot newSlot = Instantiate(ItemSlotPrefab, inventoryContent);
+                ItemSlotSlots.Add(newSlot);
             }
 
             // Build quick slots
-            quickInventoryItemSlots.Clear();
+            quickItemSlotSlots.Clear();
             for (int i = 0; i < quickSlotCount; i++)
             {
-                InventoryItem quickSlot = Instantiate(inventoryItemPrefab, quickInventoryContent);
+                ItemSlot quickSlot = Instantiate(ItemSlotPrefab, quickInventoryContent);
                 quickSlot.MarkAsQuickSlot(true);
-                quickInventoryItemSlots.Add(quickSlot);
+                quickItemSlotSlots.Add(quickSlot);
             }
 
             // Seed starting items
             SetStartingItems();
 
             // Select first quick slot
-            if (quickInventoryItemSlots.Count > 0)
+            if (quickItemSlotSlots.Count > 0)
             {
                 selectedQuickIndex = 0;
                 SelectQuickSlot(selectedQuickIndex);
@@ -135,7 +135,7 @@ namespace Yamigisa
             }
 
             // Quick slot number keys (work even when inventory is closed)
-            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            for (int i = 0; i < quickItemSlotSlots.Count; i++)
             {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                     SelectQuickSlot(i);
@@ -163,7 +163,7 @@ namespace Yamigisa
 
             if (Input.GetMouseButtonDown(0))
             {
-                pendingPickSlot = RaycastInventoryItemAtMouse();
+                pendingPickSlot = RaycastItemSlotAtMouse();
                 if (pendingPickSlot != null && pendingPickSlot.HasItem)
                 {
                     pendingPickActive = true;
@@ -213,15 +213,15 @@ namespace Yamigisa
 
         private void SelectQuickSlot(int index)
         {
-            if (index < 0 || index >= quickInventoryItemSlots.Count) return;
+            if (index < 0 || index >= quickItemSlotSlots.Count) return;
             selectedQuickIndex = index;
             UpdateQuickIndicators();
         }
 
         private void UpdateQuickIndicators()
         {
-            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
-                quickInventoryItemSlots[i].SetSelectedVisual(i == selectedQuickIndex);
+            for (int i = 0; i < quickItemSlotSlots.Count; i++)
+                quickItemSlotSlots[i].SetSelectedVisual(i == selectedQuickIndex);
         }
 
         public void ShowInventory() { if (inventoryPanel != null) inventoryPanel.SetActive(true); }
@@ -239,28 +239,28 @@ namespace Yamigisa
             if (data == null || amountToAdd <= 0) return;
 
             // Try stack in quick
-            if (data.isStackable && TryStackInList(quickInventoryItemSlots, data, amountToAdd))
+            if (data.isStackable && TryStackInList(quickItemSlotSlots, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
                 return;
             }
             // Try stack in inventory
-            if (data.isStackable && TryStackInList(inventoryItemSlots, data, amountToAdd))
+            if (data.isStackable && TryStackInList(ItemSlotSlots, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
                 return;
             }
             // Empty in quick
-            if (TryPlaceInEmptySlot(quickInventoryItemSlots, data, amountToAdd))
+            if (TryPlaceInEmptySlot(quickItemSlotSlots, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
                 return;
             }
             // Empty in inventory
-            if (TryPlaceInEmptySlot(inventoryItemSlots, data, amountToAdd))
+            if (TryPlaceInEmptySlot(ItemSlotSlots, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
@@ -268,11 +268,11 @@ namespace Yamigisa
             }
         }
 
-        private bool TryStackInList(List<InventoryItem> list, ItemData data, int amountToAdd)
+        private bool TryStackInList(List<ItemSlot> list, ItemData data, int amountToAdd)
         {
             for (int i = 0; i < list.Count; i++)
             {
-                InventoryItem slot = list[i];
+                ItemSlot slot = list[i];
                 if (slot.HasItem && slot.ItemData == data && data.isStackable)
                 {
                     int cap = Mathf.Max(1, data.maxAmount);
@@ -288,11 +288,11 @@ namespace Yamigisa
             return false;
         }
 
-        private bool TryPlaceInEmptySlot(List<InventoryItem> list, ItemData data, int amountToAdd)
+        private bool TryPlaceInEmptySlot(List<ItemSlot> list, ItemData data, int amountToAdd)
         {
             for (int i = 0; i < list.Count; i++)
             {
-                InventoryItem slot = list[i];
+                ItemSlot slot = list[i];
                 if (!slot.HasItem)
                 {
                     slot.SetItem(data, amountToAdd);
@@ -304,7 +304,7 @@ namespace Yamigisa
 
         // ===================== USE =====================
 
-        public void UseSlot(InventoryItem slot)
+        public void UseSlot(ItemSlot slot)
         {
             if (slot == null || slot.ItemData == null) return;
             if (isUsingSlot) return;
@@ -340,12 +340,12 @@ namespace Yamigisa
 
         private void UseQuickSlot(int index)
         {
-            if (index < 0 || index >= quickInventoryItemSlots.Count) return;
-            InventoryItem quickSlot = quickInventoryItemSlots[index];
+            if (index < 0 || index >= quickItemSlotSlots.Count) return;
+            ItemSlot quickSlot = quickItemSlotSlots[index];
             if (quickSlot.HasItem) UseSlot(quickSlot);
         }
 
-        public void ReduceSlotAmount(InventoryItem slot, int amount = 1)
+        public void ReduceSlotAmount(ItemSlot slot, int amount = 1)
         {
             if (slot == null || slot.ItemData == null) return;
 
@@ -379,7 +379,7 @@ namespace Yamigisa
 
         // ===================== DRAG & DROP =====================
 
-        public void BeginDrag(InventoryItem origin)
+        public void BeginDrag(ItemSlot origin)
         {
             if (!IsInventoryOpen || isDragging || origin == null || !origin.HasItem) return;
             isDragging = true;
@@ -392,7 +392,7 @@ namespace Yamigisa
 
         private void CompleteDragAtCursor()
         {
-            InventoryItem target = RaycastInventoryItemAtMouse();
+            ItemSlot target = RaycastItemSlotAtMouse();
             bool success = false;
 
             if (target != null && target != dragOrigin)
@@ -505,7 +505,7 @@ namespace Yamigisa
             dragIconAmount = null;
         }
 
-        private InventoryItem RaycastInventoryItemAtMouse()
+        private ItemSlot RaycastItemSlotAtMouse()
         {
             if (raycaster == null && rootCanvas != null) raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
             if (raycaster == null) return null;
@@ -518,7 +518,7 @@ namespace Yamigisa
 
             for (int i = 0; i < results.Count; i++)
             {
-                InventoryItem slot = results[i].gameObject.GetComponentInParent<InventoryItem>();
+                ItemSlot slot = results[i].gameObject.GetComponentInParent<ItemSlot>();
                 if (slot != null) return slot;
             }
             return null;
@@ -526,18 +526,18 @@ namespace Yamigisa
 
         // ===================== QUICK SELECT ACCESSORS =====================
 
-        public InventoryItem GetSelectedQuickSlot()
+        public ItemSlot GetSelectedQuickSlot()
         {
             if (selectedQuickIndex < 0) return null;
-            if (selectedQuickIndex >= quickInventoryItemSlots.Count) return null;
+            if (selectedQuickIndex >= quickItemSlotSlots.Count) return null;
 
-            InventoryItem slot = quickInventoryItemSlots[selectedQuickIndex];
+            ItemSlot slot = quickItemSlotSlots[selectedQuickIndex];
             return slot;
         }
 
         public ItemData GetSelectedQuickItemData()
         {
-            InventoryItem slot = GetSelectedQuickSlot();
+            ItemSlot slot = GetSelectedQuickSlot();
             if (slot == null) return null;
             if (!slot.HasItem) return null;
 
@@ -552,9 +552,9 @@ namespace Yamigisa
         public bool HasGroup(GroupData group)
         {
             if (group == null) return false;
-            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
+            for (int i = 0; i < quickItemSlotSlots.Count; i++)
             {
-                var slot = quickInventoryItemSlots[i];
+                var slot = quickItemSlotSlots[i];
                 if (slot == null || !slot.HasItem || slot.ItemData == null) continue;
                 var groups = slot.ItemData.groups;
                 if (groups != null && groups.Contains(group))
@@ -594,19 +594,19 @@ namespace Yamigisa
 
         // ===================== CRAFTING HELPERS =====================
 
-        private IEnumerable<InventoryItem> AllSlots()
+        private IEnumerable<ItemSlot> AllSlots()
         {
-            for (int i = 0; i < quickInventoryItemSlots.Count; i++)
-                yield return quickInventoryItemSlots[i];
-            for (int i = 0; i < inventoryItemSlots.Count; i++)
-                yield return inventoryItemSlots[i];
+            for (int i = 0; i < quickItemSlotSlots.Count; i++)
+                yield return quickItemSlotSlots[i];
+            for (int i = 0; i < ItemSlotSlots.Count; i++)
+                yield return ItemSlotSlots[i];
         }
 
         public int CountOf(ItemData data)
         {
             if (data == null) return 0;
             int total = 0;
-            foreach (InventoryItem slot in AllSlots())
+            foreach (ItemSlot slot in AllSlots())
             {
                 if (slot != null && slot.HasItem && slot.ItemData == data)
                     total += Mathf.Max(0, slot.Amount);
@@ -618,7 +618,7 @@ namespace Yamigisa
         {
             if (group == null) return 0;
             int total = 0;
-            foreach (InventoryItem slot in AllSlots())
+            foreach (ItemSlot slot in AllSlots())
             {
                 if (slot != null && slot.HasItem && slot.ItemData != null && slot.ItemData.groups != null)
                 {
@@ -702,7 +702,7 @@ namespace Yamigisa
 
             int remaining = amount;
 
-            foreach (InventoryItem slot in AllSlots())
+            foreach (ItemSlot slot in AllSlots())
             {
                 if (remaining <= 0) break;
                 if (slot == null || !slot.HasItem || slot.ItemData != data) continue;
@@ -719,7 +719,7 @@ namespace Yamigisa
 
             int remaining = amount;
 
-            foreach (InventoryItem slot in AllSlots())
+            foreach (ItemSlot slot in AllSlots())
             {
                 if (remaining <= 0) break;
                 if (slot == null || !slot.HasItem || slot.ItemData == null || slot.ItemData.groups == null) continue;

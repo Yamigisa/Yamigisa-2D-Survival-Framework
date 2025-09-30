@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 5537749630050215522}
   - component: {fileID: 1238181590758680259}
   m_Layer: 5
-  m_Name: Inventory Item
+  m_Name: Item Slot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -301,7 +301,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5537749630050215522
 MonoBehaviour:
@@ -318,9 +318,11 @@ MonoBehaviour:
   icon: {fileID: 5700348816154652434}
   amountText: {fileID: 1918686720842210379}
   itemButton: {fileID: 1238181590758680259}
-  buttonsPanel: {fileID: 514637636091014782}
-  useButton: {fileID: 7341302625661076454}
-  dropButton: {fileID: 4452894602596338270}
+  itemActions: []
+  selectedColor: {r: 1, g: 0, b: 0, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  ItemData: {fileID: 0}
+  Amount: 0
 --- !u!114 &1238181590758680259
 MonoBehaviour:
   m_ObjectHideFlags: 0

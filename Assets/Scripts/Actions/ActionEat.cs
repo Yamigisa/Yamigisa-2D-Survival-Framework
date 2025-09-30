@@ -5,7 +5,7 @@ namespace Yamigisa
     [CreateAssetMenu(fileName = "Action", menuName = "Yamigisa/Actions/Eat", order = 50)]
     public class ActionEat : ActionBase
     {
-        public override void DoAction(Character character, InventoryItem slot)
+        public override void DoAction(Character character, ItemSlot slot)
         {
             character.ConsumeItem(slot.ItemData);
             Inventory.Instance.UseSlot(slot);

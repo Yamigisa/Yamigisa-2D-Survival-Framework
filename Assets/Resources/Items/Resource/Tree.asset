@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Tree
   iconWorld: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  iconInventory: {fileID: 0}
-  description: 
+  iconInventory: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  description: sadsadas
   itemType: 0
   maxAmount: 99
   isDroppable: 1
@@ -34,7 +34,7 @@ MonoBehaviour:
   destructible: 1
   destructibleHP: 100
   destructibleRequiredGroups:
-  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
+  - {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
   destructibleLoots:
   - item: {fileID: 11400000, guid: 8f122fa209b4a3746b9b12fd6de5bc2a, type: 2}
     amount: 1

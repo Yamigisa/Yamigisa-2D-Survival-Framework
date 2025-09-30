@@ -16,8 +16,11 @@ namespace Yamigisa
             foreach (var a in attributeInfo)
                 attributeUI.InitializeAttributeBar(a);
 
-            TimeClock.Instance.OnMinuteChanged += SetDepletingAttributes;
-            TimeClock.Instance.OnMinuteChanged += SetRegeneratingAttributes;
+            if (TimeClock.Instance != null)
+            {
+                TimeClock.Instance.OnMinuteChanged += SetDepletingAttributes;
+                TimeClock.Instance.OnMinuteChanged += SetRegeneratingAttributes;
+            }
         }
 
         void OnDisable()

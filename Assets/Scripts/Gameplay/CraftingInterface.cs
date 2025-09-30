@@ -72,7 +72,7 @@ namespace Yamigisa
                 if (!hasReqs) continue;
 
                 CraftSlot slot = Instantiate(slotPrefab, contentRoot);
-                slot.Init(item, inventory);
+                //slot.Init(item, inventory);
                 slots.Add(slot);
             }
         }
@@ -89,7 +89,7 @@ namespace Yamigisa
             for (int i = 0; i < slots.Count; i++)
             {
                 CraftSlot s = slots[i];
-                if (s != null) s.Refresh();
+                //if (s != null) s.Refresh();
             }
         }
     }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Yamigisa
 {
-    public class InventoryItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [Header("Item UI")]
         [SerializeField] private Image icon;
@@ -13,7 +13,7 @@ namespace Yamigisa
         [SerializeField] private Button itemButton;
 
         [Header("Item Actions")]
-        public List<ActionBase> itemActions;
+        private List<ActionBase> itemActions;
 
 
         [Header("Slot Flags")]
