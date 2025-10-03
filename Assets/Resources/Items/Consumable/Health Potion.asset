@@ -29,6 +29,12 @@ MonoBehaviour:
   increaseThirst: 0
   damage: 0
   isCraftable: 1
-  craftGroupsNeeded: []
+  craftGroupsNeeded:
+  - GroupData: {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
+    Amount: 1
   craftItemsNeeded: []
   craftResultAmount: 1
+  destructible: 0
+  destructibleHP: 100
+  destructibleRequiredGroups: []
+  destructibleLoots: []
