@@ -10,29 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: Health Potion
+  m_Name: tREE
   m_EditorClassIdentifier: 
-  itemName: Health Potion
-  iconWorld: {fileID: 1903202154, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  iconInventory: {fileID: 1903202154, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  description: Increase health
-  itemType: 2
+  itemName: tREE
+  iconWorld: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconInventory: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  description: tree
+  itemType: 0
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
   groups:
-  - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
+  - {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
   itemActions:
-  - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
   - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
-  increaseHealth: 10
+  increaseHealth: 0
   increaseHunger: 0
   increaseThirst: 0
   damage: 0
-  isCraftable: 1
-  craftGroupsNeeded:
-  - GroupData: {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
-    Amount: 1
+  isCraftable: 0
+  craftGroupsNeeded: []
   craftItemsNeeded: []
   craftResultAmount: 1
   destructible: 0

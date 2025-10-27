@@ -668,7 +668,6 @@ namespace Yamigisa
         {
             if (!CanCraft(output)) return false;
 
-            // Consume specific items
             if (output.craftItemsNeeded != null)
             {
                 for (int i = 0; i < output.craftItemsNeeded.Count; i++)
@@ -678,7 +677,6 @@ namespace Yamigisa
                 }
             }
 
-            // Consume groups (any items matching group)
             if (output.craftGroupsNeeded != null)
             {
                 for (int i = 0; i < output.craftGroupsNeeded.Count; i++)
@@ -688,7 +686,6 @@ namespace Yamigisa
                 }
             }
 
-            // Grant result
             int amount = Mathf.Max(1, output.craftResultAmount);
             AddItem(output, amount);
 

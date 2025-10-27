@@ -8,25 +8,30 @@ namespace Yamigisa
     {
         [Header("UI")]
         [SerializeField] private Image icon;
-        [SerializeField] private Button button;
+        public Button button;
 
         private ItemData itemData;
-        private Action<ItemData> onCraftRequest; // callback to CraftingInterface.TryCraft
+        private GroupData groupData;
+        private string amount;
 
-        public void Bind(ItemData data, Action<ItemData> onCraft)
+        public void BindItem(ItemData data, bool isInteractable = true)
         {
             itemData = data;
-            onCraftRequest = onCraft;
 
             if (icon) icon.sprite = itemData != null ? itemData.iconInventory : null;
 
-            if (button)
-            {
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(OnClick);
-            }
+            if (isInteractable)
+                RefreshInteractable();
+        }
 
-            RefreshInteractable();
+        public void BindGroup(GroupData data, bool isInteractable = true)
+        {
+            groupData = data;
+
+            if (icon) icon.sprite = groupData != null ? groupData.icon : null;
+
+            if (isInteractable)
+                RefreshInteractable();
         }
 
         public void RefreshInteractable()
@@ -37,14 +42,7 @@ namespace Yamigisa
                 return;
             }
 
-            // interactable iff the player currently meets all requirements
             button.interactable = Inventory.Instance.CanCraft(itemData);
-        }
-
-        private void OnClick()
-        {
-            if (!button || !button.interactable) return;
-            onCraftRequest?.Invoke(itemData);
         }
     }
 }

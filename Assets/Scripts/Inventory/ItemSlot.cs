@@ -10,7 +10,7 @@ namespace Yamigisa
         [Header("Item UI")]
         [SerializeField] private Image icon;
         [SerializeField] private Text amountText;
-        [SerializeField] private Button itemButton;
+        [SerializeField] private Button slotButton;
 
         [Header("Item Actions")]
         private List<ActionBase> itemActions;
@@ -31,7 +31,7 @@ namespace Yamigisa
         private void Start()
         {
             amountText.text = "";
-            if (itemButton && itemButton.image) itemButton.image.color = normalColor;
+            if (slotButton && slotButton.image) slotButton.image.color = normalColor;
         }
 
         public void MarkAsQuickSlot(bool value)
@@ -41,7 +41,7 @@ namespace Yamigisa
 
         public void SetSelectedVisual(bool selected)
         {
-            if (itemButton && itemButton.image) itemButton.image.color = selected ? selectedColor : normalColor;
+            if (slotButton && slotButton.image) slotButton.image.color = selected ? selectedColor : normalColor;
             if (icon && icon.enabled) icon.color = selected ? selectedColor : normalColor;
         }
 

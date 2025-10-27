@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3676928337103078053}
   - component: {fileID: 7535180578091278229}
   m_Layer: 5
-  m_Name: Craft Slot
+  m_Name: Craft Group Slot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
