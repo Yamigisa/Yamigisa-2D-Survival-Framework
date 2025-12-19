@@ -11,10 +11,7 @@ namespace Yamigisa
         [SerializeField] private Image icon;
         [SerializeField] private Text amountText;
         [SerializeField] private Button slotButton;
-
-        [Header("Item Actions")]
-        private List<ActionBase> itemActions;
-
+        [SerializeField] private Transform buttonContainer;
 
         [Header("Slot Flags")]
         private bool isQuickSlot = false;
@@ -32,8 +29,11 @@ namespace Yamigisa
         {
             amountText.text = "";
             if (slotButton && slotButton.image) slotButton.image.color = normalColor;
-        }
 
+            slotButton.onClick.AddListener(ShowButton);
+
+            buttonContainer.gameObject.SetActive(false);
+        }
         public void MarkAsQuickSlot(bool value)
         {
             isQuickSlot = value;
@@ -41,8 +41,8 @@ namespace Yamigisa
 
         public void SetSelectedVisual(bool selected)
         {
-            if (slotButton && slotButton.image) slotButton.image.color = selected ? selectedColor : normalColor;
-            if (icon && icon.enabled) icon.color = selected ? selectedColor : normalColor;
+            if (slotButton && slotButton.image)
+                slotButton.image.color = selected ? selectedColor : normalColor;
         }
 
         public void SetItem(ItemData data, int _amount = 1)
@@ -52,6 +52,7 @@ namespace Yamigisa
 
             icon.enabled = true;
             icon.sprite = data.iconInventory;
+            icon.color = normalColor;
 
             if (!data.isStackable)
             {
@@ -63,6 +64,52 @@ namespace Yamigisa
                 int cap = Mathf.Max(1, data.maxAmount);
                 Amount = Mathf.Clamp(_amount, 1, cap);
                 amountText.text = Amount <= 1 ? "" : $"{Amount}";
+            }
+
+            int index = 0;
+
+            for (int i = 0; i < buttonContainer.childCount; i++)
+                buttonContainer.GetChild(i).gameObject.SetActive(false);
+
+            if (data.itemActions == null) return;
+
+            foreach (ActionBase action in data.itemActions)
+            {
+                InitializeAction(action, index);
+                index++;
+            }
+        }
+
+        private void InitializeAction(ActionBase action, int index)
+        {
+            if (action == null) return;
+            if (index < 0 || index >= buttonContainer.childCount) return;
+
+            Transform child = buttonContainer.GetChild(index);
+            child.gameObject.SetActive(true);
+
+            ButtonSelectable selectableButton = child.GetComponent<ButtonSelectable>();
+            if (selectableButton == null) return;
+
+            selectableButton.SetText(action.title);
+            selectableButton.Button.onClick.RemoveAllListeners();
+            selectableButton.Button.onClick.AddListener(() =>
+            {
+                action.DoAction(Inventory.Instance.Character, this);
+            });
+        }
+
+        public void ShowButton()
+        {
+            if (buttonContainer == null) return;
+
+            buttonContainer.gameObject.SetActive(true);
+
+            int count = ItemData != null && ItemData.itemActions != null ? ItemData.itemActions.Count : 0;
+
+            for (int i = 0; i < buttonContainer.childCount; i++)
+            {
+                buttonContainer.GetChild(i).gameObject.SetActive(i < count);
             }
         }
 
@@ -82,6 +129,12 @@ namespace Yamigisa
             icon.color = normalColor;
 
             amountText.text = "";
+
+            if (slotButton && slotButton.image)
+                slotButton.image.color = normalColor;
+
+            for (int i = 0; i < buttonContainer.childCount; i++)
+                buttonContainer.GetChild(i).gameObject.SetActive(false);
         }
 
         public void OnPointerEnter(PointerEventData eventData)

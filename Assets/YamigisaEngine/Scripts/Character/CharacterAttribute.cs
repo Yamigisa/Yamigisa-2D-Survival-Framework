@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [ExecuteAlways]
     public class CharacterAttribute : MonoBehaviour
     {
         [SerializeField] private List<AttributeData> AttributeData;
@@ -12,8 +11,9 @@ namespace Yamigisa
         void Start()
         {
             attributeUI = FindObjectOfType<AttributeUI>();
+            if (attributeUI == null) return;
 
-            foreach (var a in AttributeData)
+            foreach (AttributeData a in AttributeData)
                 attributeUI.InitializeAttributeBar(a);
 
             if (TimeClock.Instance != null)
@@ -34,47 +34,60 @@ namespace Yamigisa
 
         private void SetDepletingAttributes()
         {
+            if (attributeUI == null) return;
+
             foreach (var a in AttributeData)
             {
                 a.CurrentValue += a.DepleteValuePerMinute;
                 if (a.CurrentValue < 0) a.CurrentValue = 0;
-                AttributeBar bar = attributeUI.GetAttributeBar(a);
-                bar.SetCurrentValue(a.CurrentValue);
+
+                var bar = attributeUI.GetAttributeBar(a);
+                if (bar != null) bar.SetCurrentValue(a.CurrentValue);
             }
         }
 
         private void SetRegeneratingAttributes()
         {
+            if (attributeUI == null) return;
+
             foreach (var a in AttributeData)
             {
                 if (a.CurrentValue >= a.MaxValue) return;
                 a.CurrentValue += a.RegenerateValuePerMinute;
-                AttributeBar bar = attributeUI.GetAttributeBar(a);
-                bar.SetCurrentValue(a.CurrentValue);
+
+                var bar = attributeUI.GetAttributeBar(a);
+                if (bar != null) bar.SetCurrentValue(a.CurrentValue);
             }
         }
 
         public void AddMaxAttributeValue(AttributeType type, float value)
         {
+            if (attributeUI == null) return;
+
             foreach (var a in AttributeData)
             {
                 if (a.type == type)
                 {
                     a.MaxValue += value;
-                    attributeUI.GetAttributeBar(a).SetMaxValue(a.MaxValue);
+                    var bar = attributeUI.GetAttributeBar(a);
+                    if (bar != null) bar.SetMaxValue(a.MaxValue);
                 }
             }
         }
 
         public void AddCurrentAttributeValue(AttributeType type, float value)
         {
+            if (attributeUI == null) return;
+
             foreach (var a in AttributeData)
             {
                 if (a.type == type)
                 {
                     a.CurrentValue += value;
                     if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
-                    attributeUI.GetAttributeBar(a).SetCurrentValue(a.CurrentValue);
+
+                    var bar = attributeUI.GetAttributeBar(a);
+                    if (bar != null) bar.SetCurrentValue(a.CurrentValue);
                 }
             }
         }

@@ -11,10 +11,10 @@ namespace Yamigisa
     public class CreateObjectWindow : EditorWindow
     {
         private const string MenuPath = "Yamigisa Engine/Create Object...";
-        private const string RES = "Assets/Resources";
-        private const string PREFABS = "Assets/Prefabs";
-        private const string PREFABS_ITEMS = "Assets/Prefabs/Items";
-        private const string RES_ITEMS = "Assets/Resources/Items";
+        private const string RES = "Assets/YamigisaEngine/Resources";
+        private const string PREFABS = "Assets/YamigisaEngine/Prefabs";
+        private const string PREFABS_ITEMS = "Assets/YamigisaEngine/Prefabs/Items";
+        private const string RES_ITEMS = "Assets/YamigisaEngine/Resources/Items";
 
         private string objectName = "NewItem";
         private ObjectType objectType = ObjectType.Item;

@@ -24,6 +24,7 @@ namespace Yamigisa
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, itemData.increaseHealth);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Hunger, itemData.increaseHunger);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Thirst, itemData.increaseThirst);
+            Debug.Log("Consumed " + itemData.itemName);
         }
     }
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 0
   MaxValue: 100
-  CurrentValue: 10
+  CurrentValue: 2
   DepleteValuePerMinute: 0
   RegenerateValuePerMinute: 2
   HealthLossValue: 0
