@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Yamigisa
 {
-    [RequireComponent(typeof(Selectable))]
-    public class Destructible : MonoBehaviour
+    [RequireComponent(typeof(InteractiveObject))]
+    public class Destroyable : MonoBehaviour
     {
         [Header("Stats")]
         public int hp = 100;
@@ -16,11 +15,11 @@ namespace Yamigisa
         [Header("Loot")]
         [SerializeField] private List<ItemData> loots;
 
-        private Selectable select;
+        private InteractiveObject select;
 
         private void Awake()
         {
-            select = GetComponent<Selectable>();
+            select = GetComponent<InteractiveObject>();
         }
 
         public void TakeDamage(int damage)

@@ -88,12 +88,12 @@ namespace Yamigisa
             Transform child = buttonContainer.GetChild(index);
             child.gameObject.SetActive(true);
 
-            ButtonSelectable selectableButton = child.GetComponent<ButtonSelectable>();
-            if (selectableButton == null) return;
+            ButtonInteractiveObject InteractiveObjectButton = child.GetComponent<ButtonInteractiveObject>();
+            if (InteractiveObjectButton == null) return;
 
-            selectableButton.SetText(action.title);
-            selectableButton.Button.onClick.RemoveAllListeners();
-            selectableButton.Button.onClick.AddListener(() =>
+            InteractiveObjectButton.SetText(action.title);
+            InteractiveObjectButton.Button.onClick.RemoveAllListeners();
+            InteractiveObjectButton.Button.onClick.AddListener(() =>
             {
                 action.DoAction(Inventory.Instance.Character, this);
             });

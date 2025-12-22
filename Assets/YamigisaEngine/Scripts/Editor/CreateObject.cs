@@ -43,8 +43,8 @@ namespace Yamigisa
         private List<(GroupData group, int amount)> craftGroupsNeeded = new();
         private List<(ItemData item, int amount)> craftItemsNeeded = new();
 
-        // Selectable
-        private int selectableAmount = 1;
+        // InteractiveObject
+        private int InteractiveObjectAmount = 1;
         private float autoHideDistance = 4f;
 
         [MenuItem(MenuPath, priority = 0)]
@@ -68,7 +68,7 @@ namespace Yamigisa
             itemDescription = EditorGUILayout.TextField("Description", itemDescription);
 
             EditorGUILayout.Space(6);
-            selectableAmount = Mathf.Max(1, EditorGUILayout.IntField("Selectable Amount", selectableAmount));
+            InteractiveObjectAmount = Mathf.Max(1, EditorGUILayout.IntField("InteractiveObject Amount", InteractiveObjectAmount));
             autoHideDistance = EditorGUILayout.FloatField("Auto Hide Distance", autoHideDistance);
 
             EditorGUILayout.Space(10);
@@ -121,7 +121,7 @@ namespace Yamigisa
             var box = root.AddComponent<BoxCollider2D>();
 
             // Components
-            var selectable = root.AddComponent<Selectable>(); // no Destructible; Selectable handles that
+            var InteractiveObject = root.AddComponent<InteractiveObject>(); // no Destructible; InteractiveObject handles that
 
             // Child: Visual with SpriteRenderer
             var visualGO = new GameObject("Visual");
@@ -147,14 +147,14 @@ namespace Yamigisa
             // Fit collider to the Visual sprite (size & offset from sprite bounds)
             FitColliderToSprite(box, sr);
 
-            // Fill Selectable
-            var soSelectable = new SerializedObject(selectable);
-            soSelectable.FindProperty("spriteRenderer").objectReferenceValue = sr;
-            soSelectable.FindProperty("itemData").objectReferenceValue = so;
-            soSelectable.FindProperty("amount").intValue = selectableAmount;
-            soSelectable.FindProperty("autoHideDistance").floatValue = autoHideDistance;
-            soSelectable.FindProperty("outlineObject").objectReferenceValue = outlineGO;
-            soSelectable.ApplyModifiedPropertiesWithoutUndo();
+            // Fill InteractiveObject
+            var soInteractiveObject = new SerializedObject(InteractiveObject);
+            soInteractiveObject.FindProperty("spriteRenderer").objectReferenceValue = sr;
+            soInteractiveObject.FindProperty("itemData").objectReferenceValue = so;
+            soInteractiveObject.FindProperty("amount").intValue = InteractiveObjectAmount;
+            soInteractiveObject.FindProperty("autoHideDistance").floatValue = autoHideDistance;
+            soInteractiveObject.FindProperty("outlineObject").objectReferenceValue = outlineGO;
+            soInteractiveObject.ApplyModifiedPropertiesWithoutUndo();
 
             // Save prefab
             string prefabPath = $"{PREFABS_ITEMS}/{safeName}.prefab";

@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 namespace Yamigisa
 {
     [RequireComponent(typeof(Collider2D))]
-    public class Selectable : MonoBehaviour
+    public class InteractiveObject : MonoBehaviour
     {
         [Header("Actions")]
         private List<ActionBase> actions = new();
@@ -23,10 +23,10 @@ namespace Yamigisa
         [Header("Auto Hide")]
         [SerializeField] private float autoHideDistance = 4f;
 
-        private static Selectable currentOpen;
+        private static InteractiveObject currentOpen;
 
         private Character character;
-        private Camera cam; // world picking only
+        private Camera cam; 
         private bool panelVisible;
         private Collider2D col2D;
 
@@ -61,7 +61,7 @@ namespace Yamigisa
         void Start()
         {
             SetOutline(false);
-            ShowSelectableButtons(false);
+            ShowInteractiveObjectButtons(false);
         }
 
         void Update()
@@ -73,7 +73,7 @@ namespace Yamigisa
                 float d = Vector2.Distance(character.transform.position, transform.position);
                 if (d > autoHideDistance)
                 {
-                    ShowSelectableButtons(false);
+                    ShowInteractiveObjectButtons(false);
                     return;
                 }
             }
@@ -85,10 +85,10 @@ namespace Yamigisa
 
                 Ray ray = cam ? cam.ScreenPointToRay(Input.mousePosition) : new Ray();
                 RaycastHit2D hit = cam ? Physics2D.GetRayIntersection(ray) : default;
-                var clickedSelectable = hit.collider ? hit.collider.GetComponentInParent<Selectable>() : null;
-                if (clickedSelectable != this)
+                var clickedInteractiveObject = hit.collider ? hit.collider.GetComponentInParent<InteractiveObject>() : null;
+                if (clickedInteractiveObject != this)
                 {
-                    ShowSelectableButtons(false);
+                    ShowInteractiveObjectButtons(false);
                 }
             }
         }
@@ -100,8 +100,8 @@ namespace Yamigisa
         {
             if (IsPointerOverAnyUI()) return;
 
-            if (panelVisible) ShowSelectableButtons(false);
-            else ShowSelectableButtons(true);
+            if (panelVisible) ShowInteractiveObjectButtons(false);
+            else ShowInteractiveObjectButtons(true);
         }
 
         public void SetOutline(bool on)
@@ -109,12 +109,12 @@ namespace Yamigisa
             if (outlineObject) outlineObject.SetActive(on);
         }
 
-        public void ShowSelectableButtons(bool show)
+        public void ShowInteractiveObjectButtons(bool show)
         {
             if (show)
             {
                 if (currentOpen && currentOpen != this)
-                    currentOpen.ShowSelectableButtons(false);
+                    currentOpen.ShowInteractiveObjectButtons(false);
 
                 if (ButtonActionsUI.Instance != null)
                     ButtonActionsUI.Instance.InitializeButton(this);
@@ -139,7 +139,7 @@ namespace Yamigisa
             if (!action.CanDoAction(this)) return;
 
             action.DoAction(character, this);
-            ShowSelectableButtons(false);
+            ShowInteractiveObjectButtons(false);
         }
 
         public ItemData GetItemData() => itemData;

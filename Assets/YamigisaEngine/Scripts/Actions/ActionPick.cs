@@ -7,19 +7,19 @@ namespace Yamigisa
     {
         public override bool CanDoAction(Component context = null)
         {
-            Selectable selectable = context as Selectable;
-            return selectable && selectable.ItemData != null;
+            InteractiveObject InteractiveObject = context as InteractiveObject;
+            return InteractiveObject && InteractiveObject.ItemData != null;
         }
 
         public override void DoAction(Character character, Component context)
         {
-            Selectable selectable = context as Selectable;
+            NewInteractiveObject InteractiveObject = context as NewInteractiveObject;
 
-            ItemData item = selectable.ItemData;
+            Item item = InteractiveObject.gameObject.GetComponent<Item>();
 
-            Inventory.Instance?.AddItem(item, selectable.Amount);
+            Inventory.Instance?.AddItem(item.itemData, item.quantity);
 
-            Destroy(selectable.gameObject);
+            Destroy(InteractiveObject.gameObject);
         }
     }
 }

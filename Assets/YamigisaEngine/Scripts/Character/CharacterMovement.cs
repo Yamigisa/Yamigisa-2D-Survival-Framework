@@ -54,6 +54,9 @@ namespace Yamigisa
         private bool isCrouching = false;
         private Vector3 originalSpriteScale;
 
+        private bool isAutoMoving = false;
+        private Vector2 autoMoveTarget;
+        private float autoMoveStoppingDistance = 0.1f;
         private void Awake()
         {
             characterControls = GetComponent<CharacterControls>();
@@ -77,8 +80,43 @@ namespace Yamigisa
 
         private void FixedUpdate()
         {
-            if (!isJumping)
+            if (isJumping) return;
+
+            if (isAutoMoving)
+                AutoMove();
+            else
                 Move();
+
+        }
+
+        private void AutoMove()
+        {
+            Vector2 currentPos = rb.position;
+            Vector2 direction = (autoMoveTarget - currentPos);
+
+            if (direction.sqrMagnitude <= autoMoveStoppingDistance * autoMoveStoppingDistance)
+            {
+                StopAutoMove();
+                return;
+            }
+
+            direction.Normalize();
+
+            float currentSpeed = walkSpeed;
+            Vector2 targetVelocity = direction * currentSpeed;
+
+            isWalking = true;
+            lastDirection = direction;
+
+            Vector2 velocity = rb.linearVelocity;
+            Vector2 velocityChange = targetVelocity - velocity;
+            rb.AddForce(velocityChange, ForceMode2D.Impulse);
+        }
+
+        private void StopAutoMove()
+        {
+            isAutoMoving = false;
+            rb.linearVelocity = Vector2.zero;
         }
 
         private void Move()
@@ -115,6 +153,13 @@ namespace Yamigisa
             Vector2 velocity = rb.linearVelocity;
             Vector2 velocityChange = targetVelocity - velocity;
             rb.AddForce(velocityChange, ForceMode2D.Impulse);
+        }
+
+        public void MoveTo(Vector2 target, float stoppingDistance)
+        {
+            autoMoveTarget = target;
+            autoMoveStoppingDistance = stoppingDistance;
+            isAutoMoving = true;
         }
 
         private void HandleJump()

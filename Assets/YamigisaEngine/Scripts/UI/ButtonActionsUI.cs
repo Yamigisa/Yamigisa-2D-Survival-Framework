@@ -4,7 +4,7 @@ namespace Yamigisa
 {
     public class ButtonActionsUI : MonoBehaviour
     {
-        [SerializeField] private ButtonSelectable buttonSelectablePrefab;
+        [SerializeField] private ButtonInteractiveObject buttonInteractiveObjectPrefab;
         public Transform buttonTransform;
 
         [Header("Overlay Positioning (pixels)")]
@@ -50,26 +50,26 @@ namespace Yamigisa
             if (!sceneCamera) sceneCamera = Camera.main;
         }
 
-        public void InitializeButton(Selectable selectable)
+        public void InitializeButton(InteractiveObject InteractiveObject)
         {
-            if (!rt || !canvas || selectable == null) return;
+            if (!rt || !canvas || InteractiveObject == null) return;
 
             // Clear children
             for (int i = buttonTransform.childCount - 1; i >= 0; i--)
                 Destroy(buttonTransform.GetChild(i).gameObject);
 
             // Build buttons
-            foreach (ActionBase action in selectable.Actions)
+            foreach (ActionBase action in InteractiveObject.Actions)
             {
-                ButtonSelectable selectableButton = Instantiate(buttonSelectablePrefab, buttonTransform);
-                selectableButton.SetText(action.title);
-                selectableButton.Button.onClick.AddListener(() => selectable.PerformAction(action));
+                ButtonInteractiveObject InteractiveObjectButton = Instantiate(buttonInteractiveObjectPrefab, buttonTransform);
+                InteractiveObjectButton.SetText(action.title);
+                InteractiveObjectButton.Button.onClick.AddListener(() => InteractiveObject.PerformAction(action));
             }
 
             buttonTransform.gameObject.SetActive(true);
             Canvas.ForceUpdateCanvases();
 
-            PositionAboveSelectable_Overlay(selectable);
+            PositionAboveInteractiveObject_Overlay(InteractiveObject);
         }
 
         public void HideButtonActions()
@@ -77,10 +77,10 @@ namespace Yamigisa
             if (buttonTransform) buttonTransform.gameObject.SetActive(false);
         }
 
-        void PositionAboveSelectable_Overlay(Selectable selectable)
+        void PositionAboveInteractiveObject_Overlay(InteractiveObject InteractiveObject)
         {
             // 1) Get the object's top world point
-            Vector3 worldTop = selectable.GetTopWorldPoint();
+            Vector3 worldTop = InteractiveObject.GetTopWorldPoint();
 
             // 2) Convert to screen pixels
             Vector3 sp = sceneCamera ? sceneCamera.WorldToScreenPoint(worldTop)

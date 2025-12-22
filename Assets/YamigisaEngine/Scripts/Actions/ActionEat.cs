@@ -13,10 +13,10 @@ namespace Yamigisa
 
         public override void DoAction(Character character, Component context)
         {
-            if (context is Selectable selectable && selectable.ItemData != null)
+            if (context is InteractiveObject InteractiveObject && InteractiveObject.ItemData != null)
             {
-                character.ConsumeItem(selectable.ItemData);
-                Destroy(selectable.gameObject);
+                character.ConsumeItem(InteractiveObject.ItemData);
+                Destroy(InteractiveObject.gameObject);
             }
         }
     }

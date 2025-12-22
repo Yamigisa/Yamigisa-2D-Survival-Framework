@@ -8,7 +8,7 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, Component context)
         {
-            Selectable selectable = context as Selectable;
+            InteractiveObject InteractiveObject = context as InteractiveObject;
 
             ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
             if (equipped == null)
@@ -17,7 +17,7 @@ namespace Yamigisa
                 return;
             }
 
-            var targetData = selectable.GetItemData();
+            var targetData = InteractiveObject.GetItemData();
             if (targetData == null)
             {
                 Debug.LogWarning("[ActionChop] Target has no ItemData.");
@@ -43,7 +43,7 @@ namespace Yamigisa
             }
 
             int dmg = Mathf.Max(1, equipped.damage);
-            selectable.TakeDamage(dmg);
+            InteractiveObject.TakeDamage(dmg);
         }
     }
 }

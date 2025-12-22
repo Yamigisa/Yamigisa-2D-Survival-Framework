@@ -146,7 +146,7 @@ namespace Yamigisa
             var root = new GameObject(objectName);
 
             var box = root.AddComponent<BoxCollider2D>();
-            var selectable = root.AddComponent<Selectable>();
+            var InteractiveObject = root.AddComponent<InteractiveObject>();
 
             var visualGO = new GameObject("Visual");
             visualGO.transform.SetParent(root.transform, false);
@@ -167,17 +167,17 @@ namespace Yamigisa
 
             FitColliderToSprite(box, sr);
 
-            var soSelectable = new SerializedObject(selectable);
-            var pSR = soSelectable.FindProperty("spriteRenderer");
+            var soInteractiveObject = new SerializedObject(InteractiveObject);
+            var pSR = soInteractiveObject.FindProperty("spriteRenderer");
             if (pSR != null) pSR.objectReferenceValue = sr;
 
-            var pItem = soSelectable.FindProperty("itemData");
+            var pItem = soInteractiveObject.FindProperty("itemData");
             if (pItem != null) pItem.objectReferenceValue = so;
 
-            var pOutline = soSelectable.FindProperty("outlineObject");
+            var pOutline = soInteractiveObject.FindProperty("outlineObject");
             if (pOutline != null) pOutline.objectReferenceValue = outlineGO;
 
-            soSelectable.ApplyModifiedPropertiesWithoutUndo();
+            soInteractiveObject.ApplyModifiedPropertiesWithoutUndo();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);

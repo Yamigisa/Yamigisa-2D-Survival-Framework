@@ -1,7 +1,7 @@
 using UnityEngine.UI;
 using UnityEngine;
 
-public class ButtonSelectable : MonoBehaviour
+public class ButtonInteractiveObject : MonoBehaviour
 {
     public Button Button;
     [SerializeField] private Text label;
