@@ -6,19 +6,25 @@ namespace Yamigisa
     [CreateAssetMenu(menuName = "Yamigisa/Item")]
     public class ItemData : ScriptableObject
     {
+        [Header("Item Information")]
         public string itemName;
         public Sprite iconWorld;
         public Sprite iconInventory;
         [TextArea] public string description;
+
+        [Header("Item Properties")]
         public ItemType itemType;
         public int maxAmount = 99;
         public bool isDroppable = true;
         public bool isStackable = true;
 
+        [Header("Item Groups")]
         public List<GroupData> groups = new List<GroupData>();
+
+        [Header("Item Actions")]
         public List<ActionBase> itemActions;
 
-        // Consumable Effects
+        [Header("Consumable Effect")]
         public int increaseHealth = 0;
         public int increaseHunger = 0;
         public int increaseThirst = 0;

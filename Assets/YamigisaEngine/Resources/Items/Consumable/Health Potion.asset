@@ -35,7 +35,3 @@ MonoBehaviour:
     Amount: 1
   craftItemsNeeded: []
   craftResultAmount: 1
-  destructible: 0
-  destructibleHP: 100
-  destructibleRequiredGroups: []
-  destructibleLoots: []
