@@ -33,13 +33,6 @@ namespace Yamigisa
         public List<CraftItemData> craftItemsNeeded = new List<CraftItemData>();
         [Min(1)] public int craftResultAmount = 1;
 
-        // ===== DESTRUCTIBLE (Resource only) =====
-        [Header("Destructible (Resource only)")]
-        public bool destructible = false;
-        [Min(1)] public int destructibleHP = 100;
-        public List<GroupData> destructibleRequiredGroups = new List<GroupData>(); // MUST have at least one
-        public List<LootEntry> destructibleLoots = new List<LootEntry>();          // per-entry amount + chance
-
         public void ChangeDroppableState(bool state) => isDroppable = state;
     }
 

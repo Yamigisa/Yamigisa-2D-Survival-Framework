@@ -28,8 +28,6 @@ namespace Yamigisa
         private void Start()
         {
             amountText.text = "";
-            if (slotButton && slotButton.image) slotButton.image.color = normalColor;
-
             slotButton.onClick.AddListener(ShowButton);
 
             buttonContainer.gameObject.SetActive(false);

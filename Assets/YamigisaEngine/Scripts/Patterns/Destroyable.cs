@@ -3,36 +3,35 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [RequireComponent(typeof(InteractiveObject))]
+    [RequireComponent(typeof(NewInteractiveObject))]
     public class Destroyable : MonoBehaviour
     {
         [Header("Stats")]
         public int hp = 100;
 
         [Header("Group Items Required")]
-        public GroupData requiredItem;
+        public List<GroupData> requiredItems;
 
         [Header("Loot")]
-        [SerializeField] private List<ItemData> loots;
+        [SerializeField] private List<DestroyableLoot> loots;
 
-        private InteractiveObject select;
+        private NewInteractiveObject select;
 
         private void Awake()
         {
-            select = GetComponent<InteractiveObject>();
+            select = GetComponent<NewInteractiveObject>();
         }
 
         public void TakeDamage(int damage)
         {
             hp -= damage;
-            Debug.Log("tkaing dmg");
             if (hp <= 0)
             {
                 Kill();
             }
         }
 
-        private void Kill()
+        public void Kill()
         {
             GetLoot();
             Destroy(gameObject);
@@ -40,15 +39,18 @@ namespace Yamigisa
 
         private void GetLoot()
         {
-            if (loots == null || loots.Count == 0) return;
-            if (Inventory.Instance == null) return;
-
-            for (int i = 0; i < loots.Count; i++)
+            foreach (DestroyableLoot loot in loots)
             {
-                ItemData item = loots[i];
-                if (item != null)
-                    Inventory.Instance.AddItem(item);
+                Inventory.Instance?.AddItem(loot.itemLoot, loot.quantity);
             }
         }
+
+    }
+
+    [System.Serializable]
+    public class DestroyableLoot
+    {
+        public ItemData itemLoot;
+        public int quantity;
     }
 }

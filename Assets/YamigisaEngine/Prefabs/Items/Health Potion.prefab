@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2555259589888189745}
   - component: {fileID: 7518808819245495975}
-  - component: {fileID: 8506850467815415600}
+  - component: {fileID: 1727220696433448700}
+  - component: {fileID: 8852525240735975044}
   m_Layer: 0
   m_Name: Health Potion
   m_TagString: Player
@@ -82,7 +83,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &8506850467815415600
+--- !u!114 &1727220696433448700
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -91,14 +92,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 35342087502092565}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35efdb9aa061a1040b1b84f286a49c8c, type: 3}
+  m_Script: {fileID: 11500000, guid: a601ecd441d50c64bbfee64f8997341f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 2606387062411640539}
   itemData: {fileID: 11400000, guid: 7b2410fbb683fb3488b06e330b02b474, type: 2}
-  amount: 1
-  outlineObject: {fileID: 2341490277285640583}
-  autoHideDistance: 4
+  quantity: 1
+  spriteRenderer: {fileID: 2606387062411640539}
+--- !u!114 &8852525240735975044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35342087502092565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PickupAble: 1
+  interactRange: 2
+  Actions:
+  - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
+  Groups: []
+  outlineObject: {fileID: 5594299672933949231}
 --- !u!1 &2341490277285640583
 GameObject:
   m_ObjectHideFlags: 0

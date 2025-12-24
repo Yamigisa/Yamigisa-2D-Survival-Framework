@@ -26,7 +26,7 @@ namespace Yamigisa
         private static InteractiveObject currentOpen;
 
         private Character character;
-        private Camera cam; 
+        private Camera cam;
         private bool panelVisible;
         private Collider2D col2D;
 
@@ -48,14 +48,6 @@ namespace Yamigisa
 
             if (ItemData != null && ItemData.itemActions != null)
                 actions.AddRange(ItemData.itemActions);
-
-            isDestructibleInstance =
-                (ItemData != null &&
-                 ItemData.itemType == ItemType.Resource &&
-                 ItemData.destructible);
-
-            if (isDestructibleInstance)
-                currentHP = Mathf.Max(1, ItemData.destructibleHP);
         }
 
         void Start()
@@ -180,57 +172,57 @@ namespace Yamigisa
             if (!isDestructibleInstance) return;
             if (damage <= 0) return;
 
-            if (!HasAnyRequiredGroup())
-                return;
+            // if (!HasAnyRequiredGroup())
+            //     return;
 
-            currentHP -= damage;
-            if (currentHP <= 0) Kill();
+            // currentHP -= damage;
+            // if (currentHP <= 0) Kill();
         }
 
-        private bool HasAnyRequiredGroup()
-        {
-            var req = ItemData.destructibleRequiredGroups;
-            if (req == null || req.Count == 0) return false; // MUST: list cannot be empty
+        // private bool HasAnyRequiredGroup()
+        // {
+        //     var req = ItemData.destructibleRequiredGroups;
+        //     if (req == null || req.Count == 0) return false; // MUST: list cannot be empty
 
-            if (Inventory.Instance == null) return false;
+        //     if (Inventory.Instance == null) return false;
 
-            // Require: player has at least one of the required groups
-            // Adjust this if your design needs "ALL groups" instead.
-            for (int i = 0; i < req.Count; i++)
-            {
-                var g = req[i];
-                if (g != null && Inventory.Instance.HasGroup(g))
-                    return true;
-            }
-            return false;
-        }
+        //     // Require: player has at least one of the required groups
+        //     // Adjust this if your design needs "ALL groups" instead.
+        //     for (int i = 0; i < req.Count; i++)
+        //     {
+        //         var g = req[i];
+        //         if (g != null && Inventory.Instance.HasGroup(g))
+        //             return true;
+        //     }
+        //     return false;
+        // }
 
-        private void Kill()
-        {
-            DropLoot();
-            Destroy(gameObject);
-        }
+        // private void Kill()
+        // {
+        //     DropLoot();
+        //     Destroy(gameObject);
+        // }
 
-        private void DropLoot()
-        {
-            if (ItemData == null || ItemData.destructibleLoots == null || ItemData.destructibleLoots.Count == 0) return;
-            if (Inventory.Instance == null) return;
+        // private void DropLoot()
+        // {
+        //     if (ItemData == null || ItemData.destructibleLoots == null || ItemData.destructibleLoots.Count == 0) return;
+        //     if (Inventory.Instance == null) return;
 
-            // Each LootEntry has: item, amount, dropChancePercent
-            for (int i = 0; i < ItemData.destructibleLoots.Count; i++)
-            {
-                var entry = ItemData.destructibleLoots[i];
-                if (entry == null || entry.item == null) continue;
+        //     // Each LootEntry has: item, amount, dropChancePercent
+        //     for (int i = 0; i < ItemData.destructibleLoots.Count; i++)
+        //     {
+        //         var entry = ItemData.destructibleLoots[i];
+        //         if (entry == null || entry.item == null) continue;
 
-                // Roll chance (0..100)
-                float roll = Random.value * 100f;
-                if (roll <= Mathf.Clamp(entry.dropChancePercent, 0f, 100f))
-                {
-                    int amt = Mathf.Max(1, entry.amount);
-                    Inventory.Instance.AddItem(entry.item, amt);
-                }
-            }
-        }
+        //         // Roll chance (0..100)
+        //         float roll = Random.value * 100f;
+        //         if (roll <= Mathf.Clamp(entry.dropChancePercent, 0f, 100f))
+        //         {
+        //             int amt = Mathf.Max(1, entry.amount);
+        //             Inventory.Instance.AddItem(entry.item, amt);
+        //         }
+        //     }
+        // }
 
     }
 }

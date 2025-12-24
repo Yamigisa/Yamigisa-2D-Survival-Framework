@@ -45,12 +45,10 @@ namespace Yamigisa
 
             if (IsCharacterInRange(cachedCharacter))
             {
-                // ✅ Close enough → interact immediately
                 InteractObject(cachedCharacter);
             }
             else
             {
-                // 🚶 Too far → move first, interact later
                 cachedCharacter.characterMovement
                     .MoveTo(transform.position, interactRange);
 
@@ -73,7 +71,7 @@ namespace Yamigisa
                 action.DoAction(character, this);
             }
 
-            TextTooltip.Instance.CloseInteractiveObjectTexts();
+            //TextTooltip.Instance.CloseInteractiveObjectTexts();
         }
 
         private bool IsPointerOverAnyUI()

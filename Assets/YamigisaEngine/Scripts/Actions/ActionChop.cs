@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Yamigisa
@@ -8,42 +8,20 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, Component context)
         {
-            InteractiveObject InteractiveObject = context as InteractiveObject;
+            NewInteractiveObject InteractiveObject = context as NewInteractiveObject;
 
             ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
-            if (equipped == null)
-            {
-                Debug.LogWarning("[ActionChop] No selected quick item. Select a tool first (1–8).");
-                return;
-            }
+            Destroyable destroyable = InteractiveObject.GetComponent<Destroyable>();
 
-            var targetData = InteractiveObject.GetItemData();
-            if (targetData == null)
+            if (equipped.groups.Any(g => destroyable.requiredItems.Contains(g)))
             {
-                Debug.LogWarning("[ActionChop] Target has no ItemData.");
-                return;
+                int dmg = Mathf.Max(1, equipped.damage);
+                destroyable.TakeDamage(dmg);
             }
-
-            // Only resources marked as destructible can be chopped
-            if (!(targetData.itemType == ItemType.Resource && targetData.destructible))
+            else if (destroyable.requiredItems == null || destroyable.requiredItems.Count == 0)
             {
-                Debug.Log("[ActionChop] Target is not destructible.");
-                return;
+                destroyable.Kill();
             }
-
-            // If the target requires groups, you must have at least one matching tool in QUICK SLOTS
-            List<GroupData> req = targetData.destructibleRequiredGroups;
-            if (req != null && req.Count > 0)
-            {
-                if (!Inventory.Instance.HasAnyGroup(req))
-                {
-                    Debug.Log("[ActionChop] You don't have a required tool in your quick slots.");
-                    return;
-                }
-            }
-
-            int dmg = Mathf.Max(1, equipped.damage);
-            InteractiveObject.TakeDamage(dmg);
         }
     }
 }

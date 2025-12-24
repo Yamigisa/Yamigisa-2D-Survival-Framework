@@ -82,10 +82,16 @@ namespace Yamigisa
         {
             if (isJumping) return;
 
+            if (isAutoMoving && HasManualMoveInput())
+            {
+                StopAutoMove();
+            }
+
             if (isAutoMoving)
                 AutoMove();
             else
                 Move();
+
 
         }
 
@@ -130,6 +136,7 @@ namespace Yamigisa
             if (characterControls.IsAnyKeyPressed(characterControls.moveRightKey)) inputDirection.x += 1;
             if (characterControls.IsAnyKeyPressed(characterControls.moveLeftKey)) inputDirection.x -= 1;
 
+            StopAutoMove();
             if (inputDirection.x != 0 && inputDirection.y != 0)
                 inputDirection.y = 0;
 
@@ -153,6 +160,7 @@ namespace Yamigisa
             Vector2 velocity = rb.linearVelocity;
             Vector2 velocityChange = targetVelocity - velocity;
             rb.AddForce(velocityChange, ForceMode2D.Impulse);
+
         }
 
         public void MoveTo(Vector2 target, float stoppingDistance)
@@ -160,6 +168,15 @@ namespace Yamigisa
             autoMoveTarget = target;
             autoMoveStoppingDistance = stoppingDistance;
             isAutoMoving = true;
+        }
+
+        private bool HasManualMoveInput()
+        {
+            return
+                characterControls.IsAnyKeyPressed(characterControls.moveUpKey) ||
+                characterControls.IsAnyKeyPressed(characterControls.moveDownKey) ||
+                characterControls.IsAnyKeyPressed(characterControls.moveLeftKey) ||
+                characterControls.IsAnyKeyPressed(characterControls.moveRightKey);
         }
 
         private void HandleJump()
