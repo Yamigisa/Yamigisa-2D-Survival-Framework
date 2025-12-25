@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: Animal
   m_EditorClassIdentifier: 
   behaviour: 0
-  wanderSpeed: 2
-  runSpeed: 3.5
-  wanderRange: 10
-  wanderInterval: 5
-  detectRange: 5
+  wanderSpeed: 1
+  runSpeed: 3
+  wanderRange: 5
+  wanderInterval: 3
+  continueWander: 1.5
+  detectRange: 2
+  detectedRange: 5
   detectAngle: 360
-  reactionTime: 1
+  reactionTime: 0.2
   attackDamage: 5
   attackRange: 1.5
   attackDuration: 1

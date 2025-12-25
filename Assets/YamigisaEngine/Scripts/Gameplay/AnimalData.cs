@@ -36,14 +36,16 @@ namespace Yamigisa
         public float runSpeed = 3.5f;
         public float wanderRange = 10f;
         public float wanderInterval = 5f;
+        public float continueWander = 1.5f;
 
         [Header("Vision")]
-        public float detectRange = 5f;
+        public float detectRange = 2.5f;
+        public float detectedRange = 10f;
         public float detectAngle = 360f;
         public float reactionTime = 1f;
 
         [Header("Attack")]
-        public float attackDamage = 5f;
+        public int attackDamage = 5;
         public float attackRange = 1.5f;
         public float attackDuration = 1f;
         public float attackCooldown = 2f;

@@ -14,12 +14,15 @@ namespace Yamigisa
 
         private NewInteractiveObject pendingInteraction;
 
+        public static Character instance;
 
         private void Awake()
         {
             characterAnimation = GetComponent<CharacterAnimation>();
             characterAttribute = GetComponent<CharacterAttribute>();
             characterMovement = GetComponent<CharacterMovement>();
+
+            instance = this;
         }
 
         private void Update()
@@ -42,6 +45,11 @@ namespace Yamigisa
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, itemData.increaseHealth);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Hunger, itemData.increaseHunger);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Thirst, itemData.increaseThirst);
+        }
+
+        public void TakeDamage(int damage)
+        {
+            characterAttribute.AddCurrentAttributeValue(AttributeType.Health, -damage);
         }
     }
 }
