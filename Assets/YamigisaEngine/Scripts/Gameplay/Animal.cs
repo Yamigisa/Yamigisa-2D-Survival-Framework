@@ -11,7 +11,7 @@ public class Animal : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
 
-    [Header("Visuals")]
+    [Header("Animation Parameters")]
     private Vector3 startPosition;
 
     private Rigidbody2D rb;
