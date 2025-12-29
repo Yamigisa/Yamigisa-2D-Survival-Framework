@@ -244,6 +244,18 @@ MonoBehaviour:
   animalData: {fileID: 11400000, guid: 1855b1d4b9885164fb830fd462d7d593, type: 2}
   spriteRenderer: {fileID: 177034061}
   animator: {fileID: 61258225}
+  idleFront: IdleFront
+  idleBack: IdleBack
+  idleSide: IdleSide
+  wanderFront: WanderFront
+  wanderBack: WanderBack
+  wanderSide: WanderSide
+  runFront: RunFront
+  runBack: RunBack
+  runSide: RunSide
+  attackFront: AttackFront
+  attackBack: AttackBack
+  attackSide: AttackSide
 --- !u!4 &61258222
 Transform:
   m_ObjectHideFlags: 0
@@ -286,7 +298,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &61258224
 BoxCollider2D:
   m_ObjectHideFlags: 0

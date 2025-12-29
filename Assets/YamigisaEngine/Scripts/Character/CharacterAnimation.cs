@@ -13,7 +13,7 @@ namespace Yamigisa
         [SerializeField] private string walkSide = "WalkSide";
 
         private Animator animator;
-        private Yamigisa.CharacterMovement movement;
+        private CharacterMovement movement;
         private Transform spriteTransform;
 
         void Start()
