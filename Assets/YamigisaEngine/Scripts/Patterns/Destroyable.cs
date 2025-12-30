@@ -14,6 +14,8 @@ namespace Yamigisa
 
         [Header("Loot")]
         [SerializeField] private List<DestroyableLoot> loots;
+        [Tooltip("If true, the destroyable will drop loot upon being killed. IF false, loot will instantly go into inventory.")]
+        [SerializeField] private bool dropLootOnKill = true;
 
         private NewInteractiveObject select;
 
@@ -39,12 +41,24 @@ namespace Yamigisa
 
         private void GetLoot()
         {
-            foreach (DestroyableLoot loot in loots)
+            if (dropLootOnKill)
             {
-                Inventory.Instance?.AddItem(loot.itemLoot, loot.quantity);
+                foreach (DestroyableLoot loot in loots)
+                {
+                    for (int i = 0; i < loot.quantity; i++)
+                    {
+                        Instantiate(loot.itemLoot.itemPrefab, transform.position, Quaternion.identity);
+                    }
+                }
+            }
+            else
+            {
+                foreach (DestroyableLoot loot in loots)
+                {
+                    Inventory.Instance?.AddItem(loot.itemLoot, loot.quantity);
+                }
             }
         }
-
     }
 
     [System.Serializable]

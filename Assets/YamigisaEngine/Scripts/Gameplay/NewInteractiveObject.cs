@@ -6,7 +6,6 @@ namespace Yamigisa
 {
     public class NewInteractiveObject : MonoBehaviour
     {
-        public bool PickupAble = true;
         public float interactRange = 2f;
 
         [Header("Actions")]
@@ -71,7 +70,7 @@ namespace Yamigisa
                 action.DoAction(character, this);
             }
 
-            //TextTooltip.Instance.CloseInteractiveObjectTexts();
+            TextTooltip.Instance.CloseInteractiveObjectTexts();
         }
 
         private bool IsPointerOverAnyUI()

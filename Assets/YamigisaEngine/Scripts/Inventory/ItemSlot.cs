@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using Unity.Mathematics;
 
 namespace Yamigisa
 {
@@ -32,6 +33,7 @@ namespace Yamigisa
 
             buttonContainer.gameObject.SetActive(false);
         }
+
         public void MarkAsQuickSlot(bool value)
         {
             isQuickSlot = value;
@@ -111,8 +113,18 @@ namespace Yamigisa
             }
         }
 
-        private void DropItem()
+        private void HideButton()
         {
+            buttonContainer.gameObject.SetActive(false);
+        }
+
+        public void DropItem(Vector3 spawnPoint, int amount)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                Instantiate(ItemData.itemPrefab, spawnPoint, Quaternion.identity);
+            }
+
             ResetSlot();
         }
 
@@ -133,6 +145,8 @@ namespace Yamigisa
 
             for (int i = 0; i < buttonContainer.childCount; i++)
                 buttonContainer.GetChild(i).gameObject.SetActive(false);
+
+            HideButton();
         }
 
         public void OnPointerEnter(PointerEventData eventData)

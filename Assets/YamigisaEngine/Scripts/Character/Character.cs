@@ -40,16 +40,23 @@ namespace Yamigisa
         {
             pendingInteraction = obj;
         }
+
         public void ConsumeItem(ItemData itemData)
         {
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, itemData.increaseHealth);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Hunger, itemData.increaseHunger);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Thirst, itemData.increaseThirst);
+            Debug.Log("Consumed item: " + itemData.itemName);
         }
 
         public void TakeDamage(int damage)
         {
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, -damage);
+        }
+
+        public void DropItem()
+        {
+            
         }
     }
 }

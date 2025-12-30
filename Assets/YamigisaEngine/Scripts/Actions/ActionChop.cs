@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [CreateAssetMenu(fileName = "Action", menuName = "Yamigisa/Actions/Chop", order = 50)]
+    [CreateAssetMenu(fileName = "Chop", menuName = "Yamigisa/Actions/Chop", order = 50)]
     public class ActionChop : ActionBase
     {
         public override void DoAction(Character character, Component context)

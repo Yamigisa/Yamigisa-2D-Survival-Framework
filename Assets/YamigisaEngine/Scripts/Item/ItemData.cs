@@ -6,6 +6,9 @@ namespace Yamigisa
     [CreateAssetMenu(menuName = "Yamigisa/Item")]
     public class ItemData : ScriptableObject
     {
+        [Header("Item Prefab")]
+        public GameObject itemPrefab;
+
         [Header("Item Information")]
         public string itemName;
         public Sprite iconWorld;
@@ -38,7 +41,6 @@ namespace Yamigisa
         public List<CraftGroupData> craftGroupsNeeded = new List<CraftGroupData>();
         public List<CraftItemData> craftItemsNeeded = new List<CraftItemData>();
         [Min(1)] public int craftResultAmount = 1;
-
         public void ChangeDroppableState(bool state) => isDroppable = state;
     }
 

@@ -10,12 +10,9 @@ namespace Yamigisa
         [Header("Settings")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
-        private InteractiveObject interactiveObject;
-
         void Start()
         {
             spriteRenderer.sprite = itemData.iconWorld;
-            interactiveObject = GetComponent<InteractiveObject>();
         }
     }
 }
