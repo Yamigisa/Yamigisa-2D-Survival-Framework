@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Yamigisa;
 
@@ -24,9 +25,16 @@ public class Animal : MonoBehaviour
     [SerializeField] private string attackFront = "AttackFront";
     [SerializeField] private string attackBack = "AttackBack";
     [SerializeField] private string attackSide = "AttackSide";
+    [SerializeField] private string hurtFront = "HurtFront";
+    [SerializeField] private string hurtBack = "HurtBack";
+    [SerializeField] private string hurtSide = "HurtSide";
+
+    [Header("Death Animation Parameters")]
+    [SerializeField] private string deathFront = "DeathFront";
+    [SerializeField] private string deathBack = "DeathBack";
+    [SerializeField] private string deathSide = "DeathSide";
 
     private Vector3 startPosition;
-
     private Rigidbody2D rb;
 
     private float wanderTimer;
@@ -52,6 +60,22 @@ public class Animal : MonoBehaviour
     private float defaultWanderRange;
     private bool ignoreWanderClamp;
 
+    private Destroyable destroyable;
+    private bool isDead;
+
+    private void OnEnable()
+    {
+        destroyable = GetComponent<Destroyable>();
+        if (destroyable != null)
+            destroyable.OnKilled += OnDestroyableKilled;
+    }
+
+    private void OnDisable()
+    {
+        if (destroyable != null)
+            destroyable.OnKilled -= OnDestroyableKilled;
+    }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -69,6 +93,7 @@ public class Animal : MonoBehaviour
 
     private void Update()
     {
+        if (isDead) return;
         if (animalData == null || Character.instance == null) return;
 
         attackCooldownTimer -= Time.deltaTime;
@@ -125,9 +150,21 @@ public class Animal : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isDead)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (isAttacking)
         {
             rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        if (rb != null && rb.linearVelocity.sqrMagnitude <= 0.0001f)
+        {
+            SetAnimation(AnimMode.Idle, lastAnimDir);
         }
     }
 
@@ -136,7 +173,6 @@ public class Animal : MonoBehaviour
         if (animalData == null || Character.instance == null) return false;
 
         Transform target = Character.instance.transform;
-
         Vector2 toTarget = (Vector2)(target.position - transform.position);
 
         float r = range;
@@ -181,7 +217,6 @@ public class Animal : MonoBehaviour
         if (isAttacking) return;
 
         Transform target = Character.instance.transform;
-
         Vector2 awayDir = ((Vector2)transform.position - (Vector2)target.position).normalized;
 
         if (awayDir.sqrMagnitude < 0.0001f)
@@ -197,6 +232,12 @@ public class Animal : MonoBehaviour
                 nextPos = (Vector2)startPosition + offset.normalized * max;
         }
 
+        if (!IsFinite(nextPos))
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         rb.MovePosition(nextPos);
 
         SetAnimation(AnimMode.Run, awayDir);
@@ -206,7 +247,6 @@ public class Animal : MonoBehaviour
     private void AttackCharacter()
     {
         Transform target = Character.instance.transform;
-
         Vector2 toTarget = (Vector2)(target.position - transform.position);
         float dist = toTarget.magnitude;
 
@@ -215,10 +255,7 @@ public class Animal : MonoBehaviour
             attackTimer += Time.deltaTime;
 
             if (!attackFailed && dist > animalData.attackRange)
-            {
                 attackFailed = true;
-                Debug.Log("[Animal] Attack FAILED: player left attack range during attackDuration");
-            }
 
             if (toTarget.sqrMagnitude > 0.0001f)
             {
@@ -233,20 +270,11 @@ public class Animal : MonoBehaviour
             if (attackTimer >= animalData.attackDuration)
             {
                 if (!attackFailed)
-                {
-                    Debug.Log($"[Animal] Attack SUCCESS: dealing {animalData.attackDamage} damage");
                     Character.instance.TakeDamage(animalData.attackDamage);
-                }
-                else
-                {
-                    Debug.Log("[Animal] Attack ended with FAIL: no damage applied");
-                }
 
                 isAttacking = false;
                 attackTimer = 0f;
                 attackFailed = false;
-
-                Debug.Log("[Animal] Attack finished/reset");
             }
 
             rb.linearVelocity = Vector2.zero;
@@ -257,34 +285,26 @@ public class Animal : MonoBehaviour
         {
             Vector2 dir = toTarget.normalized;
             Vector2 nextPos = rb.position + dir * animalData.runSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(nextPos);
 
+            if (!IsFinite(nextPos))
+            {
+                rb.linearVelocity = Vector2.zero;
+                return;
+            }
+
+            rb.MovePosition(nextPos);
             SetAnimation(AnimMode.Run, dir);
             FaceDirection(dir);
             return;
         }
 
-        if (toTarget.sqrMagnitude > 0.0001f)
-        {
-            SetAnimation(AnimMode.Attack, toTarget.normalized);
-            FaceDirection(toTarget.normalized);
-        }
-        else
-        {
-            SetAnimation(AnimMode.Attack, lastAnimDir);
-        }
-
         if (attackCooldownTimer <= 0f)
         {
             attackCooldownTimer = animalData.attackCooldown;
-
             isAttacking = true;
             attackTimer = 0f;
             attackFailed = false;
-
             rb.linearVelocity = Vector2.zero;
-
-            Debug.Log($"[Animal] Attack START: holding still for {animalData.attackDuration}s (range={animalData.attackRange})");
         }
     }
 
@@ -297,8 +317,6 @@ public class Animal : MonoBehaviour
             return;
         }
 
-        if (animalData == null) return;
-
         if (!isWanderStopped)
         {
             wanderTimer += Time.deltaTime;
@@ -306,8 +324,23 @@ public class Animal : MonoBehaviour
             Vector2 current = rb.position;
             Vector2 targetPos = (Vector2)wanderTarget;
 
+            if (!IsFinite(current) || !IsFinite(targetPos))
+            {
+                rb.linearVelocity = Vector2.zero;
+                PickNewWanderTarget();
+                return;
+            }
+
             float step = animalData.wanderSpeed * Time.fixedDeltaTime;
             Vector2 next = Vector2.MoveTowards(current, targetPos, step);
+
+            if (!IsFinite(next))
+            {
+                rb.linearVelocity = Vector2.zero;
+                PickNewWanderTarget();
+                return;
+            }
+
             rb.MovePosition(next);
 
             Vector2 dir = (targetPos - current);
@@ -329,7 +362,6 @@ public class Animal : MonoBehaviour
                 isWanderStopped = true;
                 stopTimer = 0f;
                 rb.linearVelocity = Vector2.zero;
-
                 SetAnimation(AnimMode.Idle, lastAnimDir);
             }
         }
@@ -338,7 +370,6 @@ public class Animal : MonoBehaviour
             stopTimer += Time.deltaTime;
 
             rb.linearVelocity = Vector2.zero;
-
             SetAnimation(AnimMode.Idle, lastAnimDir);
 
             if (stopTimer >= animalData.continueWander)
@@ -355,8 +386,18 @@ public class Animal : MonoBehaviour
         wanderTimer = 0f;
 
         float r = animalData != null ? animalData.wanderRange : 10f;
+        if (!IsFinite(r) || r <= 0f)
+            r = defaultWanderRange > 0f ? defaultWanderRange : 10f;
+
         Vector2 offset = Random.insideUnitCircle * r;
-        wanderTarget = startPosition + new Vector3(offset.x, offset.y, 0f);
+        if (!IsFinite(offset))
+            offset = Vector2.zero;
+
+        Vector3 target = startPosition + new Vector3(offset.x, offset.y, 0f);
+        if (!IsFinite(target))
+            target = startPosition;
+
+        wanderTarget = target;
     }
 
     private void FaceDirection(Vector2 dir)
@@ -369,16 +410,8 @@ public class Animal : MonoBehaviour
     {
         if (animator == null) return;
 
-        if (animalData != null &&
-            (animalData.behaviour == AnimalBehaviour.Passive ||
-             animalData.behaviour == AnimalBehaviour.EscapeAttacked))
-        {
-            if (mode == AnimMode.Attack)
-                mode = AnimMode.Run;
-        }
-
-        if (dir.sqrMagnitude > 0.0001f) lastAnimDir = dir.normalized;
-        Vector2 d = (dir.sqrMagnitude > 0.0001f) ? dir : lastAnimDir;
+        if (dir.sqrMagnitude > 0.0001f)
+            lastAnimDir = dir.normalized;
 
         animator.SetBool(idleFront, false);
         animator.SetBool(idleBack, false);
@@ -393,58 +426,147 @@ public class Animal : MonoBehaviour
         animator.SetBool(attackBack, false);
         animator.SetBool(attackSide, false);
 
-        bool isSide = Mathf.Abs(d.x) > Mathf.Abs(d.y);
+        if (mode == AnimMode.Idle)
+        {
+            bool sideIdle = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
+
+            if (spriteRenderer != null)
+            {
+                if (sideIdle)
+                    spriteRenderer.flipX = lastAnimDir.x > 0f;
+                else
+                    spriteRenderer.flipX = false;
+            }
+
+            if (sideIdle)
+                animator.SetBool(idleSide, true);
+            else if (lastAnimDir.y > 0f)
+                animator.SetBool(idleBack, true);
+            else
+                animator.SetBool(idleFront, true);
+
+            return;
+        }
+
+        bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
         if (spriteRenderer != null)
         {
-            if (isSide)
-                spriteRenderer.flipX = (d.x > 0f);
+            if (side)
+                spriteRenderer.flipX = lastAnimDir.x > 0f;
             else
                 spriteRenderer.flipX = false;
         }
 
-        string param = null;
-
-        if (isSide)
-        {
-            param = mode switch
-            {
-                AnimMode.Idle => idleSide,
-                AnimMode.Wander => wanderSide,
-                AnimMode.Run => runSide,
-                AnimMode.Attack => attackSide,
-                _ => idleSide
-            };
-        }
-        else if (d.y > 0f)
-        {
-            param = mode switch
-            {
-                AnimMode.Idle => idleBack,
-                AnimMode.Wander => wanderBack,
-                AnimMode.Run => runBack,
-                AnimMode.Attack => attackBack,
-                _ => idleBack
-            };
-        }
+        if (side)
+            animator.SetBool(mode == AnimMode.Run ? runSide : attackSide, true);
+        else if (lastAnimDir.y > 0f)
+            animator.SetBool(mode == AnimMode.Run ? runBack : attackBack, true);
         else
-        {
-            param = mode switch
-            {
-                AnimMode.Idle => idleFront,
-                AnimMode.Wander => wanderFront,
-                AnimMode.Run => runFront,
-                AnimMode.Attack => attackFront,
-                _ => idleFront
-            };
-        }
-
-        animator.SetBool(param, true);
+            animator.SetBool(mode == AnimMode.Run ? runFront : attackFront, true);
     }
 
     public void OnAttacked()
     {
         isAttacked = true;
+
+        if (animator == null) return;
+
+        animator.SetBool(hurtFront, false);
+        animator.SetBool(hurtBack, false);
+        animator.SetBool(hurtSide, false);
+
+        bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
+
+        if (side)
+            animator.SetBool(hurtSide, true);
+        else if (lastAnimDir.y > 0f)
+            animator.SetBool(hurtBack, true);
+        else
+            animator.SetBool(hurtFront, true);
+    }
+
+    private void OnDestroyableKilled(Destroyable d)
+    {
+        if (isDead) return;
+        isDead = true;
+
+        isAttacking = false;
+        attackTimer = 0f;
+        attackFailed = false;
+        isDetectedLocked = false;
+        reactionTimer = 0f;
+
+        rb.linearVelocity = Vector2.zero;
+
+        if (animator == null)
+        {
+            d.NotifyDeathAnimationFinished();
+            return;
+        }
+
+        animator.SetBool(idleFront, false);
+        animator.SetBool(idleBack, false);
+        animator.SetBool(idleSide, false);
+        animator.SetBool(wanderFront, false);
+        animator.SetBool(wanderBack, false);
+        animator.SetBool(wanderSide, false);
+        animator.SetBool(runFront, false);
+        animator.SetBool(runBack, false);
+        animator.SetBool(runSide, false);
+        animator.SetBool(attackFront, false);
+        animator.SetBool(attackBack, false);
+        animator.SetBool(attackSide, false);
+        animator.SetBool(hurtFront, false);
+        animator.SetBool(hurtBack, false);
+        animator.SetBool(hurtSide, false);
+
+        animator.SetBool(deathFront, false);
+        animator.SetBool(deathBack, false);
+        animator.SetBool(deathSide, false);
+
+        bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
+
+        if (side)
+            animator.SetBool(deathSide, true);
+        else if (lastAnimDir.y > 0f)
+            animator.SetBool(deathBack, true);
+        else
+            animator.SetBool(deathFront, true);
+
+        StartCoroutine(DeathAnimThenLoot(d));
+    }
+
+    private IEnumerator DeathAnimThenLoot(Destroyable d)
+    {
+        yield return null;
+
+        float wait = 0.5f;
+        if (animator != null)
+        {
+            var st = animator.GetCurrentAnimatorStateInfo(0);
+            if (st.length > 0f) wait = st.length;
+        }
+
+        yield return new WaitForSeconds(wait);
+
+        if (d != null)
+            d.NotifyDeathAnimationFinished();
+    }
+
+    private bool IsFinite(float v)
+    {
+        return !(float.IsNaN(v) || float.IsInfinity(v));
+    }
+
+    private bool IsFinite(Vector2 v)
+    {
+        return IsFinite(v.x) && IsFinite(v.y);
+    }
+
+    private bool IsFinite(Vector3 v)
+    {
+        return IsFinite(v.x) && IsFinite(v.y) && IsFinite(v.z);
     }
 
 #if UNITY_EDITOR

@@ -57,6 +57,14 @@ namespace Yamigisa
         private bool isAutoMoving = false;
         private Vector2 autoMoveTarget;
         private float autoMoveStoppingDistance = 0.1f;
+
+        public bool IsAutoMoving => isAutoMoving;
+
+        public void StopAutoMoveExternal()
+        {
+            StopAutoMove();
+        }
+
         private void Awake()
         {
             characterControls = GetComponent<CharacterControls>();
@@ -91,8 +99,6 @@ namespace Yamigisa
                 AutoMove();
             else
                 Move();
-
-
         }
 
         private void AutoMove()
@@ -160,7 +166,6 @@ namespace Yamigisa
             Vector2 velocity = rb.linearVelocity;
             Vector2 velocityChange = targetVelocity - velocity;
             rb.AddForce(velocityChange, ForceMode2D.Impulse);
-
         }
 
         public void MoveTo(Vector2 target, float stoppingDistance)

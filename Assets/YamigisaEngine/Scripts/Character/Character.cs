@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Yamigisa
@@ -8,6 +9,7 @@ namespace Yamigisa
         [HideInInspector] public CharacterAnimation characterAnimation;
         [HideInInspector] public CharacterAttribute characterAttribute;
         [HideInInspector] public CharacterMovement characterMovement;
+        [HideInInspector] public CharacterCombat characterCombat;
 
         [Header("Starting Items")]
         public List<ItemData> startingItems;
@@ -21,6 +23,7 @@ namespace Yamigisa
             characterAnimation = GetComponent<CharacterAnimation>();
             characterAttribute = GetComponent<CharacterAttribute>();
             characterMovement = GetComponent<CharacterMovement>();
+            characterCombat = GetComponent<CharacterCombat>();
 
             instance = this;
         }
@@ -39,6 +42,35 @@ namespace Yamigisa
         public void SetPendingInteraction(NewInteractiveObject obj)
         {
             pendingInteraction = obj;
+
+            if (obj == null) return;
+            if (characterCombat == null || characterMovement == null) return;
+
+            Destroyable destroyable = obj.GetComponent<Destroyable>();
+            if (destroyable == null) return;
+
+            ItemData equipped = Inventory.Instance != null ? Inventory.Instance.GetSelectedQuickItemData() : null;
+
+            bool canAttackBareHand = (destroyable.requiredItems == null || destroyable.requiredItems.Count == 0);
+
+            bool canAttackWithTool =
+                equipped != null &&
+                equipped.groups != null &&
+                destroyable.requiredItems != null &&
+                equipped.groups.Any(g => destroyable.requiredItems.Contains(g));
+
+            if (!canAttackBareHand && !canAttackWithTool) return;
+
+            int damagePerHit = 0;
+            if (canAttackWithTool)
+                damagePerHit = Mathf.Max(1, equipped.damage);
+
+            characterCombat.StartAutoAttack(destroyable, damagePerHit);
+
+            float stopDist = Mathf.Max(0.05f, characterCombat.attackRange * 0.9f);
+            characterMovement.MoveTo(destroyable.transform.position, stopDist);
+
+            pendingInteraction = null;
         }
 
         public void ConsumeItem(ItemData itemData)
@@ -56,7 +88,7 @@ namespace Yamigisa
 
         public void DropItem()
         {
-            
+
         }
     }
 }

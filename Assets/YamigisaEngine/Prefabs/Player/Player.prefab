@@ -27,8 +27,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 3662977993977089539}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -156,7 +156,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 0.6
+  orthographic size: 2
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -311,13 +311,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3662977993977089539}
+  - component: {fileID: 4202189188480381823}
+  - component: {fileID: 3137625051191780908}
   - component: {fileID: 8513543583330830844}
   - component: {fileID: 6228037158487507412}
   - component: {fileID: 714083658698003909}
   - component: {fileID: 8627710104781531030}
-  - component: {fileID: 4202189188480381823}
-  - component: {fileID: 3137625051191780908}
   - component: {fileID: 406260137901645681}
+  - component: {fileID: 336338363393975827}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -343,80 +344,6 @@ Transform:
   - {fileID: 2491543333314017610}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8513543583330830844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8584085795953339516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c168f85953dfd9438294d35f3c9ecfe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 4202189188480381823}
-  walkSpeed: 1
-  playerCanMove: 1
-  playerCanSprint: 1
-  unlimitedSprint: 0
-  sprintSpeed: 7
-  sprintDuration: 5
-  sprintCooldown: 0.5
---- !u!114 &6228037158487507412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8584085795953339516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c90aba01dc0e2144b0267bc75a82bb0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attributeInfo:
-  - {fileID: 11400000, guid: 6f3f887e7f385604e801153293b12e1c, type: 2}
-  - {fileID: 11400000, guid: 4b8c20c2806899b418b2fac035a8ca71, type: 2}
-  - {fileID: 11400000, guid: 9ffefb1527e11e84ab4f554aa231e7da, type: 2}
---- !u!114 &714083658698003909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8584085795953339516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 34b250045e9694b45a84b1e7c846de4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveUpKey: 1101000077000000
-  moveDownKey: 1201000073000000
-  moveLeftKey: 1401000061000000
-  moveRightKey: 1301000064000000
-  sprintKey: 30010000
-  inventoryKey: 69000000
-  useItemKey: 65000000
-  craftingKey: 75000000
---- !u!114 &8627710104781531030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8584085795953339516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f124d9eaad07d6418aefa3c7b73d093, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  idleFront: IdleFront
-  idleBack: IdleBack
-  idleSide: IdleSide
-  walkFront: WalkFront
-  walkBack: WalkBack
-  walkSide: WalkSide
 --- !u!50 &4202189188480381823
 Rigidbody2D:
   serializedVersion: 5
@@ -466,6 +393,90 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8513543583330830844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c168f85953dfd9438294d35f3c9ecfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rb: {fileID: 4202189188480381823}
+  spriteRenderer: {fileID: 6926324322210759816}
+  playerCollider: {fileID: 6136506362100289820}
+  walkSpeed: 3
+  playerCanMove: 1
+  playerCanSprint: 1
+  unlimitedSprint: 0
+  sprintSpeed: 3
+  sprintDuration: 5
+  sprintCooldown: 0.5
+  canJump: 1
+  jumpForce: 0.4
+  jumpDuration: 0.35
+  jumpDistance: 1.2
+  obstacleCheckDistance: 1
+  crouchKey: 306
+  crouchSpeedMultiplier: 0.45
+  crouchSpriteScale: 0.7
+--- !u!114 &6228037158487507412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c90aba01dc0e2144b0267bc75a82bb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttributeData:
+  - {fileID: 11400000, guid: 6f3f887e7f385604e801153293b12e1c, type: 2}
+--- !u!114 &714083658698003909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34b250045e9694b45a84b1e7c846de4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveUpKey: 1101000077000000
+  moveDownKey: 1201000073000000
+  moveLeftKey: 1401000061000000
+  moveRightKey: 1301000064000000
+  sprintKey: 30010000
+  jumpKey: 20000000
+  crouchKey: 32010000
+  inventoryKey: 69000000
+  useItemKey: 65000000
+  craftingKey: 75000000
+--- !u!114 &8627710104781531030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f124d9eaad07d6418aefa3c7b73d093, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idleFront: IdleFront
+  idleBack: IdleBack
+  idleSide: IdleSide
+  walkFront: WalkFront
+  walkBack: WalkBack
+  walkSide: WalkSide
 --- !u!114 &406260137901645681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -481,6 +492,20 @@ MonoBehaviour:
   characterAnimation: {fileID: 0}
   characterAttribute: {fileID: 0}
   characterMovement: {fileID: 0}
-  startingItems:
-  - {fileID: 11400000, guid: 0b19655979e7d814bb996bac6fcfaebd, type: 2}
-  - {fileID: 11400000, guid: 8f122fa209b4a3746b9b12fd6de5bc2a, type: 2}
+  characterCombat: {fileID: 0}
+  startingItems: []
+--- !u!114 &336338363393975827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1c30fdf3aa3afc4cb48f12ff18241d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handDamage: 3
+  attackRange: 1
+  attackCooldown: 0.4

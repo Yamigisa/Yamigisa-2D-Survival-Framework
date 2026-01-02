@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   behaviour: 0
   wanderSpeed: 1
-  runSpeed: 3
-  wanderRange: 5
+  runSpeed: 0.5
+  wanderRange: Infinity
   wanderInterval: 3
-  continueWander: 1.5
+  continueWander: 1.53
   detectRange: 2
   detectedRange: 5
   detectAngle: 360

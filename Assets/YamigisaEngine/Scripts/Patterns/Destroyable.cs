@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,7 +19,15 @@ namespace Yamigisa
         [Tooltip("If true, the destroyable will drop loot upon being killed. IF false, loot will instantly go into inventory.")]
         [SerializeField] private bool dropLootOnKill = true;
 
+        [Header("Loot Scatter")]
+        [SerializeField] private float lootScatterRadius = 0.5f;
+
+        public event Action<Destroyable> OnKilled;
+
         private NewInteractiveObject select;
+
+        private bool isDying;
+        private bool deathAnimFinished;
 
         private void Awake()
         {
@@ -35,6 +45,35 @@ namespace Yamigisa
 
         public void Kill()
         {
+            if (isDying) return;
+            isDying = true;
+            deathAnimFinished = false;
+            StartCoroutine(KillRoutine());
+        }
+
+        public void NotifyDeathAnimationFinished()
+        {
+            deathAnimFinished = true;
+        }
+
+        private IEnumerator KillRoutine()
+        {
+            OnKilled?.Invoke(this);
+
+            if (OnKilled == null)
+            {
+                GetLoot();
+                Destroy(gameObject);
+                yield break;
+            }
+
+            float timeout = 10f;
+            while (!deathAnimFinished && timeout > 0f)
+            {
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+
             GetLoot();
             Destroy(gameObject);
         }
@@ -47,7 +86,14 @@ namespace Yamigisa
                 {
                     for (int i = 0; i < loot.quantity; i++)
                     {
-                        Instantiate(loot.itemLoot.itemPrefab, transform.position, Quaternion.identity);
+                        Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * lootScatterRadius;
+                        Vector3 spawnPos = transform.position + new Vector3(randomOffset.x, randomOffset.y, 0f);
+
+                        Instantiate(
+                            loot.itemLoot.itemPrefab,
+                            spawnPos,
+                            Quaternion.identity
+                        );
                     }
                 }
             }
