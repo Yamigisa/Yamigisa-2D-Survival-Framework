@@ -66,11 +66,16 @@ public class Animal : MonoBehaviour
     private Destroyable destroyable;
     private bool isDead;
 
+    private int lastKnownHp;
+
     private void OnEnable()
     {
         destroyable = GetComponent<Destroyable>();
         if (destroyable != null)
+        {
             destroyable.OnKilled += OnDestroyableKilled;
+            lastKnownHp = destroyable.hp;
+        }
     }
 
     private void OnDisable()
@@ -90,10 +95,8 @@ public class Animal : MonoBehaviour
 
         defaultWanderRange = animalData.wanderRange;
 
-        // IMPORTANT: wander center starts at actual position
         wanderCenter = transform.position;
 
-        // FORCE wandering at game start
         isWanderStopped = false;
         wanderTimer = 0f;
         stopTimer = 0f;
@@ -101,11 +104,17 @@ public class Animal : MonoBehaviour
         PickNewWanderTarget();
     }
 
-
     private void Update()
     {
         if (isDead) return;
         if (animalData == null || Character.instance == null) return;
+
+        if (destroyable != null)
+        {
+            if (destroyable.hp < lastKnownHp)
+                OnAttacked();
+            lastKnownHp = destroyable.hp;
+        }
 
         attackCooldownTimer -= Time.deltaTime;
 
@@ -124,7 +133,6 @@ public class Animal : MonoBehaviour
             isDetectedLocked = false;
 
             animalData.wanderRange = defaultWanderRange;
-            // PickNewWanderTarget(); // FIX: do NOT reset every frame
 
             Wander();
             return;
@@ -209,8 +217,9 @@ public class Animal : MonoBehaviour
                 break;
 
             case AnimalBehaviour.EscapeAttacked:
+                Debug.Log("isAttacked: " + isAttacked);
                 if (isAttacked) EscapeFromCharacter();
-                else Wander();
+                //else Wander();
                 break;
 
             case AnimalBehaviour.DefenseAttacked:
@@ -449,18 +458,18 @@ public class Animal : MonoBehaviour
 
         if (animator == null) return;
 
-        animator.SetBool(hurtFront, false);
-        animator.SetBool(hurtBack, false);
-        animator.SetBool(hurtSide, false);
+        // animator.SetBool(hurtFront, false);
+        // animator.SetBool(hurtBack, false);
+        // animator.SetBool(hurtSide, false);
 
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
-        if (side)
-            animator.SetBool(hurtSide, true);
-        else if (lastAnimDir.y > 0f)
-            animator.SetBool(hurtBack, true);
-        else
-            animator.SetBool(hurtFront, true);
+        // if (side)
+        //     animator.SetBool(hurtSide, true);
+        // else if (lastAnimDir.y > 0f)
+        //     animator.SetBool(hurtBack, true);
+        // else
+        //     animator.SetBool(hurtFront, true);
     }
 
     private void OnDestroyableKilled(Destroyable d)

@@ -24,15 +24,9 @@ namespace Yamigisa
 
         public event Action<Destroyable> OnKilled;
 
-        private NewInteractiveObject select;
-
         private bool isDying;
         private bool deathAnimFinished;
 
-        private void Awake()
-        {
-            select = GetComponent<NewInteractiveObject>();
-        }
 
         public void TakeDamage(int damage)
         {
