@@ -12,19 +12,23 @@ public class Animal : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
 
-    [Header("Animation Parameters")]
+    [Header("Idle Animation Parameters")]
     [SerializeField] private string idleFront = "IdleFront";
     [SerializeField] private string idleBack = "IdleBack";
     [SerializeField] private string idleSide = "IdleSide";
+    [Header("Wander Animation Parameters")]
     [SerializeField] private string wanderFront = "WanderFront";
     [SerializeField] private string wanderBack = "WanderBack";
     [SerializeField] private string wanderSide = "WanderSide";
+    [Header("Run Animation Parameters")]
     [SerializeField] private string runFront = "RunFront";
     [SerializeField] private string runBack = "RunBack";
     [SerializeField] private string runSide = "RunSide";
+    [Header("Attack Animation Parameters")]
     [SerializeField] private string attackFront = "AttackFront";
     [SerializeField] private string attackBack = "AttackBack";
     [SerializeField] private string attackSide = "AttackSide";
+    [Header("Hurt Animation Parameters")]
     [SerializeField] private string hurtFront = "HurtFront";
     [SerializeField] private string hurtBack = "HurtBack";
     [SerializeField] private string hurtSide = "HurtSide";

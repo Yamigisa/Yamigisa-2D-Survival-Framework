@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da0b1db9ad374694aa192e94ba62b41e, type: 3}
-  m_Name: Deer
+  m_Name: Boar
   m_EditorClassIdentifier: 
-  behaviour: 0
-  wanderSpeed: 1
-  runSpeed: 2
-  wanderRange: 10
-  wanderInterval: 3
-  continueWander: 1.53
-  detectRange: 2
-  detectedRange: 5
+  behaviour: 3
+  wanderSpeed: 2
+  runSpeed: 3.5
+  wanderRange: Infinity
+  wanderInterval: 5
+  continueWander: 1.5
+  detectRange: 2.5
+  detectedRange: 10
   detectAngle: 360
-  reactionTime: 0.2
+  reactionTime: 1
   attackDamage: 5
-  attackRange: 1.5
+  attackRange: 0.5
   attackDuration: 1
   attackCooldown: 2

@@ -44,7 +44,7 @@ namespace Yamigisa
         public float detectAngle = 360f;
         public float reactionTime = 1f;
 
-        [Header("Attack")]
+        [Header("Attack (if available)")]
         public int attackDamage = 5;
         public float attackRange = 1.5f;
         public float attackDuration = 1f;
