@@ -15,7 +15,7 @@ MonoBehaviour:
   behaviour: 0
   wanderSpeed: 1
   runSpeed: 2
-  wanderRange: 10
+  wanderRange: 5
   wanderInterval: 3
   continueWander: 1.53
   detectRange: 2

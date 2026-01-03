@@ -38,7 +38,7 @@ public class Animal : MonoBehaviour
     [SerializeField] private string deathBack = "DeathBack";
     [SerializeField] private string deathSide = "DeathSide";
 
-    private Vector3 startPosition;
+    private Vector3 wanderCenter;
     private Rigidbody2D rb;
 
     private float wanderTimer;
@@ -62,7 +62,6 @@ public class Animal : MonoBehaviour
     private enum AnimMode { Idle, Wander, Run, Attack }
 
     private float defaultWanderRange;
-    private bool ignoreWanderClamp;
 
     private Destroyable destroyable;
     private bool isDead;
@@ -83,17 +82,25 @@ public class Animal : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        startPosition = transform.position;
 
         if (animator == null) animator = GetComponent<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
         rb.constraints |= RigidbodyConstraints2D.FreezeRotation;
 
-        defaultWanderRange = animalData != null ? animalData.wanderRange : 10f;
+        defaultWanderRange = animalData.wanderRange;
+
+        // IMPORTANT: wander center starts at actual position
+        wanderCenter = transform.position;
+
+        // FORCE wandering at game start
+        isWanderStopped = false;
+        wanderTimer = 0f;
+        stopTimer = 0f;
 
         PickNewWanderTarget();
     }
+
 
     private void Update()
     {
@@ -116,9 +123,8 @@ public class Animal : MonoBehaviour
             reactionTimer = 0f;
             isDetectedLocked = false;
 
-            ignoreWanderClamp = false;
             animalData.wanderRange = defaultWanderRange;
-            PickNewWanderTarget();
+            // PickNewWanderTarget(); // FIX: do NOT reset every frame
 
             Wander();
             return;
@@ -137,8 +143,6 @@ public class Animal : MonoBehaviour
             if (DetectCharacter(animalData.detectRange))
             {
                 isDetectedLocked = true;
-                ignoreWanderClamp = true;
-                animalData.wanderRange = Mathf.Infinity;
             }
             else
             {
@@ -228,12 +232,12 @@ public class Animal : MonoBehaviour
 
         Vector2 nextPos = rb.position + awayDir * animalData.runSpeed * Time.fixedDeltaTime;
 
-        if (!ignoreWanderClamp)
+        float max = animalData.wanderRange;
+        if (max > 0f)
         {
-            float max = animalData.wanderRange;
-            Vector2 offset = nextPos - (Vector2)startPosition;
+            Vector2 offset = nextPos - (Vector2)wanderCenter;
             if (offset.magnitude > max)
-                nextPos = (Vector2)startPosition + offset.normalized * max;
+                nextPos = (Vector2)wanderCenter + offset.normalized * max;
         }
 
         if (!IsFinite(nextPos))
@@ -314,40 +318,17 @@ public class Animal : MonoBehaviour
 
     private void Wander()
     {
-        if (isAttacking)
-        {
-            rb.linearVelocity = Vector2.zero;
-            SetAnimation(AnimMode.Attack, lastAnimDir);
-            return;
-        }
-
         if (!isWanderStopped)
         {
             wanderTimer += Time.deltaTime;
 
             Vector2 current = rb.position;
-            Vector2 targetPos = (Vector2)wanderTarget;
+            Vector2 target = wanderTarget;
 
-            if (!IsFinite(current) || !IsFinite(targetPos))
-            {
-                rb.linearVelocity = Vector2.zero;
-                PickNewWanderTarget();
-                return;
-            }
-
-            float step = animalData.wanderSpeed * Time.fixedDeltaTime;
-            Vector2 next = Vector2.MoveTowards(current, targetPos, step);
-
-            if (!IsFinite(next))
-            {
-                rb.linearVelocity = Vector2.zero;
-                PickNewWanderTarget();
-                return;
-            }
-
+            Vector2 next = Vector2.MoveTowards(current, target, animalData.wanderSpeed * Time.fixedDeltaTime);
             rb.MovePosition(next);
 
-            Vector2 dir = (targetPos - current);
+            Vector2 dir = target - current;
             if (dir.sqrMagnitude > 0.0001f)
             {
                 SetAnimation(AnimMode.Wander, dir);
@@ -358,22 +339,19 @@ public class Animal : MonoBehaviour
                 SetAnimation(AnimMode.Idle, lastAnimDir);
             }
 
-            if (Vector2.Distance(next, targetPos) < 0.1f)
+            if (Vector2.Distance(next, target) < 0.1f)
                 PickNewWanderTarget();
 
             if (wanderTimer >= animalData.wanderInterval)
             {
                 isWanderStopped = true;
                 stopTimer = 0f;
-                rb.linearVelocity = Vector2.zero;
                 SetAnimation(AnimMode.Idle, lastAnimDir);
             }
         }
         else
         {
             stopTimer += Time.deltaTime;
-
-            rb.linearVelocity = Vector2.zero;
             SetAnimation(AnimMode.Idle, lastAnimDir);
 
             if (stopTimer >= animalData.continueWander)
@@ -389,19 +367,19 @@ public class Animal : MonoBehaviour
     {
         wanderTimer = 0f;
 
-        float r = animalData != null ? animalData.wanderRange : 10f;
-        if (!IsFinite(r) || r <= 0f)
-            r = defaultWanderRange > 0f ? defaultWanderRange : 10f;
+        float r = animalData.wanderRange;
+        if (!IsFinite(r) || r <= 0.01f)
+            r = defaultWanderRange > 0f ? defaultWanderRange : 5f;
 
         Vector2 offset = Random.insideUnitCircle * r;
+
         if (!IsFinite(offset))
             offset = Vector2.zero;
 
-        Vector3 target = startPosition + new Vector3(offset.x, offset.y, 0f);
-        if (!IsFinite(target))
-            target = startPosition;
+        wanderTarget = wanderCenter + new Vector3(offset.x, offset.y, 0f);
 
-        wanderTarget = target;
+        if (!IsFinite(wanderTarget))
+            wanderTarget = wanderCenter;
     }
 
     private void FaceDirection(Vector2 dir)
@@ -430,44 +408,39 @@ public class Animal : MonoBehaviour
         animator.SetBool(attackBack, false);
         animator.SetBool(attackSide, false);
 
-        if (mode == AnimMode.Idle)
-        {
-            bool sideIdle = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
-
-            if (spriteRenderer != null)
-            {
-                if (sideIdle)
-                    spriteRenderer.flipX = lastAnimDir.x > 0f;
-                else
-                    spriteRenderer.flipX = false;
-            }
-
-            if (sideIdle)
-                animator.SetBool(idleSide, true);
-            else if (lastAnimDir.y > 0f)
-                animator.SetBool(idleBack, true);
-            else
-                animator.SetBool(idleFront, true);
-
-            return;
-        }
-
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
         if (spriteRenderer != null)
         {
-            if (side)
-                spriteRenderer.flipX = lastAnimDir.x > 0f;
-            else
-                spriteRenderer.flipX = false;
+            spriteRenderer.flipX = side && lastAnimDir.x > 0f;
         }
 
-        if (side)
-            animator.SetBool(mode == AnimMode.Run ? runSide : attackSide, true);
-        else if (lastAnimDir.y > 0f)
-            animator.SetBool(mode == AnimMode.Run ? runBack : attackBack, true);
-        else
-            animator.SetBool(mode == AnimMode.Run ? runFront : attackFront, true);
+        switch (mode)
+        {
+            case AnimMode.Idle:
+                if (side) animator.SetBool(idleSide, true);
+                else if (lastAnimDir.y > 0f) animator.SetBool(idleBack, true);
+                else animator.SetBool(idleFront, true);
+                break;
+
+            case AnimMode.Wander:
+                if (side) animator.SetBool(wanderSide, true);
+                else if (lastAnimDir.y > 0f) animator.SetBool(wanderBack, true);
+                else animator.SetBool(wanderFront, true);
+                break;
+
+            case AnimMode.Run:
+                if (side) animator.SetBool(runSide, true);
+                else if (lastAnimDir.y > 0f) animator.SetBool(runBack, true);
+                else animator.SetBool(runFront, true);
+                break;
+
+            case AnimMode.Attack:
+                if (side) animator.SetBool(attackSide, true);
+                else if (lastAnimDir.y > 0f) animator.SetBool(attackBack, true);
+                else animator.SetBool(attackFront, true);
+                break;
+        }
     }
 
     public void OnAttacked()

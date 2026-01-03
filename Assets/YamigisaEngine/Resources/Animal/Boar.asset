@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Boar
   m_EditorClassIdentifier: 
   behaviour: 3
-  wanderSpeed: 2
-  runSpeed: 3.5
-  wanderRange: Infinity
+  wanderSpeed: 1
+  runSpeed: 2
+  wanderRange: 5
   wanderInterval: 5
   continueWander: 1.5
   detectRange: 2.5
-  detectedRange: 10
+  detectedRange: 5
   detectAngle: 360
   reactionTime: 1
   attackDamage: 5
