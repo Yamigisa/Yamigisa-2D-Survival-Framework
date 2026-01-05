@@ -7,8 +7,8 @@ namespace Yamigisa
     public class TextTooltip : MonoBehaviour
     {
         [Header("Interactive Object")]
-        [SerializeField] private GameObject interactiveObjectTextGameObject;
-        [SerializeField] private List<Text> interactiveObjectTexts;
+        [SerializeField] private GameObject InteractiveObjectTextGameObject;
+        [SerializeField] private List<Text> InteractiveObjectTexts;
 
         public static TextTooltip Instance { get; private set; }
 
@@ -25,8 +25,8 @@ namespace Yamigisa
 
         private void Start()
         {
-            interactiveObjectTextGameObject.SetActive(false);
-            foreach (Text text in interactiveObjectTexts)
+            InteractiveObjectTextGameObject.SetActive(false);
+            foreach (Text text in InteractiveObjectTexts)
             {
                 text.gameObject.SetActive(false);
             }
@@ -34,25 +34,25 @@ namespace Yamigisa
 
         public void ShowInteractiveObjectText(List<ActionBase> action)
         {
-            interactiveObjectTextGameObject.SetActive(true);
-            for (int i = 0; i < interactiveObjectTexts.Count; i++)
+            InteractiveObjectTextGameObject.SetActive(true);
+            for (int i = 0; i < InteractiveObjectTexts.Count; i++)
             {
                 if (i < action.Count)
                 {
-                    interactiveObjectTexts[i].gameObject.SetActive(true);
-                    interactiveObjectTexts[i].text = action[i].title;
+                    InteractiveObjectTexts[i].gameObject.SetActive(true);
+                    InteractiveObjectTexts[i].text = action[i].title;
                 }
             }
         }
 
         public void CloseInteractiveObjectTexts()
         {
-            foreach (Text text in interactiveObjectTexts)
+            foreach (Text text in InteractiveObjectTexts)
             {
                 text.gameObject.SetActive(false);
             }
 
-            interactiveObjectTextGameObject.SetActive(false);
+            InteractiveObjectTextGameObject.SetActive(false);
         }
     }
 }

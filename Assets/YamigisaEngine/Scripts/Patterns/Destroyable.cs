@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [RequireComponent(typeof(NewInteractiveObject))]
+    [RequireComponent(typeof(InteractiveObject))]
     public class Destroyable : MonoBehaviour
     {
         [Header("Stats")]

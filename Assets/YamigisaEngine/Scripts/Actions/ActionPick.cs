@@ -7,7 +7,7 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, Component context)
         {
-            NewInteractiveObject InteractiveObject = context as NewInteractiveObject;
+            InteractiveObject InteractiveObject = context as InteractiveObject;
 
             Item item = InteractiveObject.gameObject.GetComponent<Item>();
 

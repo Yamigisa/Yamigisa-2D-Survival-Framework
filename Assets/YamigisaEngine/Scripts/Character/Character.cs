@@ -14,7 +14,7 @@ namespace Yamigisa
         [Header("Starting Items")]
         public List<ItemData> startingItems;
 
-        private NewInteractiveObject pendingInteraction;
+        private InteractiveObject pendingInteraction;
 
         public static Character instance;
 
@@ -39,7 +39,7 @@ namespace Yamigisa
             }
         }
 
-        public void SetPendingInteraction(NewInteractiveObject obj)
+        public void SetPendingInteraction(InteractiveObject obj)
         {
             pendingInteraction = obj;
 

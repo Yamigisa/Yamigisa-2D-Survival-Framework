@@ -8,7 +8,7 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, Component context)
         {
-            NewInteractiveObject InteractiveObject = context as NewInteractiveObject;
+            InteractiveObject InteractiveObject = context as InteractiveObject;
 
             ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
             Destroyable destroyable = InteractiveObject.GetComponent<Destroyable>();

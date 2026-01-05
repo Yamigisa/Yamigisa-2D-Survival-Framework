@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -26,6 +27,9 @@ namespace Yamigisa
         private bool hasItem;
         public bool HasItem => hasItem;
 
+        // 🔧 FIX: block click-through after pickup
+        private bool blockNextClick;
+
         private void Start()
         {
             amountText.text = "";
@@ -49,6 +53,10 @@ namespace Yamigisa
         {
             ItemData = data;
             hasItem = true;
+
+            // 🔧 FIX: prevent same-frame click
+            blockNextClick = true;
+            StartCoroutine(UnblockClickNextFrame());
 
             icon.enabled = true;
             icon.sprite = data.iconInventory;
@@ -80,6 +88,12 @@ namespace Yamigisa
             }
         }
 
+        private IEnumerator UnblockClickNextFrame()
+        {
+            yield return null;
+            blockNextClick = false;
+        }
+
         private void InitializeAction(ActionBase action, int index)
         {
             if (action == null) return;
@@ -101,6 +115,8 @@ namespace Yamigisa
 
         public void ShowButton()
         {
+            // 🔧 FIX: ignore click-through
+            if (blockNextClick) return;
             if (buttonContainer == null) return;
 
             buttonContainer.gameObject.SetActive(true);
