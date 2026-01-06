@@ -23,7 +23,21 @@ namespace Yamigisa
         [Header("Quick Inventory")]
         [SerializeField] private int quickSlotCount = 8;
         [SerializeField] private Transform quickInventoryContent;
-        private List<ItemSlot> quickItemSlotSlots = new List<ItemSlot>();
+        private List<ItemSlot> quickItemSlot = new List<ItemSlot>();
+
+        [Header("Quick Slot Scroll")]
+        [SerializeField] private bool CanScrollUsingScrollWheel = true;
+
+        [Header("Inventory Sorting")]
+        [SerializeField]
+        private List<ItemType> inventorySortOrder = new List<ItemType>()
+        {
+            ItemType.Equipment,
+            ItemType.Consumable,
+            ItemType.Resource
+        };
+
+        [SerializeField] private Button sortButton;
 
         [Header("Tooltip Panel")]
         [SerializeField] private bool showTooltipPanel = true;
@@ -32,9 +46,9 @@ namespace Yamigisa
         [SerializeField] private Text itemDescriptionText;
 
         [Header("Drag & Drop")]
-        [SerializeField] private Canvas rootCanvas;
-        [SerializeField] private GraphicRaycaster raycaster;
         [SerializeField] private float holdToPickSeconds = 0.25f;
+        private Canvas rootCanvas;
+        private GraphicRaycaster raycaster;
 
         private int selectedQuickIndex = -1;
 
@@ -58,7 +72,6 @@ namespace Yamigisa
 
         private bool isUsingSlot;
 
-        // ===== Inventory change event (for Crafting UI etc.) =====
         public static event System.Action OnChanged;
         private static void NotifyChanged()
         {
@@ -71,20 +84,18 @@ namespace Yamigisa
         {
             if (Instance == null) Instance = this;
             else { Destroy(gameObject); return; }
-
-            // Ensure we can read starting items
-            if (Character == null) Character = FindObjectOfType<Character>();
         }
 
         private void Start()
         {
-            if (controls == null) controls = FindObjectOfType<CharacterControls>();
+            Character = Character.instance.GetCharacter();
+            controls = Character.characterControls;
+
             if (rootCanvas == null && inventoryPanel != null)
                 rootCanvas = inventoryPanel.GetComponentInParent<Canvas>();
             if (raycaster == null && rootCanvas != null)
                 raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
 
-            // Build main inventory slots
             ItemSlotSlots.Clear();
             for (int i = 0; i < maxItems; i++)
             {
@@ -92,60 +103,66 @@ namespace Yamigisa
                 ItemSlotSlots.Add(newSlot);
             }
 
-            // Build quick slots
-            quickItemSlotSlots.Clear();
+            quickItemSlot.Clear();
             for (int i = 0; i < quickSlotCount; i++)
             {
                 ItemSlot quickSlot = Instantiate(ItemSlotPrefab, quickInventoryContent);
+                quickItemSlot.Add(quickSlot);
                 quickSlot.MarkAsQuickSlot(true);
-                quickItemSlotSlots.Add(quickSlot);
             }
 
-            // Seed starting items
             SetStartingItems();
 
-            // Select first quick slot
-            if (quickItemSlotSlots.Count > 0)
+            if (quickItemSlot.Count > 0)
             {
                 selectedQuickIndex = 0;
                 SelectQuickSlot(selectedQuickIndex);
                 UpdateQuickIndicators();
             }
 
-            // Force a late broadcast next frame so any late-subscribing UIs (e.g. CraftingInterface)
-            // will refresh counts including starting items.
             StartCoroutine(BroadcastInventoryChangedNextFrame());
+
+            sortButton.onClick.AddListener(() => { SortInventory(); });
         }
 
         private IEnumerator BroadcastInventoryChangedNextFrame()
         {
-            yield return null; // wait one frame (after all Start calls)
+            yield return null;
             NotifyChanged();
         }
 
         private void Update()
         {
-            if (controls == null) return;
-
-            // Toggle Inventory
             if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
             {
                 if (inventoryPanel != null && inventoryPanel.activeSelf) HideInventory();
                 else ShowInventory();
             }
 
-            // Quick slot number keys (work even when inventory is closed)
-            for (int i = 0; i < quickItemSlotSlots.Count; i++)
+            for (int i = 0; i < quickItemSlot.Count; i++)
             {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                     SelectQuickSlot(i);
             }
 
-            // Use selected quick slot (e.g., E)
+            if (CanScrollUsingScrollWheel && quickItemSlot.Count > 0)
+            {
+                float scroll = Input.mouseScrollDelta.y;
+                if (scroll != 0f)
+                {
+                    int dir = scroll > 0f ? 1 : -1;
+                    int next = selectedQuickIndex + dir;
+
+                    if (next < 0) next = quickItemSlot.Count - 1;
+                    else if (next >= quickItemSlot.Count) next = 0;
+
+                    SelectQuickSlot(next);
+                }
+            }
+
             if (!isDragging && controls.IsAnyKeyPressedDown(controls.useItemKey) && selectedQuickIndex >= 0)
                 UseQuickSlot(selectedQuickIndex);
 
-            // Stop here if inventory closed (drag/tooltip only when open)
             if (!IsInventoryOpen)
             {
                 CancelPendingPick();
@@ -153,11 +170,15 @@ namespace Yamigisa
                 return;
             }
 
-            // Drag
+            // ===================== DRAG DRIVER (RESTORED) =====================
+
             if (isDragging)
             {
                 UpdateDragIconPosition();
-                if (Input.GetMouseButtonUp(0)) CompleteDragAtCursor();
+
+                if (Input.GetMouseButtonUp(0))
+                    CompleteDragAtCursor();
+
                 return;
             }
 
@@ -181,27 +202,8 @@ namespace Yamigisa
                 }
             }
 
-            if (Input.GetMouseButtonUp(0)) CancelPendingPick();
-
-            // Tooltip follows cursor when open
-            if (showTooltipPanel && tooltipPanel != null && tooltipPanel.activeSelf)
-            {
-                Vector2 pos;
-                RectTransform canvasRT = inventoryPanel != null
-                    ? inventoryPanel.GetComponentInParent<Canvas>().transform as RectTransform
-                    : null;
-
-                if (canvasRT != null)
-                {
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        canvasRT,
-                        Input.mousePosition,
-                        null,
-                        out pos);
-                    RectTransform tprt = tooltipPanel.GetComponent<RectTransform>();
-                    if (tprt != null) tprt.anchoredPosition = pos + new Vector2(0f, 30f);
-                }
-            }
+            if (Input.GetMouseButtonUp(0))
+                CancelPendingPick();
         }
 
         private void CancelPendingPick()
@@ -213,15 +215,14 @@ namespace Yamigisa
 
         private void SelectQuickSlot(int index)
         {
-            if (index < 0 || index >= quickItemSlotSlots.Count) return;
             selectedQuickIndex = index;
             UpdateQuickIndicators();
         }
 
         private void UpdateQuickIndicators()
         {
-            for (int i = 0; i < quickItemSlotSlots.Count; i++)
-                quickItemSlotSlots[i].SetSelectedVisual(i == selectedQuickIndex);
+            for (int i = 0; i < quickItemSlot.Count; i++)
+                quickItemSlot[i].SetSelectedVisual(i == selectedQuickIndex);
         }
 
         public void ShowInventory() { if (inventoryPanel != null) inventoryPanel.SetActive(true); }
@@ -232,6 +233,7 @@ namespace Yamigisa
             if (isDragging) CancelDrag();
         }
 
+
         // ===================== ADD / REMOVE =====================
 
         public void AddItem(ItemData data, int amountToAdd = 1)
@@ -239,7 +241,7 @@ namespace Yamigisa
             if (data == null || amountToAdd <= 0) return;
 
             // Try stack in quick
-            if (data.isStackable && TryStackInList(quickItemSlotSlots, data, amountToAdd))
+            if (data.isStackable && TryStackInList(quickItemSlot, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
@@ -253,7 +255,7 @@ namespace Yamigisa
                 return;
             }
             // Empty in quick
-            if (TryPlaceInEmptySlot(quickItemSlotSlots, data, amountToAdd))
+            if (TryPlaceInEmptySlot(quickItemSlot, data, amountToAdd))
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
@@ -319,14 +321,11 @@ namespace Yamigisa
                     {
                         ActionBase action = actions[i];
                         if (action == null) continue;
+
+                        if (action is ActionDrop) continue;
+
                         action.DoAction(Character, slot);
                     }
-                }
-
-                // Only auto-consume stack for Consumables
-                if (slot.ItemData.itemType == ItemType.Consumable)
-                {
-                    ReduceSlotAmount(slot, 1);
                 }
 
                 UpdateQuickIndicators();
@@ -340,8 +339,8 @@ namespace Yamigisa
 
         private void UseQuickSlot(int index)
         {
-            if (index < 0 || index >= quickItemSlotSlots.Count) return;
-            ItemSlot quickSlot = quickItemSlotSlots[index];
+            if (index < 0 || index >= quickItemSlot.Count) return;
+            ItemSlot quickSlot = quickItemSlot[index];
             if (quickSlot.HasItem) UseSlot(quickSlot);
         }
 
@@ -375,6 +374,63 @@ namespace Yamigisa
             if (tooltipPanel != null) tooltipPanel.SetActive(false);
             if (itemNameText != null) itemNameText.text = "";
             if (itemDescriptionText != null) itemDescriptionText.text = "";
+        }
+
+        // ===================== SORT INVENTORY =====================
+
+        private struct SlotSnapshot
+        {
+            public ItemData data;
+            public int amount;
+        }
+
+        private int GetItemTypePriority(ItemType type)
+        {
+            if (inventorySortOrder == null) return int.MaxValue;
+            int index = inventorySortOrder.IndexOf(type);
+            return index >= 0 ? index : int.MaxValue;
+        }
+
+        public void SortInventory()
+        {
+            List<SlotSnapshot> items = new List<SlotSnapshot>();
+
+            for (int i = 0; i < ItemSlotSlots.Count; i++)
+            {
+                ItemSlot slot = ItemSlotSlots[i];
+                if (slot != null && slot.HasItem && slot.ItemData != null)
+                {
+                    items.Add(new SlotSnapshot
+                    {
+                        data = slot.ItemData,
+                        amount = slot.Amount
+                    });
+                }
+            }
+
+            for (int i = 0; i < ItemSlotSlots.Count; i++)
+                ItemSlotSlots[i].ResetSlot();
+
+            items.Sort((a, b) =>
+            {
+                int typeCompare =
+                    GetItemTypePriority(a.data.itemType)
+                    .CompareTo(GetItemTypePriority(b.data.itemType));
+
+                if (typeCompare != 0)
+                    return typeCompare;
+
+                return string.Compare(
+                    a.data.itemName,
+                    b.data.itemName,
+                    System.StringComparison.OrdinalIgnoreCase
+                );
+            });
+
+            for (int i = 0; i < items.Count && i < ItemSlotSlots.Count; i++)
+                ItemSlotSlots[i].SetItem(items[i].data, items[i].amount);
+
+            NotifyChanged();
         }
 
         // ===================== DRAG & DROP =====================
@@ -438,6 +494,7 @@ namespace Yamigisa
                 NotifyChanged();
             }
         }
+
 
         private void CancelDrag()
         {
@@ -529,9 +586,9 @@ namespace Yamigisa
         public ItemSlot GetSelectedQuickSlot()
         {
             if (selectedQuickIndex < 0) return null;
-            if (selectedQuickIndex >= quickItemSlotSlots.Count) return null;
+            if (selectedQuickIndex >= quickItemSlot.Count) return null;
 
-            ItemSlot slot = quickItemSlotSlots[selectedQuickIndex];
+            ItemSlot slot = quickItemSlot[selectedQuickIndex];
             return slot;
         }
 
@@ -552,9 +609,9 @@ namespace Yamigisa
         public bool HasGroup(GroupData group)
         {
             if (group == null) return false;
-            for (int i = 0; i < quickItemSlotSlots.Count; i++)
+            for (int i = 0; i < quickItemSlot.Count; i++)
             {
-                var slot = quickItemSlotSlots[i];
+                var slot = quickItemSlot[i];
                 if (slot == null || !slot.HasItem || slot.ItemData == null) continue;
                 var groups = slot.ItemData.groups;
                 if (groups != null && groups.Contains(group))
@@ -580,8 +637,7 @@ namespace Yamigisa
 
         private void SetStartingItems()
         {
-            if (Character == null) Character = FindObjectOfType<Character>();
-            if (Character == null) return;
+
             if (Character.startingItems == null || Character.startingItems.Count == 0) return;
 
             for (int i = 0; i < Character.startingItems.Count; i++)
@@ -596,8 +652,8 @@ namespace Yamigisa
 
         private IEnumerable<ItemSlot> AllSlots()
         {
-            for (int i = 0; i < quickItemSlotSlots.Count; i++)
-                yield return quickItemSlotSlots[i];
+            for (int i = 0; i < quickItemSlot.Count; i++)
+                yield return quickItemSlot[i];
             for (int i = 0; i < ItemSlotSlots.Count; i++)
                 yield return ItemSlotSlots[i];
         }

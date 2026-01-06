@@ -27,14 +27,12 @@ namespace Yamigisa
         private bool hasItem;
         public bool HasItem => hasItem;
 
-        // 🔧 FIX: block click-through after pickup
         private bool blockNextClick;
 
         private void Start()
         {
             amountText.text = "";
             slotButton.onClick.AddListener(ShowButton);
-
             buttonContainer.gameObject.SetActive(false);
         }
 
@@ -45,8 +43,10 @@ namespace Yamigisa
 
         public void SetSelectedVisual(bool selected)
         {
-            if (slotButton && slotButton.image)
-                slotButton.image.color = selected ? selectedColor : normalColor;
+            if (slotButton == null || slotButton.image == null) return;
+
+            slotButton.image.enabled = true;
+            slotButton.image.color = selected ? selectedColor : normalColor;
         }
 
         public void SetItem(ItemData data, int _amount = 1)
@@ -54,7 +54,6 @@ namespace Yamigisa
             ItemData = data;
             hasItem = true;
 
-            // 🔧 FIX: prevent same-frame click
             blockNextClick = true;
             StartCoroutine(UnblockClickNextFrame());
 
@@ -109,19 +108,26 @@ namespace Yamigisa
             InteractiveObjectButton.Button.onClick.RemoveAllListeners();
             InteractiveObjectButton.Button.onClick.AddListener(() =>
             {
-                action.DoAction(Inventory.Instance.Character, this);
+                action.DoAction(Character.instance.GetCharacter(), this);
             });
         }
 
         public void ShowButton()
         {
-            // 🔧 FIX: ignore click-through
             if (blockNextClick) return;
             if (buttonContainer == null) return;
 
+            if (buttonContainer.gameObject.activeSelf)
+            {
+                HideButton();
+                return;
+            }
+
             buttonContainer.gameObject.SetActive(true);
 
-            int count = ItemData != null && ItemData.itemActions != null ? ItemData.itemActions.Count : 0;
+            int count = ItemData != null && ItemData.itemActions != null
+                ? ItemData.itemActions.Count
+                : 0;
 
             for (int i = 0; i < buttonContainer.childCount; i++)
             {

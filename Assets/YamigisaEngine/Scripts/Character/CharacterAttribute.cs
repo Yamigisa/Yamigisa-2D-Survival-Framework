@@ -8,6 +8,7 @@ namespace Yamigisa
         [SerializeField] private List<AttributeData> AttributeData;
         private AttributeUI attributeUI;
 
+        [System.Obsolete]
         void Start()
         {
             attributeUI = FindObjectOfType<AttributeUI>();

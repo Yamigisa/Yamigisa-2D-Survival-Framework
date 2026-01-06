@@ -32,15 +32,15 @@ namespace Yamigisa
             }
         }
 
-        public void ShowInteractiveObjectText(List<ActionBase> action)
+        public void ShowInteractiveObjectText(InteractiveObject interactiveObject)
         {
             InteractiveObjectTextGameObject.SetActive(true);
-            for (int i = 0; i < InteractiveObjectTexts.Count; i++)
+            for (int i = 0; i < interactiveObject.Actions.Count; i++)
             {
-                if (i < action.Count)
+                if (i < interactiveObject.Actions.Count)
                 {
                     InteractiveObjectTexts[i].gameObject.SetActive(true);
-                    InteractiveObjectTexts[i].text = action[i].title;
+                    InteractiveObjectTexts[i].text = interactiveObject.Actions[i].title + " " + interactiveObject.name;
                 }
             }
         }

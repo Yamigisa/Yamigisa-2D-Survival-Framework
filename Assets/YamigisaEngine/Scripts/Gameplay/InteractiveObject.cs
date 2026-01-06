@@ -17,17 +17,15 @@ namespace Yamigisa
         [Header("Outline")]
         [SerializeField] private GameObject outlineObject;
 
-        private Character cachedCharacter;
 
         private void Start()
         {
             SetOutline(false);
-            cachedCharacter = FindObjectOfType<Character>();
         }
 
         private void OnMouseEnter()
         {
-            TextTooltip.Instance.ShowInteractiveObjectText(Actions);
+            TextTooltip.Instance.ShowInteractiveObjectText(this);
             SetOutline(true);
         }
 
@@ -40,18 +38,17 @@ namespace Yamigisa
         private void OnMouseDown()
         {
             if (IsPointerOverAnyUI()) return;
-            if (cachedCharacter == null) return;
 
-            if (IsCharacterInRange(cachedCharacter))
+            if (IsCharacterInRange(Character.instance.GetCharacter()))
             {
-                InteractObject(cachedCharacter);
+                InteractObject(Character.instance.GetCharacter());
             }
             else
             {
-                cachedCharacter.characterMovement
+                Character.instance.GetCharacter().characterMovement
                     .MoveTo(transform.position, interactRange);
 
-                cachedCharacter.SetPendingInteraction(this);
+                Character.instance.GetCharacter().SetPendingInteraction(this);
             }
         }
 

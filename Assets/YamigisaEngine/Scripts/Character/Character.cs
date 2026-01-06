@@ -10,6 +10,7 @@ namespace Yamigisa
         [HideInInspector] public CharacterAttribute characterAttribute;
         [HideInInspector] public CharacterMovement characterMovement;
         [HideInInspector] public CharacterCombat characterCombat;
+        [HideInInspector] public CharacterControls characterControls;
 
         [Header("Starting Items")]
         public List<ItemData> startingItems;
@@ -24,8 +25,14 @@ namespace Yamigisa
             characterAttribute = GetComponent<CharacterAttribute>();
             characterMovement = GetComponent<CharacterMovement>();
             characterCombat = GetComponent<CharacterCombat>();
+            characterControls = GetComponent<CharacterControls>();
 
             instance = this;
+        }
+
+        public Character GetCharacter()
+        {
+            return this;
         }
 
         private void Update()

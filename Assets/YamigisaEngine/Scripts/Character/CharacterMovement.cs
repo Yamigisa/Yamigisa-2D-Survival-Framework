@@ -47,7 +47,6 @@ namespace Yamigisa
         private int defaultLayer;
 
         [Header("Crouch")]
-        [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
         [SerializeField] private float crouchSpeedMultiplier = 0.45f;
         [SerializeField] private float crouchSpriteScale = 0.7f;
 
@@ -65,9 +64,10 @@ namespace Yamigisa
             StopAutoMove();
         }
 
-        private void Awake()
+        private void Start()
         {
-            characterControls = GetComponent<CharacterControls>();
+            characterControls = Character.instance.characterControls;
+
             defaultLayer = gameObject.layer;
             baseSpriteOffset = spriteRenderer.transform.localPosition;
             originalSpriteScale = spriteRenderer.transform.localScale;
