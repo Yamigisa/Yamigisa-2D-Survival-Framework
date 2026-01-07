@@ -15,7 +15,11 @@ MonoBehaviour:
   prefabFolder: Assets/YamigisaEngine/Prefabs
   prefabItemsFolder: Assets/YamigisaEngine/Prefabs/Items
   itemsFolder: Assets/YamigisaEngine/Resources/Items
+  prefabAnimalsFolder: Assets/YamigisaEngine/Prefabs/Animals
+  animalDataFolder: Assets/YamigisaEngine/Resources/Animals
   defaultItemActions:
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
   defaultInteractiveObjectActions:
   - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
+  defaultAnimalActions:
+  - {fileID: 11400000, guid: 0c65265a311c2e148a73ef05b7a89250, type: 2}

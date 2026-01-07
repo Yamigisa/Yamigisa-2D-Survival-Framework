@@ -21,6 +21,9 @@ namespace Yamigisa
         [Tooltip("Folder for item ScriptableObjects")]
         public string itemsFolder = "Assets/YamigisaEngine/Resources/Items";
 
+        [Header("Animal Folders")]
+        public string prefabAnimalsFolder = "Assets/YamigisaEngine/Prefabs/Animals";
+        public string animalDataFolder = "Assets/YamigisaEngine/Resources/Animals";
         // -------------------------------------------------------
 
         [Header("Default ItemData Actions")]
@@ -30,5 +33,8 @@ namespace Yamigisa
         [Header("Default Interactive Object Actions")]
         [Tooltip("Default actions assigned to the interactive object prefab (ScriptableObject)")]
         public ActionBase[] defaultInteractiveObjectActions;
+
+        [Header("Default Animal Interactive Actions")]
+        public ActionBase[] defaultAnimalActions;
     }
 }

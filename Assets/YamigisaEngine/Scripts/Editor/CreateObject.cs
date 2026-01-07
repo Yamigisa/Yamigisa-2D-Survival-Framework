@@ -9,7 +9,9 @@ namespace Yamigisa
     {
         Item,
         Destroyable,
+        Animal
     }
+
 
     public class CreateObjectWindow : EditorWindow
     {
@@ -21,8 +23,12 @@ namespace Yamigisa
         private ItemType itemType = ItemType.Resource;
         private int destroyableHP = 100;
 
+        private AnimalBehaviour animalBehaviour = AnimalBehaviour.Passive;
+        private Sprite animalSprite;
+
+
         // USER-SELECTABLE SETTINGS
-        private CreateObjectSettings settings;
+        public CreateObjectSettings settings;
 
         [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
         public static void Open()
@@ -65,26 +71,151 @@ namespace Yamigisa
                 return;
             }
 
+
             EditorGUILayout.Space(6);
 
             objectName = EditorGUILayout.TextField("Object Name", objectName);
             objectType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", objectType);
 
             if (objectType == ObjectType.Item)
+            {
                 itemType = (ItemType)EditorGUILayout.EnumPopup("Item Type", itemType);
-            else
+            }
+            else if (objectType == ObjectType.Destroyable || objectType == ObjectType.Animal)
+            {
                 destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
+            }
 
-            iconWorld = (Sprite)EditorGUILayout.ObjectField("Icon (World)", iconWorld, typeof(Sprite), false);
-            iconInventory = (Sprite)EditorGUILayout.ObjectField("Icon (Inventory)", iconInventory, typeof(Sprite), false);
+            if (objectType != ObjectType.Animal)
+            {
+                iconWorld = (Sprite)EditorGUILayout.ObjectField(
+                    "Icon (World)",
+                    iconWorld,
+                    typeof(Sprite),
+                    false
+                );
+
+                iconInventory = (Sprite)EditorGUILayout.ObjectField(
+                    "Icon (Inventory)",
+                    iconInventory,
+                    typeof(Sprite),
+                    false
+                );
+            }
 
             EditorGUILayout.Space(10);
 
-            if (GUILayout.Button("Create Prefab + ItemData"))
-                CreateAll();
+            if (objectType == ObjectType.Animal)
+            {
+                animalBehaviour = (AnimalBehaviour)EditorGUILayout.EnumPopup(
+                    "Animal Behaviour",
+                    animalBehaviour
+                );
+
+                animalSprite = (Sprite)EditorGUILayout.ObjectField(
+                    "Animal Sprite",
+                    animalSprite,
+                    typeof(Sprite),
+                    false
+                );
+            }
+
+            if (GUILayout.Button("Create Prefab + Data"))
+            {
+                if (objectType == ObjectType.Animal)
+                    CreateAnimal();
+                else
+                    CreateItemOrDestroyable();
+            }
         }
 
-        private void CreateAll()
+        private void CreateAnimal()
+        {
+            EnsureFolder(settings.prefabAnimalsFolder);
+            EnsureFolder(settings.animalDataFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+
+            // ---------- AnimalData ----------
+            var animalData = CreateInstance<AnimalData>();
+            animalData.behaviour = animalBehaviour;
+
+            string dataPath = $"{settings.animalDataFolder}/{safeName}.asset";
+            AssetDatabase.CreateAsset(animalData, dataPath);
+
+            // ---------- Root ----------
+            GameObject root = new GameObject(objectName);
+
+            var box = root.AddComponent<BoxCollider2D>();
+            var rb = root.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+            var interactive = root.AddComponent<InteractiveObject>();
+            if (settings.defaultAnimalActions != null &&
+                settings.defaultAnimalActions.Length > 0)
+            {
+                interactive.Actions =
+                    new System.Collections.Generic.List<ActionBase>(
+                        settings.defaultAnimalActions
+                    );
+            }
+            if (objectType == ObjectType.Item)
+            {
+                itemType = (ItemType)EditorGUILayout.EnumPopup("Item Type", itemType);
+            }
+            else if (objectType == ObjectType.Destroyable || objectType == ObjectType.Animal)
+            {
+                destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
+            }
+            var destroyable = root.AddComponent<Destroyable>();
+            destroyable.hp = destroyableHP;
+
+            var animal = root.AddComponent<Animal>();
+            animal.animalData = animalData;
+
+            var animator = root.AddComponent<Animator>();
+
+            // ---------- Visual ----------
+            GameObject visual = new GameObject("Visual");
+            visual.transform.SetParent(root.transform, false);
+
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = animalSprite;
+            sr.sortingLayerName = "NPC";
+            sr.sortingOrder = 0;
+
+            // ---------- Outline ----------
+            GameObject outline = new GameObject("Outline");
+            outline.transform.SetParent(root.transform, false);
+            outline.transform.localScale = Vector3.one * 1.3f;
+
+            var osr = outline.AddComponent<SpriteRenderer>();
+            osr.sprite = animalSprite;
+            osr.color = Color.black;
+            osr.sortingLayerName = "NPC";
+            osr.sortingOrder = -1;
+
+            outline.SetActive(false);
+
+            SerializedObject sio = new SerializedObject(interactive);
+            sio.FindProperty("outlineObject").objectReferenceValue = outline;
+            sio.ApplyModifiedPropertiesWithoutUndo();
+
+            // ---------- Prefab ----------
+            string prefabPath = $"{settings.prefabAnimalsFolder}/{safeName}.prefab";
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            DestroyImmediate(root);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+
+
+        private void CreateItemOrDestroyable()
         {
             EnsureFolder(settings.itemsFolder);
             EnsureFolder(settings.prefabItemsFolder);

@@ -8,9 +8,8 @@ public class Animal : MonoBehaviour
     [Header("Animal Data")]
     public AnimalData animalData;
 
-    [Header("Visuals")]
-    [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private Animator animator;
 
     [Header("Idle Animation Parameters")]
     [SerializeField] private string idleFront = "IdleFront";
@@ -166,13 +165,7 @@ public class Animal : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isDead)
-        {
-            rb.linearVelocity = Vector2.zero;
-            return;
-        }
-
-        if (isAttacking)
+        if (isDead || isAttacking)
         {
             rb.linearVelocity = Vector2.zero;
             return;
@@ -399,23 +392,24 @@ public class Animal : MonoBehaviour
 
     private void SetAnimation(AnimMode mode, Vector2 dir)
     {
-        if (animator == null) return;
+        if (animator.runtimeAnimatorController == null || animator == null) return;
 
         if (dir.sqrMagnitude > 0.0001f)
             lastAnimDir = dir.normalized;
 
-        animator.SetBool(idleFront, false);
-        animator.SetBool(idleBack, false);
-        animator.SetBool(idleSide, false);
-        animator.SetBool(wanderFront, false);
-        animator.SetBool(wanderBack, false);
-        animator.SetBool(wanderSide, false);
-        animator.SetBool(runFront, false);
-        animator.SetBool(runBack, false);
-        animator.SetBool(runSide, false);
-        animator.SetBool(attackFront, false);
-        animator.SetBool(attackBack, false);
-        animator.SetBool(attackSide, false);
+        SafeSetBool(idleFront, false);
+        SafeSetBool(idleBack, false);
+        SafeSetBool(idleSide, false);
+        SafeSetBool(wanderFront, false);
+        SafeSetBool(wanderBack, false);
+        SafeSetBool(wanderSide, false);
+        SafeSetBool(runFront, false);
+        SafeSetBool(runBack, false);
+        SafeSetBool(runSide, false);
+        SafeSetBool(attackFront, false);
+        SafeSetBool(attackBack, false);
+        SafeSetBool(attackSide, false);
+
 
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
@@ -449,6 +443,22 @@ public class Animal : MonoBehaviour
                 else if (lastAnimDir.y > 0f) animator.SetBool(attackBack, true);
                 else animator.SetBool(attackFront, true);
                 break;
+        }
+    }
+
+    private void SafeSetBool(string param, bool value)
+    {
+        if (animator == null) return;
+        if (string.IsNullOrEmpty(param)) return;
+
+        for (int i = 0; i < animator.parameters.Length; i++)
+        {
+            if (animator.parameters[i].type == AnimatorControllerParameterType.Bool &&
+                animator.parameters[i].name == param)
+            {
+                animator.SetBool(param, value);
+                return;
+            }
         }
     }
 

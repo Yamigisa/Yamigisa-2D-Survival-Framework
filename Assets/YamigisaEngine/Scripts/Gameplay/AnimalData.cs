@@ -32,8 +32,8 @@ namespace Yamigisa
         public AnimalBehaviour behaviour = AnimalBehaviour.Passive;
 
         [Header("Move")]
-        public float wanderSpeed = 2f;
-        public float runSpeed = 3.5f;
+        public float wanderSpeed = 1f;
+        public float runSpeed = 2f;
         public float wanderRange = 10f;
         public float wanderInterval = 5f;
         public float continueWander = 1.5f;
