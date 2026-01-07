@@ -29,9 +29,13 @@ namespace Yamigisa
 
         private bool blockNextClick;
 
+        private static ItemSlot currentlyOpenSlot;
+
         private void Start()
         {
-            amountText.text = "";
+            if (!hasItem)
+                amountText.text = "";
+
             slotButton.onClick.AddListener(ShowButton);
             buttonContainer.gameObject.SetActive(false);
         }
@@ -70,7 +74,7 @@ namespace Yamigisa
             {
                 int cap = Mathf.Max(1, data.maxAmount);
                 Amount = Mathf.Clamp(_amount, 1, cap);
-                amountText.text = Amount <= 1 ? "" : $"{Amount}";
+                amountText.text = _amount > 1 ? $"{Amount}" : "";
             }
 
             int index = 0;
@@ -109,6 +113,7 @@ namespace Yamigisa
             InteractiveObjectButton.Button.onClick.AddListener(() =>
             {
                 action.DoAction(Character.instance.GetCharacter(), this);
+                HideButton();
             });
         }
 
@@ -117,6 +122,13 @@ namespace Yamigisa
             if (blockNextClick) return;
             if (buttonContainer == null) return;
 
+            // If another slot is open, close it
+            if (currentlyOpenSlot != null && currentlyOpenSlot != this)
+            {
+                currentlyOpenSlot.HideButton();
+            }
+
+            // Toggle this slot
             if (buttonContainer.gameObject.activeSelf)
             {
                 HideButton();
@@ -124,6 +136,7 @@ namespace Yamigisa
             }
 
             buttonContainer.gameObject.SetActive(true);
+            currentlyOpenSlot = this;
 
             int count = ItemData != null && ItemData.itemActions != null
                 ? ItemData.itemActions.Count
@@ -138,6 +151,9 @@ namespace Yamigisa
         private void HideButton()
         {
             buttonContainer.gameObject.SetActive(false);
+
+            if (currentlyOpenSlot == this)
+                currentlyOpenSlot = null;
         }
 
         public void DropItem(Vector3 spawnPoint, int amount)

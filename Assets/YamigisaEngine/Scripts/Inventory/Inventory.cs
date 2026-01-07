@@ -14,6 +14,9 @@ namespace Yamigisa
         [Header("Inventory Items")]
         [SerializeField] private ItemSlot ItemSlotPrefab;
 
+        [Header("Starting Items")]
+        public List<StartingItem> startingItems;
+
         private List<ItemSlot> ItemSlotSlots = new List<ItemSlot>();
 
         [Header("Inventory UI")]
@@ -322,7 +325,7 @@ namespace Yamigisa
                         ActionBase action = actions[i];
                         if (action == null) continue;
 
-                        if (action is ActionDrop) continue;
+                        if (action is ActionDrop || action is ActionSplit) continue;
 
                         action.DoAction(Character, slot);
                     }
@@ -335,6 +338,38 @@ namespace Yamigisa
             {
                 isUsingSlot = false;
             }
+        }
+
+        public bool TryPlaceSplit(ItemData data, int amount)
+        {
+            if (data == null || amount <= 0) return false;
+
+            // Try empty quick slots first
+            for (int i = 0; i < quickItemSlot.Count; i++)
+            {
+                ItemSlot slot = quickItemSlot[i];
+                if (slot != null && !slot.HasItem)
+                {
+                    slot.SetItem(data, amount);
+                    UpdateQuickIndicators();
+                    NotifyChanged();
+                    return true;
+                }
+            }
+
+            // Then try empty inventory slots
+            for (int i = 0; i < ItemSlotSlots.Count; i++)
+            {
+                ItemSlot slot = ItemSlotSlots[i];
+                if (slot != null && !slot.HasItem)
+                {
+                    slot.SetItem(data, amount);
+                    NotifyChanged();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void UseQuickSlot(int index)
@@ -637,14 +672,13 @@ namespace Yamigisa
 
         private void SetStartingItems()
         {
-
-            if (Character.startingItems == null || Character.startingItems.Count == 0) return;
-
-            for (int i = 0; i < Character.startingItems.Count; i++)
+            for (int i = 0; i < startingItems.Count; i++)
             {
-                ItemData data = Character.startingItems[i];
-                if (data == null) continue;
-                AddItem(data, 1);
+                StartingItem entry = startingItems[i];
+                if (entry == null || entry.item == null) continue;
+
+                int amount = Mathf.Max(1, entry.amount);
+                AddItem(entry.item, amount);
             }
         }
 
@@ -782,6 +816,13 @@ namespace Yamigisa
                 ReduceSlotAmount(slot, take);
                 remaining -= take;
             }
+        }
+
+        [System.Serializable]
+        public class StartingItem
+        {
+            public ItemData item;
+            public int amount = 1;
         }
     }
 }

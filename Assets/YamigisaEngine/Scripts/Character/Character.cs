@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -11,9 +10,6 @@ namespace Yamigisa
         [HideInInspector] public CharacterMovement characterMovement;
         [HideInInspector] public CharacterCombat characterCombat;
         [HideInInspector] public CharacterControls characterControls;
-
-        [Header("Starting Items")]
-        public List<ItemData> startingItems;
 
         private InteractiveObject pendingInteraction;
 
@@ -91,11 +87,6 @@ namespace Yamigisa
         public void TakeDamage(int damage)
         {
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, -damage);
-        }
-
-        public void DropItem()
-        {
-
         }
     }
 }

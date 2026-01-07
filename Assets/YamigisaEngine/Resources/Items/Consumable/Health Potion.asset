@@ -25,6 +25,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
   itemActions:
   - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
   increaseHealth: 10
   increaseHunger: 0
