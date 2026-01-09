@@ -517,19 +517,29 @@ namespace Yamigisa
                     success = true;
                 }
             }
+            else
+            {
+                // === DROP ITEM JIKA DILEPAS DI LUAR UI INVENTORY ===
+                if (dragOrigin != null && dragData != null)
+                {
+                    dragOrigin.DropItem(Character.transform.position, dragAmount);
+                    dragOrigin.ResetSlot();
+                    success = true;
+                }
+            }
 
             DestroyDragIcon();
             isDragging = false;
             dragOrigin = null;
             dragData = null;
             dragAmount = 0;
+
             if (success)
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
             }
         }
-
 
         private void CancelDrag()
         {
