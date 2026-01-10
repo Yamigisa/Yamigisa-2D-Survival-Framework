@@ -11,7 +11,9 @@ GameObject:
   - component: {fileID: 4946041535162556918}
   - component: {fileID: 449812824003244959}
   - component: {fileID: 8127085850869459272}
-  m_Layer: 0
+  - component: {fileID: 539810989405676748}
+  - component: {fileID: -7991481481541279186}
+  m_Layer: 7
   m_Name: Test Building
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,9 +95,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53b57d62c0e5f7540a9eefe332951b9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Placed: 0
   area:
     m_Position: {x: 0, y: 0, z: 0}
     m_Size: {x: 2, y: 2, z: 1}
+--- !u!114 &539810989405676748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 514889103609099034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactRange: 2
+  Actions:
+  - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
+  Groups: []
+  outlineObject: {fileID: 9157670783399652936}
+--- !u!114 &-7991481481541279186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 514889103609099034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a601ecd441d50c64bbfee64f8997341f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 1760bffca00e53744bb2bc5759686cc4, type: 2}
+  quantity: 1
 --- !u!1 &7687042249700369892
 GameObject:
   m_ObjectHideFlags: 0
@@ -106,7 +140,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5102368139001919989}
   - component: {fileID: 8264922548708527283}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -193,7 +227,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4318734459113336577}
   - component: {fileID: 2973827918552687602}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Outline
   m_TagString: Player
   m_Icon: {fileID: 0}

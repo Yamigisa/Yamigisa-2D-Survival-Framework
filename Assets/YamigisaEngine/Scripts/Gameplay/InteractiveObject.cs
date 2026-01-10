@@ -25,6 +25,9 @@ namespace Yamigisa
 
         private void OnMouseEnter()
         {
+            if (Character.instance.IsBusy)
+                return;
+
             TextTooltip.Instance.ShowInteractiveObjectText(this);
             SetOutline(true);
         }
@@ -37,6 +40,9 @@ namespace Yamigisa
 
         private void OnMouseDown()
         {
+            if (Character.instance.IsBusy)
+                return;
+
             if (IsPointerOverAnyUI()) return;
 
             if (IsCharacterInRange(Character.instance.GetCharacter()))

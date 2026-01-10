@@ -34,6 +34,9 @@ namespace Yamigisa
 
         public void ShowInteractiveObjectText(InteractiveObject interactiveObject)
         {
+            if (Character.instance.IsBusy)
+                return;
+
             InteractiveObjectTextGameObject.SetActive(true);
             for (int i = 0; i < interactiveObject.Actions.Count; i++)
             {

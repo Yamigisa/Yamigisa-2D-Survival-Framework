@@ -10,6 +10,7 @@ namespace Yamigisa
         [HideInInspector] public CharacterMovement characterMovement;
         [HideInInspector] public CharacterCombat characterCombat;
         [HideInInspector] public CharacterControls characterControls;
+        [HideInInspector] public bool IsBusy;
 
         private InteractiveObject pendingInteraction;
 

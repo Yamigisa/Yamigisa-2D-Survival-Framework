@@ -1,40 +1,55 @@
 using UnityEngine;
 
-public class Building : MonoBehaviour
+namespace Yamigisa
 {
-    public bool Placed;
-
-    [Header("Make sure Z is > 0 to be rendered above the ground tiles")]
-    public BoundsInt area;
-    private void Awake()
+    public class Building : MonoBehaviour
     {
-        if (area.size == Vector3Int.zero)
-        {
-            area = new BoundsInt(Vector3Int.zero, Vector3Int.one);
-        }
-    }
+        public bool Placed;
 
-    public bool CanBePlaced()
-    {
-        Vector3Int positionInt = GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
-        BoundsInt areaTemp = area;
-        areaTemp.position = positionInt;
+        [Header("Make sure Z is > 0 to be rendered above the ground tiles")]
+        public BoundsInt area;
+        private BoundsInt placedArea;
 
-        if (GridBuildingSystem.instance.CanTakeArea(areaTemp))
+        private void Awake()
         {
-            return true;
+            if (area.size == Vector3Int.zero)
+            {
+                area = new BoundsInt(Vector3Int.zero, Vector3Int.one);
+            }
         }
 
-        return false;
-    }
+        private void OnDestroy()
+        {
+            if (!Placed) return;
+            if (GridBuildingSystem.instance == null) return;
 
-    public void Place()
-    {
-        Vector3Int positionInt = GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
-        BoundsInt areaTemp = area;
-        areaTemp.position = positionInt;
+            GridBuildingSystem.instance.ReleaseArea(placedArea);
+        }
 
-        Placed = true;
-        GridBuildingSystem.instance.TakeArea(areaTemp);
+        public bool CanBePlaced()
+        {
+            Vector3Int positionInt = GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
+            BoundsInt areaTemp = area;
+            areaTemp.position = positionInt;
+
+            if (GridBuildingSystem.instance.CanTakeArea(areaTemp))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Place()
+        {
+            Vector3Int positionInt = GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
+            BoundsInt areaTemp = area;
+            areaTemp.position = positionInt;
+
+            Placed = true;
+            placedArea = areaTemp;
+
+            GridBuildingSystem.instance.TakeArea(areaTemp);
+        }
     }
 }

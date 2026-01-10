@@ -2196,6 +2196,10 @@ MonoBehaviour:
   whiteTile: {fileID: 11400000, guid: 77b407678cfb1f6478314747044539af, type: 2}
   greenTile: {fileID: 11400000, guid: 7d037f23c9e7ac8438afeb54ddda2ade, type: 2}
   redTile: {fileID: 11400000, guid: 8ebe9dd3b168350459bb37c95c43e9ca, type: 2}
+  buildGridSize: {x: 10, y: 10}
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &458142822
 GameObject:
   m_ObjectHideFlags: 0
@@ -3366,8 +3370,8 @@ MonoBehaviour:
   maxItems: 32
   ItemSlotPrefab: {fileID: 5537749630050215522, guid: c37e1fd079dc1734eba7dbb464725b75, type: 3}
   startingItems:
-  - item: {fileID: 11400000, guid: 7b2410fbb683fb3488b06e330b02b474, type: 2}
-    amount: 4
+  - item: {fileID: 11400000, guid: 1760bffca00e53744bb2bc5759686cc4, type: 2}
+    amount: 1
   inventoryContent: {fileID: 1685840948}
   inventoryPanel: {fileID: 203244083}
   quickSlotCount: 8
