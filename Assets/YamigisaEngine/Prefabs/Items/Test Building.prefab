@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8127085850869459272}
   - component: {fileID: 539810989405676748}
   - component: {fileID: -7991481481541279186}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Test Building
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 514889103609099034}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.5, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -140,7 +140,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5102368139001919989}
   - component: {fileID: 8264922548708527283}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Visual
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -227,7 +227,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4318734459113336577}
   - component: {fileID: 2973827918552687602}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Outline
   m_TagString: Player
   m_Icon: {fileID: 0}

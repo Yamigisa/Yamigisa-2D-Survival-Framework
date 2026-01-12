@@ -7,7 +7,10 @@ namespace Yamigisa
 {
     public class GridBuildingSystem : MonoBehaviour
     {
+        [Header("Grid")]
         public GridLayout gridLayout;
+
+        [Header("Tilemap")]
         public Tilemap mainTilemap;
         public Tilemap TempTilemap;
 
@@ -19,7 +22,7 @@ namespace Yamigisa
         [Header("Grid Size")]
         [SerializeField] private Vector2Int buildGridSize = new Vector2Int(10, 10);
 
-        [SerializeField] private LayerMask blockingLayers;
+        //[SerializeField] private LayerMask blockingLayers;
 
         private bool buildMode;
         private BoundsInt buildBounds;
@@ -273,11 +276,11 @@ namespace Yamigisa
             filter.useTriggers = false;
 
             // If you assigned blockingLayers, use it. If not, it will check everything.
-            if (blockingLayers.value != 0)
-            {
-                filter.useLayerMask = true;
-                filter.layerMask = blockingLayers;
-            }
+            // if (blockingLayers.value != 0)
+            // {
+            //     filter.useLayerMask = true;
+            //     filter.layerMask = blockingLayers;
+            // }
 
             Collider2D[] hits2D = new Collider2D[32];
             int count2D = Physics2D.OverlapBox(center, sizeWorld, 0f, filter, hits2D);
@@ -306,13 +309,28 @@ namespace Yamigisa
                 if (temp != null && hit.transform.IsChildOf(temp.transform)) continue;
 
                 // if you want to filter 3D layers too, check blockingLayers here:
-                if (blockingLayers.value != 0 && ((blockingLayers.value & (1 << hit.gameObject.layer)) == 0))
-                    continue;
+                // if (blockingLayers.value != 0 && ((blockingLayers.value & (1 << hit.gameObject.layer)) == 0))
+                //     continue;
 
                 return true;
             }
 
             return false;
+        }
+
+        public Vector3 GetCellCenterWorld(BoundsInt area)
+        {
+            Vector3Int cellPos = area.position;
+
+            Vector3 basePos = gridLayout.CellToWorld(cellPos);
+
+            Vector3 offset = new Vector3(
+                area.size.x * 0.5f,
+                area.size.y * 0.5f,
+                0f
+            );
+
+            return basePos + offset;
         }
 
         private static TileBase[] GetTilesBlock(BoundsInt area, Tilemap tilemap)

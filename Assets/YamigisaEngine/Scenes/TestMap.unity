@@ -2158,7 +2158,7 @@ Grid:
   m_GameObject: {fileID: 433939329}
   m_Enabled: 1
   m_CellSize: {x: 1, y: 1, z: 0}
-  m_CellGap: {x: 0.1, y: 0.1, z: 0}
+  m_CellGap: {x: 0.2, y: 0.2, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
 --- !u!4 &433939331
@@ -2172,7 +2172,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1607075067}
   - {fileID: 346122020}
@@ -2197,9 +2197,6 @@ MonoBehaviour:
   greenTile: {fileID: 11400000, guid: 7d037f23c9e7ac8438afeb54ddda2ade, type: 2}
   redTile: {fileID: 11400000, guid: 8ebe9dd3b168350459bb37c95c43e9ca, type: 2}
   buildGridSize: {x: 10, y: 10}
-  blockingLayers:
-    serializedVersion: 2
-    m_Bits: 128
 --- !u!1 &458142822
 GameObject:
   m_ObjectHideFlags: 0
@@ -3371,7 +3368,7 @@ MonoBehaviour:
   ItemSlotPrefab: {fileID: 5537749630050215522, guid: c37e1fd079dc1734eba7dbb464725b75, type: 3}
   startingItems:
   - item: {fileID: 11400000, guid: 1760bffca00e53744bb2bc5759686cc4, type: 2}
-    amount: 1
+    amount: 2
   inventoryContent: {fileID: 1685840948}
   inventoryPanel: {fileID: 203244083}
   quickSlotCount: 8
