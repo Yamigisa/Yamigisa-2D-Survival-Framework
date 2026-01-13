@@ -7,6 +7,9 @@ namespace Yamigisa
 {
     public class GridBuildingSystem : MonoBehaviour
     {
+        [Header("Mode")]
+        public bool useGrid = true; // <==== NEW: if false = free placement anywhere
+
         [Header("Grid")]
         public GridLayout gridLayout;
 
@@ -64,6 +67,50 @@ namespace Yamigisa
             if (!buildMode)
                 return;
 
+            // If we are not using grid -> FREE PLACEMENT MODE
+            if (!useGrid)
+            {
+                if (!temp || temp.Placed)
+                    return;
+
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                    return;
+
+                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                mouseWorld.z = temp.transform.position.z; // keep current Z
+                temp.transform.position = mouseWorld;
+
+                bool canPlace = !HasBlockingColliderWorld(temp);
+                temp.SetSpriteColor(canPlace);
+
+                // PLACE WITH LEFT CLICK (free)
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (HasBlockingColliderWorld(temp))
+                    {
+                        Debug.Log("Cannot place here (blocked by collider)");
+                        return;
+                    }
+
+                    temp.Place(); // Building.Place() will NOT snap/take area when useGrid=false
+                    temp = null;
+                    ExitBuildMode();
+                    return;
+                }
+
+                // CANCEL
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    Destroy(temp.gameObject);
+                    temp = null;
+                    ExitBuildMode();
+                    return;
+                }
+
+                return;
+            }
+
+            // ====== ORIGINAL GRID MODE (UNCHANGED BEHAVIOR) ======
             Vector3Int currentAnchorCell = gridLayout.WorldToCell(buildAnchor.position);
 
             if (currentAnchorCell != lastAnchorCell)
@@ -81,8 +128,8 @@ namespace Yamigisa
                 return;
 
             // === FOLLOW CURSOR ALWAYS ===
-            Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int cellPos = gridLayout.WorldToCell(mouseWorld);
+            Vector2 mouseWorldGrid = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int cellPos = gridLayout.WorldToCell(mouseWorldGrid);
 
             if (prevPos != cellPos)
             {
@@ -130,7 +177,9 @@ namespace Yamigisa
             temp = Instantiate(building, Vector3.zero, Quaternion.identity)
                 .GetComponent<Building>();
 
-            FollowBuilding();
+            // Only do grid preview if using grid
+            if (useGrid)
+                FollowBuilding();
         }
 
         private void ClearArea()
@@ -144,6 +193,9 @@ namespace Yamigisa
 
         private void FollowBuilding()
         {
+            // If not using grid, do nothing (no preview tiles)
+            if (!useGrid) return;
+
             ClearArea();
 
             temp.area.position = gridLayout.WorldToCell(temp.transform.position);
@@ -169,6 +221,10 @@ namespace Yamigisa
 
         public bool CanTakeArea(BoundsInt area)
         {
+            // If not using grid, grid rules are not applied
+            if (!useGrid)
+                return true;
+
             // optional: keep placement only inside current grid zone
             if (!buildBounds.Contains(area.min) || !buildBounds.Contains(area.max - Vector3Int.one))
                 return false;
@@ -187,6 +243,10 @@ namespace Yamigisa
 
         public void TakeArea(BoundsInt area)
         {
+            // If not using grid, do nothing
+            if (!useGrid)
+                return;
+
             foreach (var pos in area.allPositionsWithin)
             {
                 occupiedCells.Add(new Vector3Int(pos.x, pos.y, 0));
@@ -202,6 +262,10 @@ namespace Yamigisa
             Character.instance.IsBusy = true;
 
             buildMode = true;
+
+            // If not using grid -> don't show tilemaps / don't rebuild grid bounds
+            if (!useGrid)
+                return;
 
             mainTilemap.gameObject.SetActive(true);
             TempTilemap.gameObject.SetActive(true);
@@ -246,6 +310,17 @@ namespace Yamigisa
 
             buildMode = false;
 
+            // If not using grid -> just ensure maps are off and reset vars
+            if (!useGrid)
+            {
+                mainTilemap.gameObject.SetActive(false);
+                TempTilemap.gameObject.SetActive(false);
+
+                buildBounds = new BoundsInt();
+                prevArea = new BoundsInt();
+                return;
+            }
+
             SetTilesBlock(buildBounds, TileType.Empty, mainTilemap);
             SetTilesBlock(buildBounds, TileType.Empty, TempTilemap);
 
@@ -258,6 +333,10 @@ namespace Yamigisa
 
         public void ReleaseArea(BoundsInt area)
         {
+            // If not using grid, occupiedCells isn't used
+            if (!useGrid)
+                return;
+
             foreach (var pos in area.allPositionsWithin)
             {
                 occupiedCells.Remove(new Vector3Int(pos.x, pos.y, 0));
@@ -275,13 +354,6 @@ namespace Yamigisa
             var filter = new ContactFilter2D();
             filter.useTriggers = false;
 
-            // If you assigned blockingLayers, use it. If not, it will check everything.
-            // if (blockingLayers.value != 0)
-            // {
-            //     filter.useLayerMask = true;
-            //     filter.layerMask = blockingLayers;
-            // }
-
             Collider2D[] hits2D = new Collider2D[32];
             int count2D = Physics2D.OverlapBox(center, sizeWorld, 0f, filter, hits2D);
 
@@ -297,7 +369,6 @@ namespace Yamigisa
             }
 
             // ---- 3D CHECK (Collider) ----
-            // if your world uses 3D colliders, THIS is the missing piece.
             Collider[] hits3D = Physics.OverlapBox(center, sizeWorld * 0.5f, Quaternion.identity);
 
             for (int i = 0; i < hits3D.Length; i++)
@@ -308,11 +379,57 @@ namespace Yamigisa
                 // ignore preview
                 if (temp != null && hit.transform.IsChildOf(temp.transform)) continue;
 
-                // if you want to filter 3D layers too, check blockingLayers here:
-                // if (blockingLayers.value != 0 && ((blockingLayers.value & (1 << hit.gameObject.layer)) == 0))
-                //     continue;
-
                 return true;
+            }
+
+            return false;
+        }
+
+        // ===== NEW: World-space collider check for free placement =====
+        private bool HasBlockingColliderWorld(Building b)
+        {
+            if (b == null) return false;
+
+            // Use any collider found in children (3D)
+            Collider col3D = b.GetComponentInChildren<Collider>();
+            if (col3D != null)
+            {
+                Bounds bounds = col3D.bounds;
+                Collider[] hits = Physics.OverlapBox(bounds.center, bounds.extents, col3D.transform.rotation);
+
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    var hit = hits[i];
+                    if (hit == null) continue;
+
+                    // ignore self
+                    if (hit.transform.IsChildOf(b.transform)) continue;
+
+                    return true;
+                }
+            }
+
+            // Also support 2D colliders
+            Collider2D col2D = b.GetComponentInChildren<Collider2D>();
+            if (col2D != null)
+            {
+                Bounds bounds = col2D.bounds;
+                var filter = new ContactFilter2D();
+                filter.useTriggers = false;
+
+                Collider2D[] hits2D = new Collider2D[32];
+                int count2D = Physics2D.OverlapBox((Vector2)bounds.center, (Vector2)bounds.size, 0f, filter, hits2D);
+
+                for (int i = 0; i < count2D; i++)
+                {
+                    var hit = hits2D[i];
+                    if (hit == null) continue;
+
+                    // ignore self
+                    if (hit.transform.IsChildOf(b.transform)) continue;
+
+                    return true;
+                }
             }
 
             return false;

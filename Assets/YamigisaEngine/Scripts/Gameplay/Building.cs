@@ -11,6 +11,11 @@ namespace Yamigisa
         public BoundsInt area;
         private BoundsInt placedArea;
 
+        [Header("For non-grid placement mode")]
+        [SerializeField] private Color cantPlaceColor = Color.red;
+        [SerializeField] private Color defaultColor = Color.white;
+        private SpriteRenderer spriteRenderer;
+
         private void OnValidate()
         {
             if (area.size == Vector3Int.zero)
@@ -27,6 +32,8 @@ namespace Yamigisa
             {
                 area = new BoundsInt(Vector3Int.zero, Vector3Int.one);
             }
+
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
 
         private void OnDestroy()
@@ -34,25 +41,21 @@ namespace Yamigisa
             if (!Placed) return;
             if (GridBuildingSystem.instance == null) return;
 
+            // NEW: only release area if grid mode is used
+            if (!GridBuildingSystem.instance.useGrid) return;
+
             GridBuildingSystem.instance.ReleaseArea(placedArea);
-        }
-
-        public bool CanBePlaced()
-        {
-            Vector3Int positionInt = GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
-            BoundsInt areaTemp = area;
-            areaTemp.position = positionInt;
-
-            if (GridBuildingSystem.instance.CanTakeArea(areaTemp))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public void Place()
         {
+            // NEW: if not using grid, do not snap or take area
+            if (GridBuildingSystem.instance != null && !GridBuildingSystem.instance.useGrid)
+            {
+                Placed = true;
+                return;
+            }
+
             Vector3Int positionInt =
                 GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
 
@@ -73,6 +76,18 @@ namespace Yamigisa
             placedArea = areaTemp;
 
             GridBuildingSystem.instance.TakeArea(areaTemp);
+        }
+
+        public void SetSpriteColor(bool canPlace)
+        {
+            if (canPlace)
+            {
+                spriteRenderer.color = defaultColor;
+            }
+            else
+            {
+                spriteRenderer.color = cantPlaceColor;
+            }
         }
 
         private void OnDrawGizmos()
