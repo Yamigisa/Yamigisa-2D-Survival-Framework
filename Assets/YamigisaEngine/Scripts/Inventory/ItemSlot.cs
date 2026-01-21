@@ -2,8 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
-using Unity.Mathematics;
+using UnityEngine.Animations;
 
 namespace Yamigisa
 {
@@ -58,8 +57,8 @@ namespace Yamigisa
             ItemData = data;
             hasItem = true;
 
-            blockNextClick = true;
-            StartCoroutine(UnblockClickNextFrame());
+            //blockNextClick = true;
+            //StartCoroutine(UnblockClickNextFrame()); 
 
             icon.enabled = true;
             icon.sprite = data.iconInventory;
@@ -120,15 +119,37 @@ namespace Yamigisa
         public void ShowButton()
         {
             if (blockNextClick) return;
-            if (buttonContainer == null) return;
 
-            // If another slot is open, close it
+            if (ItemData == null) return;
+
+            bool isInMainInventory = transform.IsChildOf(Inventory.Instance.mainInventoryPanel.transform)
+                                  || transform.IsChildOf(Inventory.Instance.quickInventoryPanel.transform);
+
+            bool isInStorage = Inventory.Instance.currentStorage != null &&
+                               transform.IsChildOf(Inventory.Instance.currentStorage.inventoryStorage.transform);
+
+            if (Inventory.Instance.currentStorage != null && isInMainInventory)
+            {
+                Inventory.Instance.AddItem(ItemData, Amount, Inventory.Instance.currentStorage.inventoryStorage);
+                Inventory.Instance.ReduceSlotAmount(this, Amount);
+                Debug.Log("Transferred item to storage");
+                return;
+            }
+
+            // Storage is open and slot is in storage → move to inventory
+            if (Inventory.Instance.currentStorage != null && isInStorage)
+            {
+                Inventory.Instance.AddItem(ItemData, Amount); // defaults to main inventory
+                Inventory.Instance.ReduceSlotAmount(this, Amount);
+                Debug.Log("Transferred item to inventory");
+                return;
+            }
+
             if (currentlyOpenSlot != null && currentlyOpenSlot != this)
             {
                 currentlyOpenSlot.HideButton();
             }
 
-            // Toggle this slot
             if (buttonContainer.gameObject.activeSelf)
             {
                 HideButton();

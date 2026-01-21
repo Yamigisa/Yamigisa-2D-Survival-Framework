@@ -20,6 +20,10 @@ namespace Yamigisa
 
         [Header("Inventory / Items")]
         public List<KeyCode> craftingKey;
+
+        [Header("Cancel")]
+        public List<KeyCode> cancelKey;
+
         public bool IsAnyKeyPressed(List<KeyCode> keyList)
         {
             foreach (KeyCode key in keyList)
