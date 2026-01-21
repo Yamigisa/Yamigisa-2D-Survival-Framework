@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Storage
+  m_EditorClassIdentifier: 
+  itemPrefab: {fileID: 8179408358234063261, guid: c2fafd349d512e9429cbfb9aab5733d9, type: 3}
+  itemName: Storage
+  iconWorld: {fileID: -1237704566, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconInventory: {fileID: -1237704566, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  description: chess
+  itemType: 3
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 0
+  groups:
+  - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
+  itemActions:
+  - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
+  - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
+  increaseHealth: 0
+  increaseHunger: 0
+  increaseThirst: 0
+  damage: 0
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

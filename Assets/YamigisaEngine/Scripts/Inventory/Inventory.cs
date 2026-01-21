@@ -133,7 +133,7 @@ namespace Yamigisa
 
             StartCoroutine(BroadcastInventoryChangedNextFrame());
 
-            mainInventoryPanel.sortButton.onClick.AddListener(() => { SortInventory(); });
+            //mainInventoryPanel.sortButton.onClick.AddListener(() => { SortInventory(); });
             mainInventoryPanel.sortButton.gameObject.SetActive(true);
         }
 
@@ -142,7 +142,9 @@ namespace Yamigisa
             if (parent == null)
                 parent = mainInventoryTransform;
 
-            return Instantiate(inventoryPanelPrefab, parent);
+            InventoryPanel panel = Instantiate(inventoryPanelPrefab, parent);
+            panel.inventoryOwner = this;
+            return panel;
         }
 
         public ItemSlot CreateItemSlot(Transform parent = null)
@@ -151,6 +153,51 @@ namespace Yamigisa
                 parent = mainInventoryPanel.inventoryContent;
 
             return Instantiate(ItemSlotPrefab, parent);
+        }
+
+        public void SortPanel(InventoryPanel panel)
+        {
+            List<ItemSlot> slots = GetSlotListFromPanel(panel);
+            if (slots == null) return;
+
+            List<SlotSnapshot> items = new List<SlotSnapshot>();
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                ItemSlot slot = slots[i];
+                if (slot.HasItem && slot.ItemData != null)
+                {
+                    items.Add(new SlotSnapshot
+                    {
+                        data = slot.ItemData,
+                        amount = slot.Amount
+                    });
+                }
+            }
+
+            for (int i = 0; i < slots.Count; i++)
+                slots[i].ResetSlot();
+
+            items.Sort((a, b) =>
+            {
+                int typeCompare =
+                    GetItemTypePriority(a.data.itemType)
+                    .CompareTo(GetItemTypePriority(b.data.itemType));
+
+                if (typeCompare != 0)
+                    return typeCompare;
+
+                return string.Compare(
+                    a.data.itemName,
+                    b.data.itemName,
+                    System.StringComparison.OrdinalIgnoreCase
+                );
+            });
+
+            for (int i = 0; i < items.Count && i < slots.Count; i++)
+                slots[i].SetItem(items[i].data, items[i].amount);
+
+            NotifyChanged();
         }
 
         private IEnumerator BroadcastInventoryChangedNextFrame()
@@ -282,6 +329,15 @@ namespace Yamigisa
             if (data.isStackable && TryStackInList(targetList, data, amountToAdd))
             {
                 NotifyChanged();
+                return;
+            }
+
+            if (!data.isStackable && amountToAdd > 1)
+            {
+                for (int i = 0; i < amountToAdd; i++)
+                {
+                    AddItem(data, 1, panel);
+                }
                 return;
             }
 

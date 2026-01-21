@@ -34,7 +34,7 @@ namespace Yamigisa
 
         private static Dictionary<TileType, TileBase> tileBases = new Dictionary<TileType, TileBase>();
 
-        private Building temp;
+        private Placable temp;
         private Vector3 prevPos;
         private BoundsInt prevArea;
 
@@ -92,7 +92,7 @@ namespace Yamigisa
                         return;
                     }
 
-                    temp.Place(); // Building.Place() will NOT snap/take area when useGrid=false
+                    temp.Place(); // Placable.Place() will NOT snap/take area when useGrid=false
                     temp = null;
                     ExitBuildMode();
                     return;
@@ -150,7 +150,7 @@ namespace Yamigisa
                     return;
                 }
 
-                temp.Place();      // Building.Place() already calls TakeArea(areaTemp)
+                temp.Place();      // Placable.Place() already calls TakeArea(areaTemp)
                 temp = null;
                 ExitBuildMode();
                 return;
@@ -167,15 +167,15 @@ namespace Yamigisa
         }
 
 
-        public void InitializeBuilding(GameObject building)
+        public void InitializeBuilding(GameObject Placable)
         {
             if (buildMode)
                 ExitBuildMode();
 
             EnterBuildMode();
 
-            temp = Instantiate(building, Vector3.zero, Quaternion.identity)
-                .GetComponent<Building>();
+            temp = Instantiate(Placable, Vector3.zero, Quaternion.identity)
+                .GetComponent<Placable>();
 
             // Only do grid preview if using grid
             if (useGrid)
@@ -260,6 +260,8 @@ namespace Yamigisa
         public void EnterBuildMode()
         {
             Character.instance.IsBusy = true;
+
+            Inventory.Instance.HideInventory();
 
             buildMode = true;
 
@@ -386,7 +388,7 @@ namespace Yamigisa
         }
 
         // ===== NEW: World-space collider check for free placement =====
-        private bool HasBlockingColliderWorld(Building b)
+        private bool HasBlockingColliderWorld(Placable b)
         {
             if (b == null) return false;
 

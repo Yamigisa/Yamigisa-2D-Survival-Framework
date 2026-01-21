@@ -9,5 +9,18 @@ namespace Yamigisa
         public GameObject inventoryPanelGameObject;
         public Transform inventoryContent;
         public Button sortButton;
+
+        [HideInInspector]
+        public Inventory inventoryOwner;
+
+        private void OnEnable()
+        {
+            sortButton.onClick.RemoveAllListeners();
+            sortButton.onClick.AddListener(() =>
+            {
+                inventoryOwner.SortPanel(this);
+            });
+        }
     }
+
 }

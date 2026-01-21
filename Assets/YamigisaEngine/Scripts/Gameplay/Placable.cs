@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Yamigisa
 {
     [ExecuteAlways]
-    public class Building : MonoBehaviour
+    public class Placable : MonoBehaviour
     {
         public bool Placed;
 
