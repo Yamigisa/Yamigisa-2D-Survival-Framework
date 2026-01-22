@@ -34,7 +34,7 @@ namespace Yamigisa
 
         private static Dictionary<TileType, TileBase> tileBases = new Dictionary<TileType, TileBase>();
 
-        private Placable temp;
+        private Placeable temp;
         private Vector3 prevPos;
         private BoundsInt prevArea;
 
@@ -92,7 +92,7 @@ namespace Yamigisa
                         return;
                     }
 
-                    temp.Place(); // Placable.Place() will NOT snap/take area when useGrid=false
+                    temp.Place(); // Placeable.Place() will NOT snap/take area when useGrid=false
                     temp = null;
                     ExitBuildMode();
                     return;
@@ -150,7 +150,7 @@ namespace Yamigisa
                     return;
                 }
 
-                temp.Place();      // Placable.Place() already calls TakeArea(areaTemp)
+                temp.Place();      // Placeable.Place() already calls TakeArea(areaTemp)
                 temp = null;
                 ExitBuildMode();
                 return;
@@ -167,15 +167,15 @@ namespace Yamigisa
         }
 
 
-        public void InitializeBuilding(GameObject Placable)
+        public void InitializeBuilding(GameObject Placeable)
         {
             if (buildMode)
                 ExitBuildMode();
 
             EnterBuildMode();
 
-            temp = Instantiate(Placable, Vector3.zero, Quaternion.identity)
-                .GetComponent<Placable>();
+            temp = Instantiate(Placeable, Vector3.zero, Quaternion.identity)
+                .GetComponent<Placeable>();
 
             // Only do grid preview if using grid
             if (useGrid)
@@ -388,7 +388,7 @@ namespace Yamigisa
         }
 
         // ===== NEW: World-space collider check for free placement =====
-        private bool HasBlockingColliderWorld(Placable b)
+        private bool HasBlockingColliderWorld(Placeable b)
         {
             if (b == null) return false;
 

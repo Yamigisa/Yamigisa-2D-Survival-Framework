@@ -36,5 +36,16 @@ namespace Yamigisa
 
         [Header("Default Animal Interactive Actions")]
         public ActionBase[] defaultAnimalActions;
+
+        [Header("Default Placeable Actions")]
+        public PlaceableDefaultActions[] defaultPlaceableActions;
+
+    }
+
+    [System.Serializable]
+    public class PlaceableDefaultActions
+    {
+        public PlaceableType type;
+        public ActionBase[] actions;
     }
 }

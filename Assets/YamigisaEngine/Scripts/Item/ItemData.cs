@@ -49,7 +49,7 @@ namespace Yamigisa
         Resource,
         Equipment,
         Consumable,
-        Placable,
+        Placeable,
     }
 
     [System.Serializable]

@@ -9,9 +9,14 @@ namespace Yamigisa
     {
         Item,
         Destroyable,
-        Animal
+        Animal,
+        Placeable
     }
 
+    public enum PlaceableType
+    {
+        Storage,
+    }
 
     public class CreateObjectWindow : EditorWindow
     {
@@ -25,6 +30,8 @@ namespace Yamigisa
 
         private AnimalBehaviour animalBehaviour = AnimalBehaviour.Passive;
         private Sprite animalSprite;
+
+        private PlaceableType placeableType = PlaceableType.Storage;
 
 
         // USER-SELECTABLE SETTINGS
@@ -85,6 +92,13 @@ namespace Yamigisa
             {
                 destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
             }
+            else if (objectType == ObjectType.Placeable)
+            {
+                placeableType = (PlaceableType)EditorGUILayout.EnumPopup(
+                    "Placeable Type",
+                    placeableType
+                );
+            }
 
             if (objectType != ObjectType.Animal)
             {
@@ -124,9 +138,102 @@ namespace Yamigisa
             {
                 if (objectType == ObjectType.Animal)
                     CreateAnimal();
+                else if (objectType == ObjectType.Placeable)
+                    CreatePlaceable();
                 else
                     CreateItemOrDestroyable();
             }
+
+        }
+
+        private void CreatePlaceable()
+        {
+            EnsureFolder(settings.itemsFolder);
+            EnsureFolder(settings.prefabItemsFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+
+            // ---------- ITEM DATA (SCRIPTABLE OBJECT) ----------
+            var so = CreateInstance<ItemData>();
+            so.itemName = objectName;
+            so.iconWorld = iconWorld;
+            so.iconInventory = iconInventory;
+            so.itemType = ItemType.Placeable;
+
+            string soPath = $"{settings.itemsFolder}/{safeName}.asset";
+            AssetDatabase.CreateAsset(so, soPath);
+
+            // ---------- ROOT ----------
+            GameObject root = new GameObject(objectName);
+            root.AddComponent<BoxCollider2D>();
+
+            var interactive = root.AddComponent<InteractiveObject>();
+            var placeable = root.AddComponent<Placeable>();
+
+            // ---------- VISUAL ----------
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(root.transform, false);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = iconWorld;
+            sr.sortingLayerName = "Object";
+            sr.sortingOrder = 0;
+
+            // ---------- OUTLINE ----------
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(root.transform, false);
+            outline.transform.localScale = Vector3.one * 1.3f;
+            var osr = outline.AddComponent<SpriteRenderer>();
+            osr.sprite = iconWorld;
+            osr.color = Color.black;
+            osr.sortingLayerName = "Object";
+            osr.sortingOrder = -1;
+            outline.SetActive(false);
+
+            SerializedObject sio = new SerializedObject(interactive);
+            sio.FindProperty("outlineObject").objectReferenceValue = outline;
+            sio.ApplyModifiedPropertiesWithoutUndo();
+
+            // ---------- PLACEABLE TYPE DISPATCH ----------
+            switch (placeableType)
+            {
+                case PlaceableType.Storage:
+                    root.AddComponent<Storage>();
+                    break;
+            }
+
+            // ---------- DEFAULT ACTIONS ----------
+            if (settings.defaultPlaceableActions != null)
+            {
+                foreach (var entry in settings.defaultPlaceableActions)
+                {
+                    if (entry.type == placeableType)
+                    {
+                        interactive.Actions =
+                            new System.Collections.Generic.List<ActionBase>(entry.actions);
+                        break;
+                    }
+                }
+            }
+
+            // ---------- ITEM COMPONENT ----------
+            var item = root.AddComponent<Item>();
+            item.itemData = so;
+            item.quantity = 1;
+
+            // ---------- SAVE PREFAB ----------
+            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            DestroyImmediate(root);
+
+            // Link prefab back to ItemData
+            so.itemPrefab = prefab;
+            EditorUtility.SetDirty(so);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
         }
 
         private void CreateAnimal()
