@@ -59,6 +59,8 @@ namespace Yamigisa
 
         public bool IsAutoMoving => isAutoMoving;
 
+        public bool canMove;
+
         public void StopAutoMoveExternal()
         {
             StopAutoMove();
@@ -81,6 +83,8 @@ namespace Yamigisa
 
         private void Update()
         {
+            if (!canMove) return;
+
             HandleSprint();
             HandleCrouch();
             HandleJump();

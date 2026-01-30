@@ -13,7 +13,6 @@ namespace Yamigisa
 
             if (craftingPlaceable == null) return;
 
-            Debug.Log("Did i click this shit");
             craftingPlaceable.ActivateCrafting();
         }
     }

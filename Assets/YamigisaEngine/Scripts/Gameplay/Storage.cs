@@ -20,6 +20,7 @@ namespace Yamigisa
         {
             if (Inventory.Instance.currentStorage != null) return;
 
+            Character.instance.DisableMovements();
             // Seed once
             if (!initialized)
             {
@@ -31,7 +32,7 @@ namespace Yamigisa
             Inventory.Instance.currentStorage = this;
             inventoryStorage = Inventory.Instance.CreateInventoryPanel();
             inventoryStorage.sortButton.gameObject.SetActive(true);
-            
+
             itemSlots.Clear();
 
             for (int i = 0; i < storageSize; i++)
@@ -77,6 +78,7 @@ namespace Yamigisa
                 Destroy(inventoryStorage.gameObject);
             }
 
+            Character.instance.EnableMovements();
             Inventory.Instance.currentStorage = null;
             Inventory.Instance.HideInventory();
         }

@@ -89,5 +89,15 @@ namespace Yamigisa
         {
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, -damage);
         }
+
+        public void DisableMovements()
+        {
+            characterMovement.canMove = false;
+        }
+
+        public void EnableMovements()
+        {
+            characterMovement.canMove = true;
+        }
     }
 }

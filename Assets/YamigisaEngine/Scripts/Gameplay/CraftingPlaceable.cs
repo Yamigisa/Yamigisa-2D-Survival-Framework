@@ -13,11 +13,20 @@ namespace Yamigisa
             craftingInterface = FindAnyObjectByType<CraftingInterface>();
         }
 
+        private void Update()
+        {
+            if (Character.instance.characterControls.IsAnyKeyPressedDown(
+                Character.instance.characterControls.cancelKey))
+            {
+                craftingInterface.CloseAllCraftingInterfaces();
+            }
+        }
+
         public void ActivateCrafting()
         {
             if (!craftingInterface || !additionalCraftGroup) return;
 
-            Debug.Log("acivagte crafting");
+            Character.instance.DisableMovements();
             craftingInterface.AddAdditionalCraftGroup(additionalCraftGroup);
         }
     }

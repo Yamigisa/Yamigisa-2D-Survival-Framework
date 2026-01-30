@@ -241,5 +241,29 @@ namespace Yamigisa
 
             itemCraftingCraftButton.interactable = canCraft;
         }
+
+        public void CloseAllCraftingInterfaces()
+        {
+            // Hide panels
+            if (craftingItemSelectionPanel)
+                craftingItemSelectionPanel.SetActive(false);
+
+            if (craftingItemPanel)
+                craftingItemPanel.SetActive(false);
+
+            // Clear current recipe
+            currentRecipe = null;
+
+            // Clear requirements UI
+            if (itemCraftingRequirementsTransform)
+            {
+                for (int i = itemCraftingRequirementsTransform.childCount - 1; i >= 0; i--)
+                    Destroy(itemCraftingRequirementsTransform.GetChild(i).gameObject);
+            }
+
+            // Disable craft button safely
+            if (itemCraftingCraftButton)
+                itemCraftingCraftButton.interactable = false;
+        }
     }
 }
