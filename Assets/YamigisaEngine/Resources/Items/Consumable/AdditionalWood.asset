@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: Test Building
+  m_Name: AdditionalWood
   m_EditorClassIdentifier: 
   itemPrefab: {fileID: 514889103609099034, guid: 968e01bd4c0f08c48a92884e6cfac5c9, type: 3}
   itemName: Health Potion
-  iconWorld: {fileID: 1903202154, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  iconInventory: {fileID: 1903202154, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconWorld: {fileID: 366320403, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconInventory: {fileID: 366320403, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
   description: Increase health
   itemType: 2
   maxAmount: 99
@@ -23,6 +23,7 @@ MonoBehaviour:
   isStackable: 1
   groups:
   - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
+  - {fileID: 11400000, guid: 681dc2c85d3cf6e4d811359e1283c11e, type: 2}
   itemActions:
   - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
   - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}

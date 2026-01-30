@@ -16,11 +16,11 @@ namespace Yamigisa
 
         [Header("Crafting Group Selection")]
         [SerializeField] private CraftGroupSlot slotGroupPrefab;
-        [SerializeField] private Transform contentRoot;  // container for group slots
+        [SerializeField] private Transform contentRoot;
 
         [Header("Crafting Item Selection")]
         [SerializeField] private GameObject craftingItemSelectionPanel;
-        [SerializeField] private Transform itemListRoot; // container for item slots
+        [SerializeField] private Transform itemListRoot;
         [SerializeField] private CraftItemSlot itemSelectionSlotPrefab;
 
         [Header("Crafting Item Panel")]
@@ -34,6 +34,11 @@ namespace Yamigisa
         private readonly List<CraftGroupSlot> groupSlots = new();
         private readonly List<CraftItemSlot> itemSlots = new();
         private readonly List<GroupData> groupCrafts = new();
+
+        private readonly HashSet<GroupData> runtimeAdditionalGroups = new();
+        private readonly HashSet<GroupData> activeShownGroups = new();
+
+        private ItemData currentRecipe;
 
         private void Awake()
         {
@@ -64,6 +69,7 @@ namespace Yamigisa
 
             for (int i = contentRoot.childCount - 1; i >= 0; i--)
                 Destroy(contentRoot.GetChild(i).gameObject);
+
             groupSlots.Clear();
             groupCrafts.Clear();
 
@@ -73,13 +79,11 @@ namespace Yamigisa
             foreach (GroupData group in groups)
             {
                 if (!group) continue;
+
                 groupCrafts.Add(group);
 
                 var slot = Instantiate(slotGroupPrefab, contentRoot);
-                slot.Bind(
-                    group,
-                    onClick: () => OpenCraftingItemSelectionPanel(slot)
-                );
+                slot.Bind(group, () => OpenCraftingItemSelectionPanel(slot));
                 groupSlots.Add(slot);
             }
         }
@@ -87,17 +91,31 @@ namespace Yamigisa
         public void OpenCraftingItemSelectionPanel(CraftGroupSlot slot)
         {
             if (!slot) return;
-            if (craftingItemSelectionPanel) craftingItemSelectionPanel.SetActive(true);
-            BuildItemsForGroup(slot.Group);
+
+            craftingItemSelectionPanel.SetActive(true);
+
+            ClearItemList();
+            activeShownGroups.Clear();
+
+            AddItemsForGroup(slot.Group);
             RefreshAllItemSlotsInteractable();
         }
 
-        private void BuildItemsForGroup(GroupData selectedGroup)
+        private void ClearItemList()
         {
-            if (!itemListRoot || !itemSelectionSlotPrefab) return;
             for (int i = itemListRoot.childCount - 1; i >= 0; i--)
                 Destroy(itemListRoot.GetChild(i).gameObject);
+
             itemSlots.Clear();
+        }
+
+        private void AddItemsForGroup(GroupData selectedGroup)
+        {
+            if (!itemListRoot || !itemSelectionSlotPrefab) return;
+            if (!selectedGroup) return;
+            if (activeShownGroups.Contains(selectedGroup)) return;
+
+            activeShownGroups.Add(selectedGroup);
 
             string path = CleanResourcesPath(itemResourcesSubfolder);
             ItemData[] allItems = Resources.LoadAll<ItemData>(path);
@@ -105,13 +123,15 @@ namespace Yamigisa
             foreach (var item in allItems)
             {
                 if (!item || !item.isCraftable) continue;
+                if (item.groups == null || !item.groups.Contains(selectedGroup)) continue;
 
-                bool belongsToGroup = item.groups != null && selectedGroup != null && item.groups.Contains(selectedGroup);
-                if (!belongsToGroup) continue;
+                bool selectedIsBase = groupCrafts.Contains(selectedGroup);
+                if (selectedIsBase && HasAnyNonBaseCraftGroup(item)) continue;
 
                 bool hasReqs =
                     (item.craftItemsNeeded != null && item.craftItemsNeeded.Count > 0) ||
                     (item.craftGroupsNeeded != null && item.craftGroupsNeeded.Count > 0);
+
                 if (!hasReqs) continue;
 
                 CraftItemSlot slot = Instantiate(itemSelectionSlotPrefab, itemListRoot);
@@ -123,61 +143,103 @@ namespace Yamigisa
 
         private void OpenItemCraftingPanel(ItemData item)
         {
+            currentRecipe = item;
+
             craftingItemPanel.SetActive(true);
             itemCraftingIcon.sprite = item.iconInventory;
-            itemCraftingDescriptionText.text = item.description;
             itemCraftingNameText.text = item.itemName;
+            itemCraftingDescriptionText.text = item.description;
+
             itemCraftingCraftButton.onClick.RemoveAllListeners();
             itemCraftingCraftButton.onClick.AddListener(() => TryCraft(item));
 
-            foreach (Transform child in itemCraftingRequirementsTransform)
-            {
-                Destroy(child.gameObject);
-            }
+            // rebuild requirements
+            for (int i = itemCraftingRequirementsTransform.childCount - 1; i >= 0; i--)
+                Destroy(itemCraftingRequirementsTransform.GetChild(i).gameObject);
 
-            if (item.craftGroupsNeeded.Count > 0)
+            if (item.craftGroupsNeeded != null)
             {
-
-                foreach (GroupData craftGroup in item.craftGroupsNeeded.ConvertAll(cg => cg.GroupData))
+                foreach (var g in item.craftGroupsNeeded)
                 {
-                    CraftItemSlot slot = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
-                    slot.BindGroup(craftGroup, false);
+                    if (g == null || g.GroupData == null) continue;
+                    var s = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
+                    s.BindGroup(g.GroupData, false);
                 }
             }
 
-            if (item.craftItemsNeeded.Count > 0)
+            if (item.craftItemsNeeded != null)
             {
-                foreach (ItemData craftItem in item.craftItemsNeeded.ConvertAll(ci => ci.itemData))
+                foreach (var r in item.craftItemsNeeded)
                 {
-                    CraftItemSlot slot = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
-                    slot.BindItem(craftItem, false);
+                    if (r == null || r.itemData == null) continue;
+                    var s = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
+                    s.BindItem(r.itemData, false);
                 }
             }
+
+            UpdateCraftButtonState();
         }
+
         private void TryCraft(ItemData recipe)
         {
             if (!recipe || Inventory.Instance == null) return;
-
             if (!Inventory.Instance.CanCraft(recipe)) return;
 
-            bool ok = Inventory.Instance.Craft(recipe);
-            if (ok)
+            if (Inventory.Instance.Craft(recipe))
             {
                 RefreshAllItemSlotsInteractable();
+                UpdateCraftButtonState();
             }
         }
 
         private void OnInventoryChanged()
         {
             RefreshAllItemSlotsInteractable();
+            UpdateCraftButtonState();
         }
 
         private void RefreshAllItemSlotsInteractable()
         {
-            for (int i = 0; i < itemSlots.Count; i++)
+            foreach (var slot in itemSlots)
             {
-                if (itemSlots[i]) itemSlots[i].RefreshInteractable();
+                if (!slot) continue;
+                if (slot.button) slot.button.interactable = true;
             }
+        }
+
+        public void AddAdditionalCraftGroup(GroupData group)
+        {
+            if (!group) return;
+
+            runtimeAdditionalGroups.Add(group);
+            craftingItemSelectionPanel.SetActive(true);
+            AddItemsForGroup(group);
+            RefreshAllItemSlotsInteractable();
+        }
+
+        private bool HasAnyNonBaseCraftGroup(ItemData item)
+        {
+            if (item == null || item.groups == null) return false;
+
+            foreach (var g in item.groups)
+            {
+                if (g && !groupCrafts.Contains(g))
+                    return true;
+            }
+            return false;
+        }
+
+        private void UpdateCraftButtonState()
+        {
+            if (!itemCraftingCraftButton)
+                return;
+
+            bool canCraft =
+                Inventory.Instance != null &&
+                currentRecipe != null &&
+                Inventory.Instance.CanCraft(currentRecipe);
+
+            itemCraftingCraftButton.interactable = canCraft;
         }
     }
 }

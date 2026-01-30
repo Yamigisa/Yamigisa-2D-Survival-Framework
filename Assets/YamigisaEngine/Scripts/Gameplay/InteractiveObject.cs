@@ -11,9 +11,6 @@ namespace Yamigisa
         [Header("Actions")]
         public List<ActionBase> Actions = new List<ActionBase>();
 
-        [Header("Groups")]
-        public List<GroupData> Groups = new List<GroupData>();
-
         [Header("Outline")]
         [SerializeField] private GameObject outlineObject;
 
