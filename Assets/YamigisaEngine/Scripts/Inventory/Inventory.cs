@@ -610,7 +610,6 @@ namespace Yamigisa
             }
             else
             {
-                // === DROP ITEM JIKA DILEPAS DI LUAR UI INVENTORY ===
                 if (dragOrigin != null && dragData != null)
                 {
                     dragOrigin.DropItem(Character.transform.position, dragAmount);

@@ -21,7 +21,7 @@ namespace Yamigisa
             if (Inventory.Instance.currentStorage != null) return;
 
             Character.instance.DisableMovements();
-            // Seed once
+
             if (!initialized)
             {
                 InitializeStorage();
@@ -38,10 +38,11 @@ namespace Yamigisa
             for (int i = 0; i < storageSize; i++)
             {
                 ItemSlot slot = Inventory.Instance.CreateItemSlot(inventoryStorage.inventoryContent);
+                slot.SetOwnerStorage(this);
                 itemSlots.Add(slot);
+
             }
 
-            // Populate UI from real data
             for (int i = 0; i < storedItems.Count; i++)
             {
                 itemSlots[i].SetItem(storedItems[i].item, storedItems[i].amount);
@@ -71,22 +72,64 @@ namespace Yamigisa
             }
         }
 
+        public void RemoveStoredItem(ItemData item, int amount)
+        {
+            for (int i = storedItems.Count - 1; i >= 0; i--)
+            {
+                if (storedItems[i].item == item)
+                {
+                    storedItems[i].amount -= amount;
+
+                    if (storedItems[i].amount <= 0)
+                    {
+                        storedItems.RemoveAt(i);
+                    }
+
+                    return;
+                }
+            }
+        }
+
         public void CloseStorage()
         {
+            // 🔴 IMPORTANT: sync before destroying UI
+            SyncStoredItemsFromUI();
+
             if (inventoryStorage != null)
             {
                 Destroy(inventoryStorage.gameObject);
+                inventoryStorage = null;
             }
+
+            itemSlots.Clear();
 
             Character.instance.EnableMovements();
             Inventory.Instance.currentStorage = null;
             Inventory.Instance.HideInventory();
         }
 
+
         public List<ItemSlot> GetSlots()
         {
             return itemSlots;
         }
+
+        private void SyncStoredItemsFromUI()
+        {
+            storedItems.Clear();
+
+            foreach (ItemSlot slot in itemSlots)
+            {
+                if (slot == null || !slot.HasItem) continue;
+
+                storedItems.Add(new StoredItem
+                {
+                    item = slot.ItemData,
+                    amount = slot.Amount
+                });
+            }
+        }
+
 
         [System.Serializable]
         public class StoredItem

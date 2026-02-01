@@ -210,7 +210,7 @@ public class Animal : MonoBehaviour
                 break;
 
             case AnimalBehaviour.EscapeAttacked:
-                Debug.Log("isAttacked: " + isAttacked);
+                Wander();
                 if (isAttacked) EscapeFromCharacter();
                 //else Wander();
                 break;

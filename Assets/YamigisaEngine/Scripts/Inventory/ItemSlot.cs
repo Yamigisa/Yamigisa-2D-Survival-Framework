@@ -30,6 +30,13 @@ namespace Yamigisa
 
         private static ItemSlot currentlyOpenSlot;
 
+        public Storage OwnerStorage { get; private set; }
+
+        public void SetOwnerStorage(Storage storage)
+        {
+            OwnerStorage = storage;
+        }
+
         private void Start()
         {
             if (!hasItem)
@@ -56,9 +63,6 @@ namespace Yamigisa
         {
             ItemData = data;
             hasItem = true;
-
-            //blockNextClick = true;
-            //StartCoroutine(UnblockClickNextFrame()); 
 
             icon.enabled = true;
             icon.sprite = data.iconInventory;
@@ -90,12 +94,6 @@ namespace Yamigisa
             }
         }
 
-        private IEnumerator UnblockClickNextFrame()
-        {
-            yield return null;
-            blockNextClick = false;
-        }
-
         private void InitializeAction(ActionBase action, int index)
         {
             if (action == null) return;
@@ -119,36 +117,33 @@ namespace Yamigisa
         public void ShowButton()
         {
             if (blockNextClick) return;
-
             if (ItemData == null) return;
 
-            bool isInMainInventory = transform.IsChildOf(Inventory.Instance.mainInventoryPanel.transform)
-                                  || transform.IsChildOf(Inventory.Instance.quickInventoryPanel.transform);
-
-            bool isInStorage = Inventory.Instance.currentStorage != null &&
-                               transform.IsChildOf(Inventory.Instance.currentStorage.inventoryStorage.transform);
-
-            if (Inventory.Instance.currentStorage != null && isInMainInventory)
+            // STORAGE → INVENTORY
+            if (OwnerStorage != null)
             {
-                Inventory.Instance.AddItem(ItemData, Amount, Inventory.Instance.currentStorage.inventoryStorage);
+                Inventory.Instance.AddItem(ItemData, Amount);
+                OwnerStorage.RemoveStoredItem(ItemData, Amount);
                 Inventory.Instance.ReduceSlotAmount(this, Amount);
-                Debug.Log("Transferred item to storage");
                 return;
             }
 
-            // Storage is open and slot is in storage → move to inventory
-            if (Inventory.Instance.currentStorage != null && isInStorage)
+            // INVENTORY → STORAGE
+            if (Inventory.Instance.currentStorage != null)
             {
-                Inventory.Instance.AddItem(ItemData, Amount); // defaults to main inventory
+                Inventory.Instance.AddItem(
+                    ItemData,
+                    Amount,
+                    Inventory.Instance.currentStorage.inventoryStorage
+                );
+
                 Inventory.Instance.ReduceSlotAmount(this, Amount);
-                Debug.Log("Transferred item to inventory");
                 return;
             }
 
+            // NORMAL ITEM ACTION UI
             if (currentlyOpenSlot != null && currentlyOpenSlot != this)
-            {
                 currentlyOpenSlot.HideButton();
-            }
 
             if (buttonContainer.gameObject.activeSelf)
             {
@@ -159,14 +154,12 @@ namespace Yamigisa
             buttonContainer.gameObject.SetActive(true);
             currentlyOpenSlot = this;
 
-            int count = ItemData != null && ItemData.itemActions != null
+            int count = ItemData.itemActions != null
                 ? ItemData.itemActions.Count
                 : 0;
 
             for (int i = 0; i < buttonContainer.childCount; i++)
-            {
                 buttonContainer.GetChild(i).gameObject.SetActive(i < count);
-            }
         }
 
         private void HideButton()
