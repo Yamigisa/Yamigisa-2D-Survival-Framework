@@ -33,6 +33,7 @@ namespace Yamigisa
 
             WorldChunk chunk = Instantiate(chunkPrefab, pos, Quaternion.identity);
             chunk.biome = biome;
+            chunk.size = chunkSize;
         }
         // IEnumerator GenerateWorldCoroutine()
         // {

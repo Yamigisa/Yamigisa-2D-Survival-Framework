@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Forest?
   debugColor: {r: 0, g: 0, b: 0, a: 0}
-  groundTile: {fileID: 11400000, guid: 9d3a0dc7903d615428ddab73820c27db, type: 2}
-  backgroundTile: {fileID: 11400000, guid: 97b25e67da5ca124f98d97b9c2fa34c9, type: 2}
+  regionSizeX: 4
+  regionSizeY: 4
+  groundTile: {fileID: 11400000, guid: 97b25e67da5ca124f98d97b9c2fa34c9, type: 2}
   resourcePrefabs:
   - {fileID: 514889103609099034, guid: b46efefc83b3d614eabebde8480bde0d, type: 3}
   enemyPrefabs:

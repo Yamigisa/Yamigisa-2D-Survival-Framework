@@ -72,6 +72,14 @@ namespace Yamigisa
             craftingItemPanel.SetActive(false);
         }
 
+        private void Update()
+        {
+            if (Character.instance.characterControls.IsAnyKeyPressedDown(
+                Character.instance.characterControls.cancelKey))
+            {
+                CloseAllCraftingInterfaces();
+            }
+        }
 
         private static string CleanResourcesPath(string p)
         {
@@ -287,19 +295,6 @@ namespace Yamigisa
             AddItemsForGroup(group);
 
             RefreshAllItemSlotsInteractable();
-        }
-
-
-        private bool HasAnyNonBaseCraftGroup(ItemData item)
-        {
-            if (item == null || item.groups == null) return false;
-
-            foreach (var g in item.groups)
-            {
-                if (g && !groupCrafts.Contains(g))
-                    return true;
-            }
-            return false;
         }
 
         private void UpdateCraftButtonState()

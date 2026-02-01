@@ -10,14 +10,9 @@ namespace Yamigisa
         [Header("Identity")]
         public string biomeName;
         public Color debugColor;
-        [Header("Region Size")]
-        public int regionSizeX = 4;
-        public int regionSizeY = 4;
-
 
         [Header("Tiles")]
         public TileBase groundTile;
-        public TileBase backgroundTile;
 
         [Header("Spawning")]
         public List<GameObject> resourcePrefabs;
