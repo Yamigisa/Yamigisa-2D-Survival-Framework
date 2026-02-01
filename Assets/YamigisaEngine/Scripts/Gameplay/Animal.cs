@@ -131,7 +131,10 @@ public class Animal : MonoBehaviour
             reactionTimer = 0f;
             isDetectedLocked = false;
 
+            isAttacked = false;
+
             animalData.wanderRange = defaultWanderRange;
+
 
             Wander();
             return;
