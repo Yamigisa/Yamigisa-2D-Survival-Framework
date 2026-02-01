@@ -22,6 +22,7 @@ MonoBehaviour:
   isDroppable: 1
   isStackable: 1
   groups:
+  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
   - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
   - {fileID: 11400000, guid: 681dc2c85d3cf6e4d811359e1283c11e, type: 2}
   itemActions:

@@ -27,7 +27,9 @@ namespace Yamigisa
             if (!craftingInterface || !additionalCraftGroup) return;
 
             Character.instance.DisableMovements();
-            craftingInterface.AddAdditionalCraftGroup(additionalCraftGroup);
+
+            // EXACTLY like pressing a craft group button first, then add additional
+            craftingInterface.OpenCraftingFromPlaceable(additionalCraftGroup);
         }
     }
 }

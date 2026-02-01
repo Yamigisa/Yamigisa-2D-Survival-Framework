@@ -10,6 +10,9 @@ namespace Yamigisa
         [Header("Folders")]
         [Tooltip("Craft group folder under Resources (NO 'Resources/' prefix), e.g. 'Groups/Craft'")]
         [SerializeField] private string groupResourcesSubfolder = "Groups/Craft";
+        [Tooltip("Additional craft group folder under Resources, e.g. 'Groups/CraftAdditional'")]
+        [SerializeField] private string additionalCraftGroupResourcesSubfolder = "Groups/CraftAdditional";
+
 
         [Tooltip("ItemData folder under Resources to scan for craftables, e.g. 'Items' or 'Items/Craftables'")]
         [SerializeField] private string itemResourcesSubfolder = "Items";
@@ -37,8 +40,12 @@ namespace Yamigisa
 
         private readonly HashSet<GroupData> runtimeAdditionalGroups = new();
         private readonly HashSet<GroupData> activeShownGroups = new();
+        private readonly HashSet<GroupData> additionalCraftGroups = new();
 
         private ItemData currentRecipe;
+        private bool isInitialized;
+
+        private readonly HashSet<ItemData> spawnedItems = new();
 
         private void Awake()
         {
@@ -50,12 +57,21 @@ namespace Yamigisa
             Inventory.OnChanged -= OnInventoryChanged;
         }
 
+        private void EnsureInitialized()
+        {
+            if (isInitialized) return;
+
+            BuildCraftSelection();
+            isInitialized = true;
+        }
+
         private void Start()
         {
-            BuildCraftSelection();
+            EnsureInitialized();
             craftingItemSelectionPanel.SetActive(false);
             craftingItemPanel.SetActive(false);
         }
+
 
         private static string CleanResourcesPath(string p)
         {
@@ -72,11 +88,13 @@ namespace Yamigisa
 
             groupSlots.Clear();
             groupCrafts.Clear();
+            additionalCraftGroups.Clear(); // <-- ADD
 
-            string path = CleanResourcesPath(groupResourcesSubfolder);
-            GroupData[] groups = Resources.LoadAll<GroupData>(path);
+            // === BASE CRAFT GROUPS ===
+            string basePath = CleanResourcesPath(groupResourcesSubfolder);
+            GroupData[] baseGroups = Resources.LoadAll<GroupData>(basePath);
 
-            foreach (GroupData group in groups)
+            foreach (GroupData group in baseGroups)
             {
                 if (!group) continue;
 
@@ -86,7 +104,18 @@ namespace Yamigisa
                 slot.Bind(group, () => OpenCraftingItemSelectionPanel(slot));
                 groupSlots.Add(slot);
             }
+
+            // === ADDITIONAL CRAFT GROUPS (HIDDEN BY DEFAULT) ===
+            string additionalPath = CleanResourcesPath(additionalCraftGroupResourcesSubfolder);
+            GroupData[] additionalGroups = Resources.LoadAll<GroupData>(additionalPath);
+
+            foreach (GroupData group in additionalGroups)
+            {
+                if (!group) continue;
+                additionalCraftGroups.Add(group);
+            }
         }
+
 
         public void OpenCraftingItemSelectionPanel(CraftGroupSlot slot)
         {
@@ -107,7 +136,9 @@ namespace Yamigisa
                 Destroy(itemListRoot.GetChild(i).gameObject);
 
             itemSlots.Clear();
+            spawnedItems.Clear(); // <-- ADD THIS
         }
+
 
         private void AddItemsForGroup(GroupData selectedGroup)
         {
@@ -118,7 +149,8 @@ namespace Yamigisa
             activeShownGroups.Add(selectedGroup);
 
             string path = CleanResourcesPath(itemResourcesSubfolder);
-            ItemData[] allItems = Resources.LoadAll<ItemData>(path);
+            List<ItemData> allItems = new List<ItemData>(Resources.LoadAll<ItemData>(path));
+            allItems.Sort(CompareItemsAlphabetically);
 
             foreach (var item in allItems)
             {
@@ -126,7 +158,11 @@ namespace Yamigisa
                 if (item.groups == null || !item.groups.Contains(selectedGroup)) continue;
 
                 bool selectedIsBase = groupCrafts.Contains(selectedGroup);
-                if (selectedIsBase && HasAnyNonBaseCraftGroup(item)) continue;
+
+                // Hide ONLY if the item requires another craft group
+                // that has NOT been unlocked yet
+                if (selectedIsBase && HasLockedCraftGroup(item))
+                    continue;
 
                 bool hasReqs =
                     (item.craftItemsNeeded != null && item.craftItemsNeeded.Count > 0) ||
@@ -134,11 +170,26 @@ namespace Yamigisa
 
                 if (!hasReqs) continue;
 
+                // 🔒 PREVENT DUPLICATE ITEMS
+                if (spawnedItems.Contains(item))
+                    continue;
+
+                spawnedItems.Add(item);
+
                 CraftItemSlot slot = Instantiate(itemSelectionSlotPrefab, itemListRoot);
                 slot.BindItem(item);
                 slot.button.onClick.AddListener(() => OpenItemCraftingPanel(item));
                 itemSlots.Add(slot);
+
             }
+        }
+
+        public void ForceInitialize()
+        {
+            if (groupCrafts.Count > 0 || additionalCraftGroups.Count > 0)
+                return;
+
+            BuildCraftSelection();
         }
 
         private void OpenItemCraftingPanel(ItemData item)
@@ -211,11 +262,33 @@ namespace Yamigisa
         {
             if (!group) return;
 
-            runtimeAdditionalGroups.Add(group);
+            ForceInitialize();
+
+            // Open UI
             craftingItemSelectionPanel.SetActive(true);
+
+            // If this is the first time opening crafting (list empty),
+            // initialize base items first so they don't "disappear"
+            bool listIsEmpty = itemListRoot == null || itemListRoot.childCount == 0;
+
+            if (listIsEmpty)
+            {
+                ClearItemList();
+                activeShownGroups.Clear();
+
+                // Default: load first base craft group items
+                GroupData baseGroup = GetFirstBaseCraftGroup();
+                if (baseGroup)
+                    AddItemsForGroup(baseGroup);
+            }
+
+            // Now unlock + append additional group items (without wiping existing list)
+            runtimeAdditionalGroups.Add(group);
             AddItemsForGroup(group);
+
             RefreshAllItemSlotsInteractable();
         }
+
 
         private bool HasAnyNonBaseCraftGroup(ItemData item)
         {
@@ -264,6 +337,84 @@ namespace Yamigisa
             // Disable craft button safely
             if (itemCraftingCraftButton)
                 itemCraftingCraftButton.interactable = false;
+
+            // =========================
+            // 🔒 RESET TEMP CRAFT STATE
+            // =========================
+            runtimeAdditionalGroups.Clear();
+            activeShownGroups.Clear();
         }
+
+        private bool HasLockedCraftGroup(ItemData item)
+        {
+            if (item == null || item.groups == null)
+                return false;
+
+            foreach (var g in item.groups)
+            {
+                if (!g) continue;
+
+                // If item belongs to an ADDITIONAL craft group
+                // and it has NOT been unlocked yet → LOCK IT
+                if (additionalCraftGroups.Contains(g) && !runtimeAdditionalGroups.Contains(g))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static int CompareItemsAlphabetically(ItemData a, ItemData b)
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            return string.Compare(a.itemName, b.itemName, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private GroupData GetFirstBaseCraftGroup()
+        {
+            for (int i = 0; i < groupCrafts.Count; i++)
+            {
+                if (groupCrafts[i]) return groupCrafts[i];
+            }
+            return null;
+        }
+
+        public void OpenCraftingFromPlaceable(GroupData additionalGroup)
+        {
+            if (!additionalGroup) return;
+
+            // Make sure groups are loaded even if Start() hasn't run yet
+            ForceInitialize();
+
+            // Same behavior as clicking a CraftGroup button:
+            // open selection panel, reset list, show default base group items
+            if (craftingItemSelectionPanel) craftingItemSelectionPanel.SetActive(true);
+            if (craftingItemPanel) craftingItemPanel.SetActive(false);
+
+            ClearItemList();
+            activeShownGroups.Clear();
+
+            // Load base items first (same default behavior as "first craft group")
+            GroupData baseGroup = null;
+            for (int i = 0; i < groupCrafts.Count; i++)
+            {
+                if (groupCrafts[i])
+                {
+                    baseGroup = groupCrafts[i];
+                    break;
+                }
+            }
+
+            if (baseGroup)
+                AddItemsForGroup(baseGroup);
+
+            // Then append the additional group items
+            runtimeAdditionalGroups.Add(additionalGroup);
+            AddItemsForGroup(additionalGroup);
+
+            RefreshAllItemSlotsInteractable();
+        }
+
     }
 }

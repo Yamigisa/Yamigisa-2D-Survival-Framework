@@ -2043,6 +2043,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   groupResourcesSubfolder: Groups/BaseCraft
+  additionalCraftGroupResourcesSubfolder: Groups/AdvanceCraft
   itemResourcesSubfolder: Items
   slotGroupPrefab: {fileID: 3676928337103078053, guid: 423395c4e49fb4b4b8de21fe3137df4b, type: 3}
   contentRoot: {fileID: 1699318618}
@@ -4092,6 +4093,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1560584481}
   m_CullTransparentMesh: 1
+--- !u!1001 &1569157831
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.9032543
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.12118921
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1515757084448078576, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3241655407360502237, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
+      propertyPath: m_Name
+      value: Crafting Placeable
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 24a34e030c335c141b60b648fc47d2ba, type: 3}
 --- !u!1 &1572809054
 GameObject:
   m_ObjectHideFlags: 0
@@ -5414,3 +5472,4 @@ SceneRoots:
   - {fileID: 9023052574243426549}
   - {fileID: 917991720}
   - {fileID: 433939331}
+  - {fileID: 1569157831}
