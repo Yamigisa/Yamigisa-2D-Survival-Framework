@@ -14,7 +14,6 @@ namespace Yamigisa
 
         [HideInInspector] public int size = 16;
 
-
         private void Start()
         {
             StartCoroutine(BuildChunk());

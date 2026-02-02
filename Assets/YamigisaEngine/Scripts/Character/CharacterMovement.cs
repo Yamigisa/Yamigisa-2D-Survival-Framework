@@ -13,6 +13,8 @@ namespace Yamigisa
 
         [Header("Movement Variables")]
         [SerializeField] private float walkSpeed = 5f;
+        private float speedAddition = 0;
+
         [SerializeField] private bool playerCanMove = true;
 
         private Vector2 lastDirection = Vector2.down;
@@ -153,7 +155,8 @@ namespace Yamigisa
             bool isPressingSprint = characterControls.IsAnyKeyPressed(characterControls.sprintKey);
             bool canSprint = playerCanSprint && !isSprintCooldown && (unlimitedSprint || sprintRemaining > 0f);
 
-            float currentSpeed = (isPressingSprint && canSprint) ? sprintSpeed : walkSpeed;
+            float currentSpeed = ((isPressingSprint && canSprint) ? sprintSpeed : walkSpeed) + speedAddition;
+
 
             if (isCrouching)
                 currentSpeed *= crouchSpeedMultiplier;
@@ -170,6 +173,11 @@ namespace Yamigisa
             Vector2 velocity = rb.linearVelocity;
             Vector2 velocityChange = targetVelocity - velocity;
             rb.AddForce(velocityChange, ForceMode2D.Impulse);
+        }
+
+        public void SetSpeedMultiplier(float addition)
+        {
+            speedAddition = addition;
         }
 
         public void MoveTo(Vector2 target, float stoppingDistance)

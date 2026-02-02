@@ -8,6 +8,9 @@ namespace Yamigisa
         [SerializeField] private List<AttributeData> AttributeData;
         private AttributeUI attributeUI;
 
+        private Dictionary<AttributeType, float> biomeRegenAdditions = new();
+        private Dictionary<AttributeType, float> biomeDepleteAdditions = new();
+
         [System.Obsolete]
         void Start()
         {
@@ -15,7 +18,9 @@ namespace Yamigisa
             if (attributeUI == null) return;
 
             foreach (AttributeData a in AttributeData)
+            {
                 attributeUI.InitializeAttributeBar(a);
+            }
 
             if (TimeClock.Instance != null)
             {
@@ -37,9 +42,14 @@ namespace Yamigisa
         {
             if (attributeUI == null) return;
 
-            foreach (var a in AttributeData)
+            foreach (AttributeData a in AttributeData)
             {
-                a.CurrentValue += a.DepleteValuePerMinute;
+                float delta = a.DepleteValuePerMinute;
+
+                if (biomeDepleteAdditions.TryGetValue(a.type, out float add))
+                    delta += add;
+
+                a.CurrentValue += delta;
                 if (a.CurrentValue < 0) a.CurrentValue = 0;
 
                 var bar = attributeUI.GetAttributeBar(a);
@@ -47,14 +57,33 @@ namespace Yamigisa
             }
         }
 
+        public void ApplyBiomeModifiers(List<AttributeModifier> modifiers)
+        {
+            biomeRegenAdditions.Clear();
+            biomeDepleteAdditions.Clear();
+
+            foreach (var mod in modifiers)
+            {
+                biomeRegenAdditions[mod.type] = mod.regenAddition;
+                biomeDepleteAdditions[mod.type] = mod.depleteAddition;
+            }
+        }
+
         private void SetRegeneratingAttributes()
         {
             if (attributeUI == null) return;
 
-            foreach (var a in AttributeData)
+            foreach (AttributeData a in AttributeData)
             {
-                if (a.CurrentValue >= a.MaxValue) return;
-                a.CurrentValue += a.RegenerateValuePerMinute;
+                if (a.CurrentValue >= a.MaxValue) continue;
+
+                float delta = a.RegenerateValuePerMinute;
+
+                if (biomeRegenAdditions.TryGetValue(a.type, out float add))
+                    delta += add;
+
+                a.CurrentValue += delta;
+                if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
 
                 var bar = attributeUI.GetAttributeBar(a);
                 if (bar != null) bar.SetCurrentValue(a.CurrentValue);
@@ -65,7 +94,7 @@ namespace Yamigisa
         {
             if (attributeUI == null) return;
 
-            foreach (var a in AttributeData)
+            foreach (AttributeData a in AttributeData)
             {
                 if (a.type == type)
                 {
@@ -80,7 +109,7 @@ namespace Yamigisa
         {
             if (attributeUI == null) return;
 
-            foreach (var a in AttributeData)
+            foreach (AttributeData a in AttributeData)
             {
                 if (a.type == type)
                 {

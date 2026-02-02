@@ -50,6 +50,7 @@ MonoBehaviour:
   groundTilemap: {fileID: 834423488082104526}
   resourceCount: 1
   enemyCount: 1
+  size: 16
 --- !u!156049354 &339918775589189051
 Grid:
   m_ObjectHideFlags: 0
@@ -74,6 +75,7 @@ GameObject:
   - component: {fileID: 834423488082104526}
   - component: {fileID: 6264444328852389247}
   - component: {fileID: 1221966794841823395}
+  - component: {fileID: 715944208696787083}
   m_Layer: 0
   m_Name: Ground Tilemap
   m_TagString: Untagged
@@ -224,3 +226,15 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
+--- !u!114 &715944208696787083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8535416337676152343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b097dc6eb4ebd42bf8dc8d6e492069, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

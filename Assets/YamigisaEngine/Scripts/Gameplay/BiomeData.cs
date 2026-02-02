@@ -19,8 +19,17 @@ namespace Yamigisa
         public List<GameObject> enemyPrefabs;
 
         [Header("Environment Modifiers")]
-        public float temperatureModifier = 0f;
-        public float speedMultiplier = 1f;
-        public float staminaDrainMultiplier = 1f;
+        public float speedAddition = 0f; // additive
+        public List<AttributeModifier> modifiers;
+    }
+
+    [System.Serializable]
+    public class AttributeModifier
+    {
+        public AttributeType type;
+
+        [Header("Additive Modifiers")]
+        public float regenAddition = 0f;     // += to RegenerateValuePerMinute
+        public float depleteAddition = 0f;   // += to DepleteValuePerMinute
     }
 }

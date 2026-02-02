@@ -6,6 +6,14 @@ namespace Yamigisa
     {
         private BiomeData currentBiome;
 
+        private CharacterMovement characterMovement;
+        private CharacterAttribute characterAttribute;
+
+        void Start()
+        {
+            characterMovement = Character.instance.characterMovement;
+            characterAttribute = Character.instance.characterAttribute;
+        }
         public void SetBiome(BiomeData biome)
         {
             currentBiome = biome;
@@ -14,9 +22,10 @@ namespace Yamigisa
 
         void ApplyBiome()
         {
-            // playerSpeed = baseSpeed * currentBiome.speedMultiplier;
-            // staminaDrain = baseDrain * currentBiome.staminaDrainMultiplier;
-            // temperature += currentBiome.temperatureModifier;
+            characterMovement.SetSpeedMultiplier(currentBiome.speedAddition);
+
+            characterAttribute.ApplyBiomeModifiers(currentBiome.modifiers);
         }
+
     }
 }
