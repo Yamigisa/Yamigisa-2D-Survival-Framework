@@ -319,6 +319,7 @@ GameObject:
   - component: {fileID: 8627710104781531030}
   - component: {fileID: 406260137901645681}
   - component: {fileID: 336338363393975827}
+  - component: {fileID: 1150660946470802542}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -420,9 +421,9 @@ MonoBehaviour:
   jumpDuration: 0.35
   jumpDistance: 1.2
   obstacleCheckDistance: 1
-  crouchKey: 306
   crouchSpeedMultiplier: 0.45
   crouchSpriteScale: 0.7
+  canMove: 0
 --- !u!114 &6228037158487507412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,6 +460,7 @@ MonoBehaviour:
   inventoryKey: 69000000
   useItemKey: 65000000
   craftingKey: 75000000
+  cancelKey: 1b000000
 --- !u!114 &8627710104781531030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -493,7 +495,8 @@ MonoBehaviour:
   characterAttribute: {fileID: 0}
   characterMovement: {fileID: 0}
   characterCombat: {fileID: 0}
-  startingItems: []
+  characterControls: {fileID: 0}
+  IsBusy: 0
 --- !u!114 &336338363393975827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -509,3 +512,15 @@ MonoBehaviour:
   handDamage: 3
   attackRange: 1
   attackCooldown: 0.4
+--- !u!114 &1150660946470802542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584085795953339516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0ed756ed0cf374ab048d80e56aa68a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

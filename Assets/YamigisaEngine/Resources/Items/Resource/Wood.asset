@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
   m_Name: Wood
   m_EditorClassIdentifier: 
+  id: 85883d7d-6eb5-4e06-a936-71c008688598
+  itemPrefab: {fileID: 0}
   itemName: Wood
   iconWorld: {fileID: 1448212059, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
   iconInventory: {fileID: 1448212059, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}

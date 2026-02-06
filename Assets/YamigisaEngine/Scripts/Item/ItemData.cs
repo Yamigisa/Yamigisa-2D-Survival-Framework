@@ -6,6 +6,53 @@ namespace Yamigisa
     [CreateAssetMenu(menuName = "Yamigisa/Item")]
     public class ItemData : ScriptableObject
     {
+        // ===================== SAVE ID =====================
+        [Header("Save ID (DO NOT CHANGE)")]
+        [SerializeField] private string id;
+        public string Id => id;
+
+        // ===================== STATIC DATABASE =====================
+        private static Dictionary<string, ItemData> lookup;
+
+        public static ItemData Get(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+
+            if (lookup == null)
+                BuildLookup();
+
+            lookup.TryGetValue(id, out ItemData item);
+            return item;
+        }
+
+        private static void BuildLookup()
+        {
+            lookup = new Dictionary<string, ItemData>();
+
+            ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
+            for (int i = 0; i < allItems.Length; i++)
+            {
+                ItemData item = allItems[i];
+                if (item == null || string.IsNullOrEmpty(item.id)) continue;
+
+                if (!lookup.ContainsKey(item.id))
+                    lookup.Add(item.id, item);
+            }
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                id = System.Guid.NewGuid().ToString();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+        }
+#endif
+
+        // ===================== EXISTING DATA =====================
+
         [Header("Item Prefab")]
         public GameObject itemPrefab;
 
@@ -35,12 +82,12 @@ namespace Yamigisa
         // Equipment Effect
         public int damage = 0;
 
-        // ===== CRAFTING =====
         [Header("Crafting (Recipe)")]
         public bool isCraftable = false;
         public List<CraftGroupData> craftGroupsNeeded = new List<CraftGroupData>();
         public List<CraftItemData> craftItemsNeeded = new List<CraftItemData>();
         [Min(1)] public int craftResultAmount = 1;
+
         public void ChangeDroppableState(bool state) => isDroppable = state;
     }
 
@@ -66,12 +113,11 @@ namespace Yamigisa
         public int Amount;
     }
 
-    // ===== New Loot entry =====
     [System.Serializable]
     public class LootEntry
     {
         public ItemData item;
         [Min(1)] public int amount = 1;
-        [Range(0f, 100f)] public float dropChancePercent = 100f; // 100 = always drops
+        [Range(0f, 100f)] public float dropChancePercent = 100f;
     }
 }

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
   m_Name: Health Potion
   m_EditorClassIdentifier: 
+  id: 91da5742-533b-4cdb-aa43-04dd2ec571fc
   itemPrefab: {fileID: 514889103609099034, guid: b46efefc83b3d614eabebde8480bde0d, type: 3}
   itemName: Health Potion
   iconWorld: {fileID: 1903202154, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}

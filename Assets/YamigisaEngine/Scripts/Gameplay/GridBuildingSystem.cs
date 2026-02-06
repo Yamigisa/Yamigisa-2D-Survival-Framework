@@ -47,7 +47,7 @@ namespace Yamigisa
             instance = this;
         }
 
-        void Start()
+        public void Setup()
         {
             tileBases.Clear();
             tileBases.Add(TileType.Empty, null);

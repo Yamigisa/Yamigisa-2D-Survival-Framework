@@ -1,107 +1,171 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Yamigisa
 {
-    public class WorldGenerator : MonoBehaviour
+    public class WorldGenerator : MonoBehaviour, ISavable
     {
         [Header("Prefabs")]
-        public WorldChunk chunkPrefab;
+        [SerializeField] private WorldChunk chunkPrefab;
 
         [Header("Biomes")]
-        public List<BiomeData> availableBiomes;
+        [SerializeField] private List<BiomeData> availableBiomes;
 
-        [Header("World Size")]
-        public int worldWidth = 20;
-        public int worldHeight = 20;
-        public int chunkSize = 16;
+        [Header("World Size (IN CHUNKS)")]
+        [SerializeField] private int worldWidth = 3;
+        [SerializeField] private int worldHeight = 3;
 
-        private bool[,] occupied;
+        [Header("Chunk Settings")]
+        [SerializeField] private int chunkSize = 16;
 
-        private void Start()
+        private readonly List<WorldChunk> spawnedChunks = new();
+
+        // =========================
+        // SETUP (NEW GAME ONLY)
+        // =========================
+        public void Setup()
         {
-            //StartCoroutine(GenerateWorldCoroutine());
-            SpawnChunk();
+            ClearWorld();
+            GenerateWorldGrid();
         }
 
-        private void SpawnChunk()
+        private void GenerateWorldGrid()
         {
-            Vector3 pos = Character.instance.transform.position;
+            Vector3 playerPos = Character.instance.transform.position;
 
-            BiomeData biome = availableBiomes[Random.Range(0, availableBiomes.Count)];
+            int halfW = worldWidth / 2;
+            int halfH = worldHeight / 2;
 
-            WorldChunk chunk = Instantiate(chunkPrefab, pos, Quaternion.identity);
-            chunk.biome = biome;
-            chunk.size = chunkSize;
-        }
-        // IEnumerator GenerateWorldCoroutine()
-        // {
-        //     occupied = new bool[worldWidth, worldHeight];
-
-        //     // center index of grid
-        //     int centerX = worldWidth / 2;
-        //     int centerY = worldHeight / 2;
-
-        //     foreach (var biome in availableBiomes)
-        //     {
-        //         int sizeX = biome.regionSizeX;
-        //         int sizeY = biome.regionSizeY;
-
-        //         Vector2Int pos = FindFreeRegion(sizeX, sizeY);
-
-        //         for (int x = 0; x < sizeX; x++)
-        //             for (int y = 0; y < sizeY; y++)
-        //             {
-        //                 int wx = pos.x + x;
-        //                 int wy = pos.y + y;
-
-        //                 occupied[wx, wy] = true;
-
-        //                 // OFFSET FROM CENTER, NOT FROM (0,0)
-        //                 int gridX = wx - centerX;
-        //                 int gridY = wy - centerY;
-
-        //                 SpawnChunk(gridX, gridY, biome);
-        //                 yield return null;
-        //             }
-        //     }
-        // }
-
-        Vector2Int FindFreeRegion(int sizeX, int sizeY)
-        {
-            for (int i = 0; i < 1000; i++)
+            for (int x = -halfW; x <= halfW; x++)
             {
-                int x = Random.Range(0, worldWidth - sizeX);
-                int y = Random.Range(0, worldHeight - sizeY);
+                for (int y = -halfH; y <= halfH; y++)
+                {
+                    Vector3 chunkPos = playerPos + new Vector3(
+                        x * chunkSize,
+                        y * chunkSize,
+                        0f
+                    );
 
-                bool free = true;
+                    BiomeData biome = availableBiomes[Random.Range(0, availableBiomes.Count)];
+                    int seed = Random.Range(int.MinValue, int.MaxValue);
 
-                for (int ix = 0; ix < sizeX; ix++)
-                    for (int iy = 0; iy < sizeY; iy++)
-                        if (occupied[x + ix, y + iy])
-                            free = false;
+                    WorldChunk chunk = Instantiate(chunkPrefab, chunkPos, Quaternion.identity);
+                    chunk.Initialize(
+                        biome,
+                        chunkSize,
+                        chunk.resourceCount,
+                        chunk.enemyCount,
+                        seed
+                    );
 
-                if (free)
-                    return new Vector2Int(x, y);
+                    spawnedChunks.Add(chunk);
+                }
             }
-
-            Debug.LogError("No free space for biome!");
-            return new Vector2Int(0, 0);
         }
 
-        void SpawnChunk(int gridX, int gridY, BiomeData biome)
+        // =========================
+        // SAVE
+        // =========================
+        public void Save(ref SaveGameData data)
         {
-            Vector3 origin = Character.instance.transform.position;
+            if (data.chunks == null)
+                data.chunks = new List<ChunkSaveData>();
+            else
+                data.chunks.Clear();
 
-            Vector3 pos = origin + new Vector3(
-                gridX * chunkSize,
-                gridY * chunkSize,
-                0
-            );
+            spawnedChunks.RemoveAll(c => c == null);
 
-            WorldChunk chunk = Instantiate(chunkPrefab, pos, Quaternion.identity);
-            chunk.biome = biome;
+            foreach (WorldChunk c in spawnedChunks)
+            {
+                ChunkSaveData chunkData = new ChunkSaveData
+                {
+                    position = c.transform.position,
+                    biomeKey = c.biome != null ? c.biome.name : "",
+                    size = c.size,
+                    resourceCount = c.resourceCount,
+                    enemyCount = c.enemyCount,
+                    seed = c.seed,
+                    resourcesSpawned = c.resourcesSpawned,
+                    enemiesSpawned = c.enemiesSpawned,
+                    interactiveObjects = new List<InteractiveObjectSaveData>()
+
+
+                };
+
+                foreach (InteractiveObject io in c.GetComponentsInChildren<InteractiveObject>(true))
+                {
+                    io.SaveToList(chunkData.interactiveObjects);
+                }
+            }
+        }
+
+        // =========================
+        // LOAD (NO SETUP HERE)
+        // =========================
+        public void Load(SaveGameData data)
+        {
+            if (data.chunks == null || data.chunks.Count == 0)
+                return;
+
+            ClearWorld();
+
+            foreach (ChunkSaveData saved in data.chunks)
+            {
+                BiomeData biome = GetBiomeByKey(saved.biomeKey);
+                if (biome == null) continue;
+
+                WorldChunk chunk = Instantiate(
+                    chunkPrefab,
+                    saved.position,
+                    Quaternion.identity
+                );
+
+                chunk.resourcesSpawned = saved.resourcesSpawned;
+                chunk.enemiesSpawned = saved.enemiesSpawned;
+
+                chunk.Initialize(
+    biome,
+    saved.size,
+    saved.resourceCount,
+    saved.enemyCount,
+    saved.seed,
+    saved.resourcesSpawned,
+    saved.enemiesSpawned
+);
+
+                spawnedChunks.Add(chunk);
+
+                // 🔽 RESTORE INTERACTIVE OBJECTS AFTER CHUNK IS READY
+                if (saved.interactiveObjects != null && saved.interactiveObjects.Count > 0)
+                {
+                    chunk.RestoreInteractiveObjects(saved.interactiveObjects);
+                }
+            }
+        }
+
+        // =========================
+        // HELPERS
+        // =========================
+        private void ClearWorld()
+        {
+            for (int i = spawnedChunks.Count - 1; i >= 0; i--)
+            {
+                if (spawnedChunks[i] != null)
+                    Destroy(spawnedChunks[i].gameObject);
+            }
+            spawnedChunks.Clear();
+        }
+
+        private BiomeData GetBiomeByKey(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return null;
+
+            for (int i = 0; i < availableBiomes.Count; i++)
+            {
+                if (availableBiomes[i] != null && availableBiomes[i].name == key)
+                    return availableBiomes[i];
+            }
+            return null;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Yamigisa;
 
@@ -67,6 +68,25 @@ public class Animal : MonoBehaviour
 
     private int lastKnownHp;
 
+    private Transform characterTf;
+
+    private int hIdleFront, hIdleBack, hIdleSide;
+    private int hWanderFront, hWanderBack, hWanderSide;
+    private int hRunFront, hRunBack, hRunSide;
+    private int hAttackFront, hAttackBack, hAttackSide;
+    private int hHurtFront, hHurtBack, hHurtSide;
+    private int hDeathFront, hDeathBack, hDeathSide;
+
+    private HashSet<int> boolParams;
+    private int currentAnimHash = 0;
+    private bool currentFlipX = false;
+
+    private float aiTickTimer;
+    private float aiTickInterval = 0.066f;
+    private bool cachedInVision;
+    private float cachedActiveRange;
+    private float cachedCosHalfAngle;
+    private float cachedAngle;
     private void OnEnable()
     {
         destroyable = GetComponent<Destroyable>();
@@ -92,7 +112,7 @@ public class Animal : MonoBehaviour
 
         rb.constraints |= RigidbodyConstraints2D.FreezeRotation;
 
-        defaultWanderRange = animalData.wanderRange;
+        defaultWanderRange = animalData != null ? animalData.wanderRange : 0f;
 
         wanderCenter = transform.position;
 
@@ -101,12 +121,58 @@ public class Animal : MonoBehaviour
         stopTimer = 0f;
 
         PickNewWanderTarget();
+
+        hIdleFront = Animator.StringToHash(idleFront);
+        hIdleBack = Animator.StringToHash(idleBack);
+        hIdleSide = Animator.StringToHash(idleSide);
+
+        hWanderFront = Animator.StringToHash(wanderFront);
+        hWanderBack = Animator.StringToHash(wanderBack);
+        hWanderSide = Animator.StringToHash(wanderSide);
+
+        hRunFront = Animator.StringToHash(runFront);
+        hRunBack = Animator.StringToHash(runBack);
+        hRunSide = Animator.StringToHash(runSide);
+
+        hAttackFront = Animator.StringToHash(attackFront);
+        hAttackBack = Animator.StringToHash(attackBack);
+        hAttackSide = Animator.StringToHash(attackSide);
+
+        hHurtFront = Animator.StringToHash(hurtFront);
+        hHurtBack = Animator.StringToHash(hurtBack);
+        hHurtSide = Animator.StringToHash(hurtSide);
+
+        hDeathFront = Animator.StringToHash(deathFront);
+        hDeathBack = Animator.StringToHash(deathBack);
+        hDeathSide = Animator.StringToHash(deathSide);
+
+        boolParams = new HashSet<int>(64);
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            var ps = animator.parameters;
+            for (int i = 0; i < ps.Length; i++)
+            {
+                if (ps[i].type == AnimatorControllerParameterType.Bool)
+                    boolParams.Add(Animator.StringToHash(ps[i].name));
+            }
+        }
+
+        aiTickTimer = Random.Range(0f, aiTickInterval);
+        cachedActiveRange = -1f;
+        cachedAngle = -1f;
+        cachedCosHalfAngle = 0f;
+
+        if (Character.instance != null)
+            characterTf = Character.instance.transform;
     }
 
     private void Update()
     {
         if (isDead) return;
         if (animalData == null || Character.instance == null) return;
+
+        if (characterTf == null || characterTf != Character.instance.transform)
+            characterTf = Character.instance.transform;
 
         if (destroyable != null)
         {
@@ -117,17 +183,31 @@ public class Animal : MonoBehaviour
 
         attackCooldownTimer -= Time.deltaTime;
 
-        float activeRange = isDetectedLocked ? animalData.detectedRange : animalData.detectRange;
-        bool inVisionNow = DetectCharacter(activeRange);
-
-        if (!inVisionNow)
+        if (isAttacking)
         {
-            if (isAttacking)
-            {
-                AttackCharacter();
-                return;
-            }
+            AttackCharacter();
+            return;
+        }
 
+        aiTickTimer -= Time.deltaTime;
+        bool doAITick = aiTickTimer <= 0f;
+        if (doAITick)
+        {
+            aiTickTimer = aiTickInterval;
+
+            float activeRange = isDetectedLocked ? animalData.detectedRange : animalData.detectRange;
+            cachedActiveRange = activeRange;
+            cachedInVision = DetectCharacter(activeRange);
+        }
+
+        if (!doAITick && isDetectedLocked)
+        {
+            ReactDetected();
+            return;
+        }
+
+        if (!cachedInVision)
+        {
             reactionTimer = 0f;
             isDetectedLocked = false;
 
@@ -135,14 +215,13 @@ public class Animal : MonoBehaviour
 
             animalData.wanderRange = defaultWanderRange;
 
-
             Wander();
             return;
         }
 
         if (!isDetectedLocked)
         {
-            reactionTimer += Time.deltaTime;
+            reactionTimer += aiTickInterval;
 
             if (reactionTimer < animalData.reactionTime)
             {
@@ -183,21 +262,37 @@ public class Animal : MonoBehaviour
     private bool DetectCharacter(float range)
     {
         if (animalData == null || Character.instance == null) return false;
+        if (characterTf == null) return false;
 
-        Transform target = Character.instance.transform;
-        Vector2 toTarget = (Vector2)(target.position - transform.position);
+        Vector2 toTarget = (Vector2)characterTf.position - (Vector2)transform.position;
 
         float r = range;
         if (toTarget.sqrMagnitude > r * r) return false;
 
-        float angle = Mathf.Clamp(animalData.detectAngle, 0f, 360f);
+        float angle = animalData.detectAngle;
+        if (!IsFinite(angle)) return false;
+
+        angle = Mathf.Clamp(angle, 0f, 360f);
         if (angle >= 360f) return true;
 
-        Vector2 forward = transform.right;
-        float halfAngle = angle * 0.5f;
-        float angleToTarget = Vector2.Angle(forward, toTarget);
+        if (angle != cachedAngle)
+        {
+            cachedAngle = angle;
+            float halfAngleRad = (angle * 0.5f) * Mathf.Deg2Rad;
+            cachedCosHalfAngle = Mathf.Cos(halfAngleRad);
+        }
 
-        return angleToTarget <= halfAngle;
+        Vector2 forward = (Vector2)transform.right;
+        float fSqr = forward.sqrMagnitude;
+        if (fSqr <= 0.0001f) return true;
+
+        float tSqr = toTarget.sqrMagnitude;
+        if (tSqr <= 0.0001f) return true;
+
+        float dot = Vector2.Dot(forward, toTarget);
+        float cos = dot / Mathf.Sqrt(fSqr * tSqr);
+
+        return cos >= cachedCosHalfAngle;
     }
 
     private void ReactDetected()
@@ -215,7 +310,6 @@ public class Animal : MonoBehaviour
             case AnimalBehaviour.EscapeAttacked:
                 Wander();
                 if (isAttacked) EscapeFromCharacter();
-                //else Wander();
                 break;
 
             case AnimalBehaviour.DefenseAttacked:
@@ -228,9 +322,9 @@ public class Animal : MonoBehaviour
     private void EscapeFromCharacter()
     {
         if (isAttacking) return;
+        if (characterTf == null) return;
 
-        Transform target = Character.instance.transform;
-        Vector2 awayDir = ((Vector2)transform.position - (Vector2)target.position).normalized;
+        Vector2 awayDir = ((Vector2)transform.position - (Vector2)characterTf.position).normalized;
 
         if (awayDir.sqrMagnitude < 0.0001f)
             awayDir = Random.insideUnitCircle.normalized;
@@ -259,8 +353,9 @@ public class Animal : MonoBehaviour
 
     private void AttackCharacter()
     {
-        Transform target = Character.instance.transform;
-        Vector2 toTarget = (Vector2)(target.position - transform.position);
+        if (characterTf == null) return;
+
+        Vector2 toTarget = (Vector2)characterTf.position - (Vector2)transform.position;
         float dist = toTarget.magnitude;
 
         if (isAttacking)
@@ -272,8 +367,9 @@ public class Animal : MonoBehaviour
 
             if (toTarget.sqrMagnitude > 0.0001f)
             {
-                SetAnimation(AnimMode.Attack, toTarget.normalized);
-                FaceDirection(toTarget.normalized);
+                Vector2 d = toTarget.normalized;
+                SetAnimation(AnimMode.Attack, d);
+                FaceDirection(d);
             }
             else
             {
@@ -296,7 +392,7 @@ public class Animal : MonoBehaviour
 
         if (dist > animalData.attackRange)
         {
-            Vector2 dir = toTarget.normalized;
+            Vector2 dir = toTarget.sqrMagnitude > 0.0001f ? toTarget / dist : Vector2.zero;
             Vector2 nextPos = rb.position + dir * animalData.runSpeed * Time.fixedDeltaTime;
 
             if (!IsFinite(nextPos))
@@ -344,7 +440,7 @@ public class Animal : MonoBehaviour
                 SetAnimation(AnimMode.Idle, lastAnimDir);
             }
 
-            if (Vector2.Distance(next, target) < 0.1f)
+            if ((next - target).sqrMagnitude < 0.01f)
                 PickNewWanderTarget();
 
             if (wanderTimer >= animalData.wanderInterval)
@@ -395,58 +491,54 @@ public class Animal : MonoBehaviour
 
     private void SetAnimation(AnimMode mode, Vector2 dir)
     {
-        if (animator.runtimeAnimatorController == null || animator == null) return;
+        if (animator == null || animator.runtimeAnimatorController == null) return;
 
         if (dir.sqrMagnitude > 0.0001f)
             lastAnimDir = dir.normalized;
-
-        SafeSetBool(idleFront, false);
-        SafeSetBool(idleBack, false);
-        SafeSetBool(idleSide, false);
-        SafeSetBool(wanderFront, false);
-        SafeSetBool(wanderBack, false);
-        SafeSetBool(wanderSide, false);
-        SafeSetBool(runFront, false);
-        SafeSetBool(runBack, false);
-        SafeSetBool(runSide, false);
-        SafeSetBool(attackFront, false);
-        SafeSetBool(attackBack, false);
-        SafeSetBool(attackSide, false);
-
 
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
         if (spriteRenderer != null)
         {
-            spriteRenderer.flipX = side && lastAnimDir.x > 0f;
+            bool flip = side && lastAnimDir.x > 0f;
+            if (flip != currentFlipX)
+            {
+                currentFlipX = flip;
+                spriteRenderer.flipX = flip;
+            }
         }
+
+        int desired = 0;
 
         switch (mode)
         {
             case AnimMode.Idle:
-                if (side) animator.SetBool(idleSide, true);
-                else if (lastAnimDir.y > 0f) animator.SetBool(idleBack, true);
-                else animator.SetBool(idleFront, true);
+                desired = side ? hIdleSide : (lastAnimDir.y > 0f ? hIdleBack : hIdleFront);
                 break;
 
             case AnimMode.Wander:
-                if (side) animator.SetBool(wanderSide, true);
-                else if (lastAnimDir.y > 0f) animator.SetBool(wanderBack, true);
-                else animator.SetBool(wanderFront, true);
+                desired = side ? hWanderSide : (lastAnimDir.y > 0f ? hWanderBack : hWanderFront);
                 break;
 
             case AnimMode.Run:
-                if (side) animator.SetBool(runSide, true);
-                else if (lastAnimDir.y > 0f) animator.SetBool(runBack, true);
-                else animator.SetBool(runFront, true);
+                desired = side ? hRunSide : (lastAnimDir.y > 0f ? hRunBack : hRunFront);
                 break;
 
             case AnimMode.Attack:
-                if (side) animator.SetBool(attackSide, true);
-                else if (lastAnimDir.y > 0f) animator.SetBool(attackBack, true);
-                else animator.SetBool(attackFront, true);
+                desired = side ? hAttackSide : (lastAnimDir.y > 0f ? hAttackBack : hAttackFront);
                 break;
         }
+
+        if (desired == 0) return;
+        if (desired == currentAnimHash) return;
+
+        if (currentAnimHash != 0 && boolParams != null && boolParams.Contains(currentAnimHash))
+            animator.SetBool(currentAnimHash, false);
+
+        currentAnimHash = desired;
+
+        if (boolParams == null || boolParams.Contains(currentAnimHash))
+            animator.SetBool(currentAnimHash, true);
     }
 
     private void SafeSetBool(string param, bool value)
@@ -454,15 +546,10 @@ public class Animal : MonoBehaviour
         if (animator == null) return;
         if (string.IsNullOrEmpty(param)) return;
 
-        for (int i = 0; i < animator.parameters.Length; i++)
-        {
-            if (animator.parameters[i].type == AnimatorControllerParameterType.Bool &&
-                animator.parameters[i].name == param)
-            {
-                animator.SetBool(param, value);
-                return;
-            }
-        }
+        int h = Animator.StringToHash(param);
+        if (boolParams != null && !boolParams.Contains(h)) return;
+
+        animator.SetBool(h, value);
     }
 
     public void OnAttacked()
@@ -471,18 +558,7 @@ public class Animal : MonoBehaviour
 
         if (animator == null) return;
 
-        // animator.SetBool(hurtFront, false);
-        // animator.SetBool(hurtBack, false);
-        // animator.SetBool(hurtSide, false);
-
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
-
-        // if (side)
-        //     animator.SetBool(hurtSide, true);
-        // else if (lastAnimDir.y > 0f)
-        //     animator.SetBool(hurtBack, true);
-        // else
-        //     animator.SetBool(hurtFront, true);
     }
 
     private void OnDestroyableKilled(Destroyable d)
@@ -504,34 +580,43 @@ public class Animal : MonoBehaviour
             return;
         }
 
-        animator.SetBool(idleFront, false);
-        animator.SetBool(idleBack, false);
-        animator.SetBool(idleSide, false);
-        animator.SetBool(wanderFront, false);
-        animator.SetBool(wanderBack, false);
-        animator.SetBool(wanderSide, false);
-        animator.SetBool(runFront, false);
-        animator.SetBool(runBack, false);
-        animator.SetBool(runSide, false);
-        animator.SetBool(attackFront, false);
-        animator.SetBool(attackBack, false);
-        animator.SetBool(attackSide, false);
-        animator.SetBool(hurtFront, false);
-        animator.SetBool(hurtBack, false);
-        animator.SetBool(hurtSide, false);
+        if (currentAnimHash != 0 && boolParams != null && boolParams.Contains(currentAnimHash))
+            animator.SetBool(currentAnimHash, false);
+        currentAnimHash = 0;
 
-        animator.SetBool(deathFront, false);
-        animator.SetBool(deathBack, false);
-        animator.SetBool(deathSide, false);
+        if (boolParams != null)
+        {
+            if (boolParams.Contains(hIdleFront)) animator.SetBool(hIdleFront, false);
+            if (boolParams.Contains(hIdleBack)) animator.SetBool(hIdleBack, false);
+            if (boolParams.Contains(hIdleSide)) animator.SetBool(hIdleSide, false);
+
+            if (boolParams.Contains(hWanderFront)) animator.SetBool(hWanderFront, false);
+            if (boolParams.Contains(hWanderBack)) animator.SetBool(hWanderBack, false);
+            if (boolParams.Contains(hWanderSide)) animator.SetBool(hWanderSide, false);
+
+            if (boolParams.Contains(hRunFront)) animator.SetBool(hRunFront, false);
+            if (boolParams.Contains(hRunBack)) animator.SetBool(hRunBack, false);
+            if (boolParams.Contains(hRunSide)) animator.SetBool(hRunSide, false);
+
+            if (boolParams.Contains(hAttackFront)) animator.SetBool(hAttackFront, false);
+            if (boolParams.Contains(hAttackBack)) animator.SetBool(hAttackBack, false);
+            if (boolParams.Contains(hAttackSide)) animator.SetBool(hAttackSide, false);
+
+            if (boolParams.Contains(hHurtFront)) animator.SetBool(hHurtFront, false);
+            if (boolParams.Contains(hHurtBack)) animator.SetBool(hHurtBack, false);
+            if (boolParams.Contains(hHurtSide)) animator.SetBool(hHurtSide, false);
+
+            if (boolParams.Contains(hDeathFront)) animator.SetBool(hDeathFront, false);
+            if (boolParams.Contains(hDeathBack)) animator.SetBool(hDeathBack, false);
+            if (boolParams.Contains(hDeathSide)) animator.SetBool(hDeathSide, false);
+        }
 
         bool side = Mathf.Abs(lastAnimDir.x) > Mathf.Abs(lastAnimDir.y);
 
-        if (side)
-            animator.SetBool(deathSide, true);
-        else if (lastAnimDir.y > 0f)
-            animator.SetBool(deathBack, true);
-        else
-            animator.SetBool(deathFront, true);
+        int death = side ? hDeathSide : (lastAnimDir.y > 0f ? hDeathBack : hDeathFront);
+
+        if (boolParams == null || boolParams.Contains(death))
+            animator.SetBool(death, true);
 
         StartCoroutine(DeathAnimThenLoot(d));
     }

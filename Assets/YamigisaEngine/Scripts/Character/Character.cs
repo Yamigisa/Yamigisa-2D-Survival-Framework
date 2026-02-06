@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    public class Character : MonoBehaviour
+    public class Character : MonoBehaviour, ISavable
     {
         [HideInInspector] public CharacterAnimation characterAnimation;
         [HideInInspector] public CharacterAttribute characterAttribute;
@@ -82,7 +82,6 @@ namespace Yamigisa
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, itemData.increaseHealth);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Hunger, itemData.increaseHunger);
             characterAttribute.AddCurrentAttributeValue(AttributeType.Thirst, itemData.increaseThirst);
-            Debug.Log("Consumed item: " + itemData.itemName);
         }
 
         public void TakeDamage(int damage)
@@ -98,6 +97,24 @@ namespace Yamigisa
         public void EnableMovements()
         {
             characterMovement.canMove = true;
+        }
+
+        public void Save(ref SaveGameData data)
+        {
+            data.player = new CharacterData
+            {
+                position = transform.position,
+                rotation = transform.rotation,
+                attributes = characterAttribute.GetSaveData()
+            };
+        }
+
+        public void Load(SaveGameData data)
+        {
+            transform.position = data.player.position;
+            transform.rotation = data.player.rotation;
+
+            characterAttribute.LoadFromSaveData(data.player.attributes);
         }
     }
 }

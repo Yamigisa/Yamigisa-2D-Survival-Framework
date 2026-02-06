@@ -2,11 +2,14 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering.Universal;
+using System.Threading.Tasks;
 
 namespace Yamigisa
 {
-    public class TimeClock : MonoBehaviour
+    public class TimeClock : MonoBehaviour, ISavable
     {
+        public static TimeClock Instance { get; private set; }
+
         public event System.Action OnMinuteChanged;
         public event System.Action OnHourChanged;
         public event System.Action OnDayChanged;
@@ -17,7 +20,7 @@ namespace Yamigisa
         [Range(0, 23)][SerializeField] private int startingHour = 0;
         [Min(1)][SerializeField] private int startingDay = 1;
 
-        [Header("UI (Legacy Text)")]
+        [Header("UI")]
         [SerializeField] private Text timeText;
         [SerializeField] private Text dayText;
         [SerializeField] private Image clockFill;
@@ -31,60 +34,61 @@ namespace Yamigisa
         public int Hour { get; private set; }
         public int Day { get; private set; }
 
-        public static TimeClock Instance { get; private set; }
+        private Coroutine ticking;
+        private bool wired;
 
-        Coroutine ticking;
+        // ===================== SINGLETON ONLY =====================
 
-        void Awake()
+        private void Awake()
         {
-            if (Instance == null)
+            if (Instance != null && Instance != this)
             {
-                Instance = this;
+                Destroy(gameObject);
+                return;
             }
+
+            Instance = this;
         }
 
-        void OnEnable()
+        // ===================== MANUAL LIFECYCLE =====================
+
+        /// <summary>
+        /// Called ONCE by GameManager before loading save data.
+        /// Wires events and sets default values.
+        /// </summary>
+        public void Setup()
         {
-            StartTime(startingMinute, startingHour, startingDay);
+            if (!wired)
+            {
+                if (changeEveryMinute)
+                    OnMinuteChanged += ApplyLightingByMinute;
+                else
+                    OnHourChanged += ApplyLightingByHour;
 
-            if (changeEveryMinute)
-                OnMinuteChanged += ApplyLightingByMinute;
-            else
-                OnHourChanged += ApplyLightingByHour;
+                OnMinuteChanged += UpdateUIAndFill;
+                OnHourChanged += UpdateUIAndFill;
+                OnDayChanged += UpdateUIAndFill;
 
-            OnMinuteChanged += UpdateUIAndFill;
-            OnHourChanged += UpdateUIAndFill;
-            OnDayChanged += UpdateUIAndFill;
+                wired = true;
+            }
 
-            UpdateUIAndFill();
-            if (changeEveryMinute) ApplyLightingByMinute(); else ApplyLightingByHour();
+            SetTime(startingMinute, startingHour, startingDay);
+            RefreshVisuals();
         }
 
-        void OnDisable()
+        /// <summary>
+        /// Called by GameManager AFTER Load().
+        /// This is when time actually starts moving.
+        /// </summary>
+        public void StartSystem()
         {
-            if (Instance != this) return;
+            if (ticking != null)
+                StopCoroutine(ticking);
 
-            if (changeEveryMinute)
-                OnMinuteChanged -= ApplyLightingByMinute;
-            else
-                OnHourChanged -= ApplyLightingByHour;
-
-            OnMinuteChanged -= UpdateUIAndFill;
-            OnHourChanged -= UpdateUIAndFill;
-            OnDayChanged -= UpdateUIAndFill;
-        }
-
-        public void StartTime(int minute, int hour, int day = 1)
-        {
-            Minute = Mathf.Clamp(minute, 0, 59);
-            Hour = Mathf.Clamp(hour, 0, 23);
-            Day = Mathf.Max(1, day);
-
-            if (ticking != null) StopCoroutine(ticking);
             ticking = StartCoroutine(Tick());
         }
 
-        public void StopTime()
+        public void StopSystem()
         {
             if (ticking != null)
             {
@@ -93,7 +97,16 @@ namespace Yamigisa
             }
         }
 
-        IEnumerator Tick()
+        // ===================== CORE LOGIC =====================
+
+        public void SetTime(int minute, int hour, int day)
+        {
+            Minute = Mathf.Clamp(minute, 0, 59);
+            Hour = Mathf.Clamp(hour, 0, 23);
+            Day = Mathf.Max(1, day);
+        }
+
+        private IEnumerator Tick()
         {
             while (true)
             {
@@ -102,7 +115,7 @@ namespace Yamigisa
             }
         }
 
-        void AdvanceMinute()
+        private void AdvanceMinute()
         {
             Minute++;
             OnMinuteChanged?.Invoke();
@@ -122,45 +135,64 @@ namespace Yamigisa
             }
         }
 
-        void UpdateUIAndFill()
+        // ===================== VISUALS =====================
+
+        private void UpdateUIAndFill()
         {
-            if (timeText != null) timeText.text = $"{Hour:00}:{Minute:00}";
-            if (dayText != null) dayText.text = $"Day {Day}";
+            if (timeText) timeText.text = $"{Hour:00}:{Minute:00}";
+            if (dayText) dayText.text = $"Day {Day}";
             UpdateClockFill();
         }
 
-        void UpdateClockFill()
+        private void UpdateClockFill()
         {
-            if (clockFill == null) return;
+            if (!clockFill) return;
 
-            float dayTime = Hour + (Minute / 60f);
+            float dayTime = Hour + Minute / 60f;
             bool clockwise = dayTime <= 12f;
             clockFill.fillClockwise = clockwise;
 
             if (clockwise)
-            {
-                float value = dayTime / 12f;
-                clockFill.fillAmount = Mathf.Clamp01(value);
-            }
+                clockFill.fillAmount = Mathf.Clamp01(dayTime / 12f);
             else
-            {
-                float value = (dayTime - 12f) / 12f;
-                clockFill.fillAmount = Mathf.Clamp01(1f - value);
-            }
+                clockFill.fillAmount = Mathf.Clamp01(1f - ((dayTime - 12f) / 12f));
         }
 
-        void ApplyLightingByMinute()
+        private void RefreshVisuals()
         {
-            if (dayNightLight == null || dayNightGradient == null) return;
+            UpdateUIAndFill();
+
+            if (changeEveryMinute) ApplyLightingByMinute();
+            else ApplyLightingByHour();
+        }
+
+        private void ApplyLightingByMinute()
+        {
+            if (!dayNightLight || dayNightGradient == null) return;
             float t = (Hour * 60f + Minute) / 1440f;
             dayNightLight.color = dayNightGradient.Evaluate(t);
         }
 
-        void ApplyLightingByHour()
+        private void ApplyLightingByHour()
         {
-            if (dayNightLight == null || dayNightGradient == null) return;
+            if (!dayNightLight || dayNightGradient == null) return;
             float t = Hour / 24f;
             dayNightLight.color = dayNightGradient.Evaluate(t);
+        }
+
+        // ===================== SAVE =====================
+
+        public void Save(ref SaveGameData data)
+        {
+            data.day = Day;
+            data.hour = Hour;
+            data.minute = Minute;
+        }
+
+        public void Load(SaveGameData data)
+        {
+            SetTime(data.minute, data.hour, data.day);
+            RefreshVisuals();
         }
     }
 }

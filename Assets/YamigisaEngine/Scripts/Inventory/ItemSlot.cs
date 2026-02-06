@@ -204,12 +204,12 @@ namespace Yamigisa
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (ItemData == null) return;
-            Inventory.Instance.ShowTooltip(ItemData);
+            //   Inventory.Instance.ShowTooltip(ItemData);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            Inventory.Instance.HideTooltip();
+            //Inventory.Instance.HideTooltip();
         }
     }
 }

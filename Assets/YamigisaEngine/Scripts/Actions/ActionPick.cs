@@ -13,6 +13,8 @@ namespace Yamigisa
 
             Inventory.Instance.AddItem(item.itemData, item.quantity);
 
+            InteractiveObject.MarkPickedUp();
+            
             Destroy(InteractiveObject.gameObject);
         }
     }

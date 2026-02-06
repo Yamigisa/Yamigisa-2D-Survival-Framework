@@ -6,8 +6,11 @@ using UnityEngine;
 namespace Yamigisa
 {
     [RequireComponent(typeof(InteractiveObject))]
-    public class Destroyable : MonoBehaviour
+    public class Destroyable : MonoBehaviour, ISavable
     {
+        [Header("Save ID (DO NOT CHANGE)")]
+        [SerializeField] private string id;
+
         [Header("Stats")]
         public int hp = 100;
 
@@ -16,7 +19,6 @@ namespace Yamigisa
 
         [Header("Loot")]
         [SerializeField] private List<DestroyableLoot> loots;
-        [Tooltip("If true, the destroyable will drop loot upon being killed. IF false, loot will instantly go into inventory.")]
         [SerializeField] private bool dropLootOnKill = true;
 
         [Header("Loot Scatter")]
@@ -27,19 +29,30 @@ namespace Yamigisa
         private bool isDying;
         private bool deathAnimFinished;
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                id = System.Guid.NewGuid().ToString();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+        }
+#endif
 
         public void TakeDamage(int damage)
         {
+            if (isDying) return;
+
             hp -= damage;
             if (hp <= 0)
-            {
                 Kill();
-            }
         }
 
         public void Kill()
         {
             if (isDying) return;
+
             isDying = true;
             deathAnimFinished = false;
             StartCoroutine(KillRoutine());
@@ -54,22 +67,17 @@ namespace Yamigisa
         {
             OnKilled?.Invoke(this);
 
-            if (OnKilled == null)
-            {
-                GetLoot();
-                Destroy(gameObject);
-                yield break;
-            }
-
             float timeout = 10f;
-            while (!deathAnimFinished && timeout > 0f)
+            while (OnKilled != null && !deathAnimFinished && timeout > 0f)
             {
                 timeout -= Time.deltaTime;
                 yield return null;
             }
 
             GetLoot();
-            Destroy(gameObject);
+
+            // IMPORTANT: disable, NOT destroy
+            gameObject.SetActive(false);
         }
 
         private void GetLoot()
@@ -97,6 +105,37 @@ namespace Yamigisa
                 {
                     Inventory.Instance?.AddItem(loot.itemLoot, loot.quantity);
                 }
+            }
+        }
+
+        public void Save(ref SaveGameData data)
+        {
+            if (data.destroyables == null)
+                data.destroyables = new Dictionary<string, DestroyableSaveData>();
+
+            data.destroyables[id] = new DestroyableSaveData
+            {
+                hp = hp,
+                destroyed = !gameObject.activeSelf
+            };
+        }
+
+        public void Load(SaveGameData data)
+        {
+            if (data.destroyables == null) return;
+            if (!data.destroyables.TryGetValue(id, out var saved)) return;
+
+            hp = saved.hp;
+
+            if (saved.destroyed)
+            {
+                Debug.Log("gameobject saved :" + saved.destroyed);
+                gameObject.SetActive(false);
+            }
+            else
+            {
+                gameObject.SetActive(true);
+                isDying = false;
             }
         }
     }

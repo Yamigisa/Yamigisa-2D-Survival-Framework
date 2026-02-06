@@ -11,7 +11,6 @@ namespace Yamigisa
         private Dictionary<AttributeType, float> biomeRegenAdditions = new();
         private Dictionary<AttributeType, float> biomeDepleteAdditions = new();
 
-        [System.Obsolete]
         void Start()
         {
             attributeUI = FindObjectOfType<AttributeUI>();
@@ -121,5 +120,47 @@ namespace Yamigisa
                 }
             }
         }
+
+        public List<AttributeSaveData> GetSaveData()
+        {
+            List<AttributeSaveData> result = new();
+
+            foreach (AttributeData a in AttributeData)
+            {
+                result.Add(new AttributeSaveData
+                {
+                    type = a.type,
+                    current = a.CurrentValue,
+                    max = a.MaxValue
+                });
+            }
+
+            return result;
+        }
+
+        public void LoadFromSaveData(List<AttributeSaveData> data)
+        {
+            foreach (var saved in data)
+            {
+                foreach (AttributeData a in AttributeData)
+                {
+                    if (a.type != saved.type) continue;
+
+                    a.MaxValue = saved.max;
+                    a.CurrentValue = Mathf.Clamp(saved.current, 0, a.MaxValue);
+
+                    if (attributeUI != null)
+                    {
+                        var bar = attributeUI.GetAttributeBar(a);
+                        if (bar != null)
+                        {
+                            bar.SetMaxValue(a.MaxValue);
+                            bar.SetCurrentValue(a.CurrentValue);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

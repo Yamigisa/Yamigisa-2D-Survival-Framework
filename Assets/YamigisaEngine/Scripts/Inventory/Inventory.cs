@@ -6,10 +6,11 @@ using UnityEngine.EventSystems;
 
 namespace Yamigisa
 {
-    public class Inventory : MonoBehaviour
+    public class Inventory : MonoBehaviour, ISavable
     {
-        [HideInInspector] public InventoryPanel mainInventoryPanel;
-        [HideInInspector] public InventoryPanel quickInventoryPanel;
+        [Header("Inventory Panels (Scene References)")]
+        [SerializeField] private InventoryPanel mainInventoryPanel;
+        [SerializeField] private InventoryPanel quickInventoryPanel;
 
         [Header("Inventory Prefabs")]
         [SerializeField] private ItemSlot ItemSlotPrefab;
@@ -19,6 +20,10 @@ namespace Yamigisa
         [SerializeField] private Transform mainInventoryTransform;
         [SerializeField] private Transform quickInventoryTransform;
 
+        [Header("Quick Inventory")]
+        [SerializeField] private int quickSlotCount = 8;
+        [SerializeField] private Transform quickInventoryContent;
+
         [Header("Max Item Count")]
         public int maxItems = 32;
 
@@ -27,9 +32,6 @@ namespace Yamigisa
 
         private List<ItemSlot> itemSlots = new List<ItemSlot>();
 
-        [Header("Quick Inventory")]
-        [SerializeField] private int quickSlotCount = 8;
-        [SerializeField] private Transform quickInventoryContent;
         private List<ItemSlot> quickItemSlot = new List<ItemSlot>();
 
         [Header("Quick Slot Scroll")]
@@ -44,16 +46,16 @@ namespace Yamigisa
             ItemType.Resource
         };
 
-        [Header("Tooltip Panel")]
-        [SerializeField] private bool showTooltipPanel = true;
-        [SerializeField] private GameObject tooltipPanel;
-        [SerializeField] private Text itemNameText;
-        [SerializeField] private Text itemDescriptionText;
+        // [Header("Tooltip Panel")]
+        // [SerializeField] private bool showTooltipPanel = true;
+        // [SerializeField] private GameObject tooltipPanel;
+        // [SerializeField] private Text itemNameText;
+        // [SerializeField] private Text itemDescriptionText;
 
         [Header("Drag & Drop")]
         [SerializeField] private float holdToPickSeconds = 0.25f;
-        public Canvas rootCanvas;
-        public GraphicRaycaster raycaster;
+        private Canvas rootCanvas;
+        private GraphicRaycaster raycaster;
 
         private int selectedQuickIndex = -1;
 
@@ -73,10 +75,10 @@ namespace Yamigisa
         public bool IsInventoryOpen { get { return mainInventoryPanel != null && mainInventoryPanel.inventoryPanelGameObject.activeSelf; } }
 
         private CharacterControls controls;
-        public Character Character;
+        private Character Character;
 
         private bool isUsingSlot;
-        public Storage currentStorage;
+        [HideInInspector] public Storage currentStorage;
 
         public static event System.Action OnChanged;
         private static void NotifyChanged()
@@ -92,13 +94,16 @@ namespace Yamigisa
             else { Destroy(gameObject); return; }
         }
 
-        private void Start()
+        public void Setup()
         {
             Character = Character.instance.GetCharacter();
             controls = Character.characterControls;
 
-            mainInventoryPanel = CreateInventoryPanel();
-            quickInventoryPanel = CreateInventoryPanel(quickInventoryTransform);
+            mainInventoryPanel.inventoryOwner = this;
+            quickInventoryPanel.inventoryOwner = this;
+
+            mainInventoryPanel.ClearPanel();
+            quickInventoryPanel.ClearPanel();
 
             mainInventoryPanel.gameObject.SetActive(false);
             rootCanvas = GetComponentInParent<Canvas>();
@@ -106,20 +111,24 @@ namespace Yamigisa
 
             itemSlots.Clear();
 
-            // Initialize Slots for main Inventory
+            // Main inventory slots
             for (int i = 0; i < maxItems; i++)
             {
-                ItemSlot newSlot = CreateItemSlot();
-                itemSlots.Add(newSlot);
+                ItemSlot slot = Instantiate(
+                    ItemSlotPrefab,
+                    mainInventoryPanel.inventoryContent
+                );
+                itemSlots.Add(slot);
             }
 
-
-            // Initialize Slots for quick Inventory
-            quickItemSlot.Clear();
+            // Quick inventory slots
             for (int i = 0; i < quickSlotCount; i++)
             {
-                ItemSlot quickSlot = CreateItemSlot(quickInventoryPanel.inventoryContent);
-                quickItemSlot.Add(quickSlot);
+                ItemSlot slot = Instantiate(
+                    ItemSlotPrefab,
+                    quickInventoryPanel.inventoryContent
+                );
+                quickItemSlot.Add(slot);
             }
 
             SetStartingItems();
@@ -133,7 +142,6 @@ namespace Yamigisa
 
             StartCoroutine(BroadcastInventoryChangedNextFrame());
 
-            //mainInventoryPanel.sortButton.onClick.AddListener(() => { SortInventory(); });
             mainInventoryPanel.sortButton.gameObject.SetActive(true);
         }
 
@@ -485,22 +493,22 @@ namespace Yamigisa
 
         // ===================== TOOLTIP =====================
 
-        public void ShowTooltip(ItemData itemData)
-        {
-            if (!showTooltipPanel || itemData == null) return;
-            //if (inventoryPanel == null || !inventoryPanel.activeSelf) return;
+        // public void ShowTooltip(ItemData itemData)
+        // {
+        //     if (!showTooltipPanel || itemData == null) return;
+        //     //if (inventoryPanel == null || !inventoryPanel.activeSelf) return;
 
-            if (tooltipPanel != null) tooltipPanel.SetActive(true);
-            if (itemNameText != null) itemNameText.text = itemData.itemName;
-            if (itemDescriptionText != null) itemDescriptionText.text = itemData.description;
-        }
+        //     if (tooltipPanel != null) tooltipPanel.SetActive(true);
+        //     if (itemNameText != null) itemNameText.text = itemData.itemName;
+        //     if (itemDescriptionText != null) itemDescriptionText.text = itemData.description;
+        // }
 
-        public void HideTooltip()
-        {
-            if (tooltipPanel != null) tooltipPanel.SetActive(false);
-            if (itemNameText != null) itemNameText.text = "";
-            if (itemDescriptionText != null) itemDescriptionText.text = "";
-        }
+        // public void HideTooltip()
+        // {
+        //     if (tooltipPanel != null) tooltipPanel.SetActive(false);
+        //     if (itemNameText != null) itemNameText.text = "";
+        //     if (itemDescriptionText != null) itemDescriptionText.text = "";
+        // }
 
         // ===================== SORT INVENTORY =====================
 
@@ -655,7 +663,7 @@ namespace Yamigisa
             dragIconAmount = textGO.GetComponent<Text>();
             dragIconAmount.raycastTarget = false;
             dragIconAmount.alignment = TextAnchor.LowerRight;
-            dragIconAmount.font = itemNameText != null ? itemNameText.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
+            //dragIconAmount.font = itemNameText != null ? itemNameText.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
             dragIconAmount.fontSize = 20;
             dragIconAmount.text = amount > 1 ? amount.ToString() : "";
             RectTransform tr = textGO.GetComponent<RectTransform>();
@@ -914,11 +922,110 @@ namespace Yamigisa
             }
         }
 
+        public void Save(ref SaveGameData data)
+        {
+            InventorySaveData inv = new InventorySaveData();
+            inv.selectedQuickIndex = selectedQuickIndex;
+
+            // Main inventory
+            for (int i = 0; i < itemSlots.Count; i++)
+            {
+                ItemSlot slot = itemSlots[i];
+                if (slot == null || !slot.HasItem || slot.ItemData == null) continue;
+
+                inv.items.Add(new InventoryItemSaveData
+                {
+                    itemId = slot.ItemData.Id,
+                    amount = slot.Amount,
+                    isQuick = false,
+                    index = i
+                });
+            }
+
+            // Quick inventory
+            for (int i = 0; i < quickItemSlot.Count; i++)
+            {
+                ItemSlot slot = quickItemSlot[i];
+                if (slot == null || !slot.HasItem || slot.ItemData == null) continue;
+
+                inv.items.Add(new InventoryItemSaveData
+                {
+                    itemId = slot.ItemData.Id,
+                    amount = slot.Amount,
+                    isQuick = true,
+                    index = i
+                });
+            }
+
+            data.inventory = inv;
+        }
+
+        public void Load(SaveGameData data)
+        {
+            if (itemSlots.Count == 0 || quickItemSlot.Count == 0)
+            {
+                Debug.LogError("Inventory.Load called before Setup()");
+                return;
+            }
+
+            if (data.inventory == null) return;
+
+            // Clear all slots
+            foreach (ItemSlot slot in itemSlots)
+                slot.ResetSlot();
+
+            foreach (ItemSlot slot in quickItemSlot)
+                slot.ResetSlot();
+
+            // Restore items
+            foreach (var saved in data.inventory.items)
+            {
+                ItemData item = ItemDatabase.Get(saved.itemId);
+                if (item == null) continue;
+
+                if (saved.isQuick)
+                {
+                    if (saved.index < 0 || saved.index >= quickItemSlot.Count) continue;
+                    quickItemSlot[saved.index].SetItem(item, saved.amount);
+                }
+                else
+                {
+                    if (saved.index < 0 || saved.index >= itemSlots.Count) continue;
+                    itemSlots[saved.index].SetItem(item, saved.amount);
+                }
+            }
+
+            // Restore selected quick slot
+            selectedQuickIndex = Mathf.Clamp(
+                data.inventory.selectedQuickIndex,
+                0,
+                quickItemSlot.Count - 1
+            );
+
+            UpdateQuickIndicators();
+            NotifyChanged();
+        }
+
         [System.Serializable]
         public class StartingItem
         {
             public ItemData item;
             public int amount = 1;
         }
+    }
+    [System.Serializable]
+    public class InventoryItemSaveData
+    {
+        public string itemId;
+        public int amount;
+        public bool isQuick;
+        public int index;
+    }
+
+    [System.Serializable]
+    public class InventorySaveData
+    {
+        public List<InventoryItemSaveData> items = new();
+        public int selectedQuickIndex;
     }
 }

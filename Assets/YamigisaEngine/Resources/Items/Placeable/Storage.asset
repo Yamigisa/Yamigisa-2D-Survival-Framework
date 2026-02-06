@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
   m_Name: Storage
   m_EditorClassIdentifier: 
+  id: 6f893130-8eda-4b51-875a-ea6d15fa8f39
   itemPrefab: {fileID: 8179408358234063261, guid: c2fafd349d512e9429cbfb9aab5733d9, type: 3}
   itemName: Storage
   iconWorld: {fileID: -1237704566, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}

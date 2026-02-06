@@ -13,8 +13,17 @@ namespace Yamigisa
         [HideInInspector]
         public Inventory inventoryOwner;
 
+        public void ClearPanel()
+        {
+            foreach (Transform child in inventoryContent)
+            {
+                Destroy(child.gameObject);
+            }
+        }
         private void OnEnable()
         {
+            if (sortButton == null) return;
+
             sortButton.onClick.RemoveAllListeners();
             sortButton.onClick.AddListener(() =>
             {

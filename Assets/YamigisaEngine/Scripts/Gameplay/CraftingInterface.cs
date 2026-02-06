@@ -47,29 +47,29 @@ namespace Yamigisa
 
         private readonly HashSet<ItemData> spawnedItems = new();
 
-        private void Awake()
-        {
-            Inventory.OnChanged += OnInventoryChanged;
-        }
-
-        private void OnDestroy()
-        {
-            Inventory.OnChanged -= OnInventoryChanged;
-        }
-
-        private void EnsureInitialized()
+        public void Setup()
         {
             if (isInitialized) return;
 
+            // 1. Build all craft group data + UI
             BuildCraftSelection();
-            isInitialized = true;
-        }
 
-        private void Start()
-        {
-            EnsureInitialized();
-            craftingItemSelectionPanel.SetActive(false);
-            craftingItemPanel.SetActive(false);
+            // 2. Subscribe to inventory changes
+            Inventory.OnChanged += OnInventoryChanged;
+
+            // 3. Ensure UI starts closed
+            if (craftingItemSelectionPanel)
+                craftingItemSelectionPanel.SetActive(false);
+
+            if (craftingItemPanel)
+                craftingItemPanel.SetActive(false);
+
+            currentRecipe = null;
+
+            runtimeAdditionalGroups.Clear();
+            activeShownGroups.Clear();
+
+            isInitialized = true;
         }
 
         private void Update()
