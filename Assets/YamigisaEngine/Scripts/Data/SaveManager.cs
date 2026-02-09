@@ -37,6 +37,7 @@ namespace Yamigisa
                 }
             }
 
+            GameManager.instance.OnGameStart();
             Debug.Log("Load game");
         }
 

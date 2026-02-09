@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: 
   biomeName: Forest?
-  debugColor: {r: 0, g: 0, b: 0, a: 0}
-  groundTile: {fileID: 11400000, guid: 97b25e67da5ca124f98d97b9c2fa34c9, type: 2}
-  resourcePrefabs:
-  - {fileID: 514889103609099034, guid: b46efefc83b3d614eabebde8480bde0d, type: 3}
-  - {fileID: 514889103609099034, guid: b46efefc83b3d614eabebde8480bde0d, type: 3}
-  enemyPrefabs:
-  - {fileID: 2092437481071958072, guid: 58e7f5fb2222cb442b19960658ccc1ba, type: 3}
+  groundTile: {fileID: 0}
+  biomePrefab: {fileID: 6773550762760936033, guid: d3e1606c0d95f5a499aa549b0f643427, type: 3}
+  resourceSpawns:
+  - prefab: {fileID: 8179408358234063261, guid: c2fafd349d512e9429cbfb9aab5733d9, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  creatureSpawns: []
   speedAddition: 1
-  modifiers:
+  attributeModifiers:
   - type: 0
-    regenAddition: 100
+    regenAddition: 1
     depleteAddition: 0

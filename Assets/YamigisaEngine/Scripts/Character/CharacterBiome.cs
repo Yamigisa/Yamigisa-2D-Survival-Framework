@@ -6,14 +6,6 @@ namespace Yamigisa
     {
         private BiomeData currentBiome;
 
-        private CharacterMovement characterMovement;
-        private CharacterAttribute characterAttribute;
-
-        void Start()
-        {
-            characterMovement = Character.instance.characterMovement;
-            characterAttribute = Character.instance.characterAttribute;
-        }
         public void SetBiome(BiomeData biome)
         {
             currentBiome = biome;
@@ -22,10 +14,8 @@ namespace Yamigisa
 
         void ApplyBiome()
         {
-            characterMovement.SetSpeedMultiplier(currentBiome.speedAddition);
-
-            characterAttribute.ApplyBiomeModifiers(currentBiome.modifiers);
+            Character.instance.characterMovement.SetSpeedMultiplier(currentBiome.speedAddition);
+            Character.instance.characterAttribute.ApplyBiomeModifiers(currentBiome.attributeModifiers);
         }
-
     }
 }

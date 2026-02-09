@@ -8,6 +8,7 @@ namespace Yamigisa
 
         private CraftingInterface craftingInterface;
 
+        private bool isOpened = false;
         void Start()
         {
             craftingInterface = FindAnyObjectByType<CraftingInterface>();
@@ -16,8 +17,10 @@ namespace Yamigisa
         private void Update()
         {
             if (Character.instance.characterControls.IsAnyKeyPressedDown(
-                Character.instance.characterControls.cancelKey))
+                Character.instance.characterControls.cancelKey) && Character.instance.CharacterIsBusy() && isOpened)
             {
+                isOpened = false;
+                Character.instance.SetCharacterBusy(false);
                 craftingInterface.CloseAllCraftingInterfaces();
             }
         }
@@ -26,8 +29,9 @@ namespace Yamigisa
         {
             if (!craftingInterface || !additionalCraftGroup) return;
 
+            isOpened = true;
             Character.instance.DisableMovements();
-
+            Character.instance.SetCharacterBusy(true);
             // EXACTLY like pressing a craft group button first, then add additional
             craftingInterface.OpenCraftingFromPlaceable(additionalCraftGroup);
         }

@@ -5,6 +5,12 @@ namespace Yamigisa
     [RequireComponent(typeof(Rigidbody2D), typeof(CharacterControls))]
     public class CharacterMovement : MonoBehaviour
     {
+        [Header("Movements Bool")]
+        public bool canMove;
+        public bool canSprint;
+        public bool canJump;
+        public bool canCrouch;
+
         [Header("Player Components")]
         [SerializeField] private Rigidbody2D rb;
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -15,13 +21,10 @@ namespace Yamigisa
         [SerializeField] private float walkSpeed = 5f;
         private float speedAddition = 0;
 
-        [SerializeField] private bool playerCanMove = true;
-
         private Vector2 lastDirection = Vector2.down;
         private bool isWalking = false;
 
         [Header("Sprint")]
-        [SerializeField] private bool playerCanSprint = true;
         [SerializeField] private bool unlimitedSprint = false;
         [SerializeField] private float sprintSpeed = 7f;
         [SerializeField] private float sprintDuration = 5f;
@@ -35,7 +38,6 @@ namespace Yamigisa
         public Vector2 LastDirection => lastDirection;
 
         [Header("Jump")]
-        [SerializeField] private bool canJump = true;
         [SerializeField] private float jumpForce = 0.4f;
         [SerializeField] private float jumpDuration = 0.35f;
         [SerializeField] private float jumpDistance = 1.2f;
@@ -61,14 +63,12 @@ namespace Yamigisa
 
         public bool IsAutoMoving => isAutoMoving;
 
-        public bool canMove;
-
         public void StopAutoMoveExternal()
         {
             StopAutoMove();
         }
 
-        private void Start()
+        private void Awake()
         {
             characterControls = Character.instance.characterControls;
 
@@ -107,6 +107,22 @@ namespace Yamigisa
                 Move();
         }
 
+        public void DisableAllMovements()
+        {
+            canMove = false;
+            canSprint = false;
+            canJump = false;
+            canCrouch = false;
+        }
+
+        public void EnableAllMovements()
+        {
+            canMove = true;
+            canSprint = true;
+            canJump = true;
+            canCrouch = true;
+        }
+
         private void AutoMove()
         {
             Vector2 currentPos = rb.position;
@@ -139,7 +155,7 @@ namespace Yamigisa
 
         private void Move()
         {
-            if (!playerCanMove) return;
+            if (!canMove) return;
 
             Vector2 inputDirection = Vector2.zero;
 
@@ -153,15 +169,15 @@ namespace Yamigisa
                 inputDirection.y = 0;
 
             bool isPressingSprint = characterControls.IsAnyKeyPressed(characterControls.sprintKey);
-            bool canSprint = playerCanSprint && !isSprintCooldown && (unlimitedSprint || sprintRemaining > 0f);
+            bool CharactercanSprint = canSprint && !isSprintCooldown && (unlimitedSprint || sprintRemaining > 0f);
 
-            float currentSpeed = ((isPressingSprint && canSprint) ? sprintSpeed : walkSpeed) + speedAddition;
+            float currentSpeed = ((isPressingSprint && CharactercanSprint) ? sprintSpeed : walkSpeed) + speedAddition;
 
 
             if (isCrouching)
                 currentSpeed *= crouchSpeedMultiplier;
 
-            if (isPressingSprint && canSprint && !unlimitedSprint)
+            if (isPressingSprint && CharactercanSprint && !unlimitedSprint)
                 sprintRemaining -= Time.deltaTime;
 
             Vector2 targetVelocity = inputDirection * currentSpeed;
@@ -177,6 +193,7 @@ namespace Yamigisa
 
         public void SetSpeedMultiplier(float addition)
         {
+
             speedAddition = addition;
         }
 
@@ -202,7 +219,6 @@ namespace Yamigisa
             {
                 if (canJump && characterControls.IsAnyKeyPressed(characterControls.jumpKey) && !isCrouching)
                     TryJump();
-
                 return;
             }
 
@@ -234,7 +250,7 @@ namespace Yamigisa
             gameObject.layer = LayerMask.NameToLayer("NoCollision");
 
             isJumping = true;
-            playerCanMove = false;
+            canMove = false;
 
             jumpTimer = jumpDuration;
             spriteRenderer.transform.localPosition = baseSpriteOffset;
@@ -243,7 +259,7 @@ namespace Yamigisa
         private void EndJump()
         {
             isJumping = false;
-            playerCanMove = true;
+            canMove = true;
 
             spriteRenderer.transform.localPosition = baseSpriteOffset;
             gameObject.layer = defaultLayer;
@@ -251,7 +267,7 @@ namespace Yamigisa
 
         private void HandleCrouch()
         {
-            if (characterControls.IsAnyKeyPressed(characterControls.crouchKey))
+            if (characterControls.IsAnyKeyPressed(characterControls.crouchKey) && canCrouch)
             {
                 if (!isCrouching && !isJumping)
                 {
@@ -273,7 +289,7 @@ namespace Yamigisa
 
         private void HandleSprint()
         {
-            if (!playerCanSprint || unlimitedSprint) return;
+            if (!canSprint || unlimitedSprint) return;
 
             if (sprintRemaining <= 0f && !isSprintCooldown)
                 isSprintCooldown = true;

@@ -53,8 +53,6 @@ namespace Yamigisa
                     chunk.Initialize(
                         biome,
                         chunkSize,
-                        chunk.resourceCount,
-                        chunk.enemyCount,
                         seed
                     );
 
@@ -82,8 +80,6 @@ namespace Yamigisa
                     position = c.transform.position,
                     biomeKey = c.biome != null ? c.biome.name : "",
                     size = c.size,
-                    resourceCount = c.resourceCount,
-                    enemyCount = c.enemyCount,
                     seed = c.seed,
                     resourcesSpawned = c.resourcesSpawned,
                     enemiesSpawned = c.enemiesSpawned,
@@ -126,8 +122,6 @@ namespace Yamigisa
                 chunk.Initialize(
     biome,
     saved.size,
-    saved.resourceCount,
-    saved.enemyCount,
     saved.seed,
     saved.resourcesSpawned,
     saved.enemiesSpawned

@@ -1,30 +1,32 @@
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Yamigisa
 {
     public class Character : MonoBehaviour, ISavable
     {
-        [HideInInspector] public CharacterAnimation characterAnimation;
-        [HideInInspector] public CharacterAttribute characterAttribute;
-        [HideInInspector] public CharacterMovement characterMovement;
-        [HideInInspector] public CharacterCombat characterCombat;
-        [HideInInspector] public CharacterControls characterControls;
-        [HideInInspector] public bool IsBusy;
+        public CharacterAnimation characterAnimation { get; private set; }
+        public CharacterAttribute characterAttribute { get; private set; }
+        public CharacterMovement characterMovement { get; private set; }
+        public CharacterCombat characterCombat { get; private set; }
+        public CharacterControls characterControls { get; private set; }
+        public bool IsBusy { get; private set; }
 
         private InteractiveObject pendingInteraction;
 
-        public static Character instance;
+        public LayerMask interactObjectLayer;
+        public static Character instance { get; private set; }
 
         private void Awake()
         {
+            instance = this;
+
             characterAnimation = GetComponent<CharacterAnimation>();
             characterAttribute = GetComponent<CharacterAttribute>();
             characterMovement = GetComponent<CharacterMovement>();
             characterCombat = GetComponent<CharacterCombat>();
             characterControls = GetComponent<CharacterControls>();
-
-            instance = this;
         }
 
         public Character GetCharacter()
@@ -41,6 +43,21 @@ namespace Yamigisa
                 pendingInteraction.InteractObject(this);
                 pendingInteraction = null;
             }
+        }
+
+        public bool SetCharacterBusy(bool _isBusy)
+        {
+            if (_isBusy == true)
+                DisableMovements();
+            else
+                EnableMovements();
+
+            return IsBusy = _isBusy;
+        }
+
+        public bool CharacterIsBusy()
+        {
+            return IsBusy;
         }
 
         public void SetPendingInteraction(InteractiveObject obj)
@@ -87,16 +104,30 @@ namespace Yamigisa
         public void TakeDamage(int damage)
         {
             characterAttribute.AddCurrentAttributeValue(AttributeType.Health, -damage);
+
+            AttributeData health = characterAttribute.GetAttributeData(AttributeType.Health);
+
+            if (health != null && health.CurrentValue <= 0)
+            {
+                Die();
+            }
+        }
+
+        private void Die()
+        {
+            DisableMovements();
+            SetCharacterBusy(true);
+            GameManager.instance.OnCharacterDeath();
         }
 
         public void DisableMovements()
         {
-            characterMovement.canMove = false;
+            characterMovement.DisableAllMovements();
         }
 
         public void EnableMovements()
         {
-            characterMovement.canMove = true;
+            characterMovement.EnableAllMovements();
         }
 
         public void Save(ref SaveGameData data)

@@ -81,6 +81,7 @@ namespace Yamigisa
         [HideInInspector] public Storage currentStorage;
 
         public static event System.Action OnChanged;
+
         private static void NotifyChanged()
         {
             if (OnChanged != null) OnChanged();
@@ -216,10 +217,24 @@ namespace Yamigisa
 
         private void Update()
         {
+            // OPEN inventory (only if closed)
             if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
             {
-                if (mainInventoryPanel != null && mainInventoryPanel.gameObject.activeSelf) HideInventory();
-                else ShowInventory();
+                if (!IsInventoryOpen)
+                    ShowInventory();
+            }
+
+            // CLOSE inventory (ONLY with cancel key)
+            if (controls.IsAnyKeyPressedDown(controls.cancelKey))
+            {
+                if (currentStorage != null)
+                {
+                    currentStorage.CloseStorage();
+                }
+                else if (IsInventoryOpen)
+                {
+                    HideInventory();
+                }
             }
 
             for (int i = 0; i < quickItemSlot.Count; i++)
@@ -310,11 +325,13 @@ namespace Yamigisa
 
         public void ShowInventory()
         {
+            Character.instance.SetCharacterBusy(true);
             mainInventoryPanel.gameObject.SetActive(true);
         }
 
         public void HideInventory()
         {
+            Character.instance.SetCharacterBusy(false);
             mainInventoryPanel.gameObject.SetActive(false);
             CancelPendingPick();
             if (isDragging) CancelDrag();

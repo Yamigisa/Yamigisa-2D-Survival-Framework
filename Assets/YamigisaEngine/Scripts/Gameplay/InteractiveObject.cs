@@ -19,6 +19,7 @@ namespace Yamigisa
 
         private bool pickedUp = false;
 
+        private static InteractiveObject hovered;
         // =====================
         // ID SAFETY
         // =====================
@@ -35,32 +36,59 @@ namespace Yamigisa
             SetOutline(false);
         }
 
-        private void OnMouseEnter()
+        private void Update()
         {
-            if (Character.instance.IsBusy) return;
-            TextTooltip.Instance.ShowInteractiveObjectText(this);
-            SetOutline(true);
+            HandleMouseHover();
+            HandleMouseClick();
         }
 
-        private void OnMouseExit()
+        void HandleMouseHover()
         {
-            TextTooltip.Instance.CloseInteractiveObjectTexts();
-            SetOutline(false);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.GetRayIntersection(
+                ray,
+                Mathf.Infinity,
+                Character.instance.interactObjectLayer
+            );
+
+            InteractiveObject current =
+                hit.collider ? hit.collider.GetComponent<InteractiveObject>() : null;
+
+            if (hovered == current) return;
+
+            if (hovered != null)
+            {
+                hovered.SetOutline(false);
+                TextTooltip.Instance.CloseInteractiveObjectTexts();
+            }
+
+            hovered = current;
+
+            if (hovered != null && !Character.instance.IsBusy)
+            {
+                hovered.SetOutline(true);
+                TextTooltip.Instance.ShowInteractiveObjectText(hovered);
+            }
         }
 
-        private void OnMouseDown()
+        void HandleMouseClick()
         {
+            if (hovered == null) return;
+            if (!Input.GetMouseButtonDown(0)) return;
             if (Character.instance.IsBusy) return;
             if (IsPointerOverAnyUI()) return;
 
-            if (IsCharacterInRange(Character.instance.GetCharacter()))
-                InteractObject(Character.instance.GetCharacter());
+            Character character = Character.instance.GetCharacter();
+
+            if (hovered.IsCharacterInRange(character))
+                hovered.InteractObject(character);
             else
             {
-                Character.instance.GetCharacter().characterMovement
-                    .MoveTo(transform.position, interactRange);
-
-                Character.instance.GetCharacter().SetPendingInteraction(this);
+                character.characterMovement.MoveTo(
+                    hovered.transform.position,
+                    hovered.interactRange
+                );
+                character.SetPendingInteraction(hovered);
             }
         }
 

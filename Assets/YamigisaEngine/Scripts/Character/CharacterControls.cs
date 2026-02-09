@@ -24,6 +24,9 @@ namespace Yamigisa
         [Header("Cancel")]
         public List<KeyCode> cancelKey;
 
+        [Header("Pause")]
+        public List<KeyCode> pauseKey;
+        
         public bool IsAnyKeyPressed(List<KeyCode> keyList)
         {
             foreach (KeyCode key in keyList)

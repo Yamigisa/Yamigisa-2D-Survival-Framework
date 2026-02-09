@@ -45,6 +45,7 @@ namespace Yamigisa
         private ItemData currentRecipe;
         private bool isInitialized;
 
+        private bool isOpened;
         private readonly HashSet<ItemData> spawnedItems = new();
 
         public void Setup()
@@ -75,8 +76,9 @@ namespace Yamigisa
         private void Update()
         {
             if (Character.instance.characterControls.IsAnyKeyPressedDown(
-                Character.instance.characterControls.cancelKey))
+                Character.instance.characterControls.cancelKey) && Character.instance.CharacterIsBusy() && isOpened)
             {
+                Character.instance.SetCharacterBusy(false);
                 CloseAllCraftingInterfaces();
             }
         }
@@ -129,11 +131,13 @@ namespace Yamigisa
         {
             if (!slot) return;
 
+            isOpened = true;
             craftingItemSelectionPanel.SetActive(true);
 
             ClearItemList();
             activeShownGroups.Clear();
 
+            Character.instance.SetCharacterBusy(true);
             AddItemsForGroup(slot.Group);
             RefreshAllItemSlotsInteractable();
         }
@@ -202,6 +206,7 @@ namespace Yamigisa
 
         private void OpenItemCraftingPanel(ItemData item)
         {
+            isOpened = true;
             currentRecipe = item;
 
             craftingItemPanel.SetActive(true);
@@ -312,6 +317,7 @@ namespace Yamigisa
 
         public void CloseAllCraftingInterfaces()
         {
+            isOpened = false;
             // Hide panels
             if (craftingItemSelectionPanel)
                 craftingItemSelectionPanel.SetActive(false);
@@ -379,6 +385,7 @@ namespace Yamigisa
         {
             if (!additionalGroup) return;
 
+            isOpened = true;
             // Make sure groups are loaded even if Start() hasn't run yet
             ForceInitialize();
 

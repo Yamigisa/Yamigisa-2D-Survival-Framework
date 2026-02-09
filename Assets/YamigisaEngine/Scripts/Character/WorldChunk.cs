@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,31 +7,31 @@ namespace Yamigisa
 {
     public class WorldChunk : MonoBehaviour
     {
-        [HideInInspector] public BiomeData biome;
-        public Tilemap groundTilemap;
+        private HashSet<Vector2Int> usedSpawnCells = new();
 
-        public int resourceCount = 5;
-        public int enemyCount = 3;
+        public BiomeData biome;
+
+        [Header("Auto detects if use tilemap or not, can leave null")]
+        public Tilemap groundTilemap;
 
         [HideInInspector] public int size = 16;
 
         [HideInInspector] public int seed;
 
-        private bool initialized;
         private System.Random rng;
 
         [HideInInspector] public bool resourcesSpawned;
         [HideInInspector] public bool enemiesSpawned;
-        public void Initialize(BiomeData biome, int size, int resourceCount, int enemyCount, int seed)
+
+        private Grid grid;
+
+        public void Initialize(BiomeData biome, int size, int seed)
         {
             this.biome = biome;
             this.size = size;
-            this.resourceCount = resourceCount;
-            this.enemyCount = enemyCount;
             this.seed = seed;
 
             rng = new System.Random(seed);
-            initialized = true;
 
             StopAllCoroutines();
             StartCoroutine(BuildChunk());
@@ -41,31 +40,67 @@ namespace Yamigisa
         public void Initialize(
             BiomeData biome,
             int size,
-            int resourceCount,
-            int enemyCount,
             int seed,
             bool resourcesSpawned,
             bool enemiesSpawned
         )
         {
             this.biome = biome;
-            this.size = size;
-            this.resourceCount = resourceCount;
-            this.enemyCount = enemyCount;
+            this.size = size; ;
             this.seed = seed;
 
             this.resourcesSpawned = resourcesSpawned;
             this.enemiesSpawned = enemiesSpawned;
 
             rng = new System.Random(seed);
-            initialized = true;
 
             StopAllCoroutines();
             StartCoroutine(BuildChunk());
         }
 
-        IEnumerator BuildChunk()
+        private IEnumerator BuildChunk()
         {
+            // =========================
+            // PREFAB-BASED BIOME
+            // =========================
+            if (!UsesTilemap())
+            {
+                if (biome.biomePrefab != null)
+                {
+                    Tilemap tilemap = GetComponentInChildren<Tilemap>(true);
+                    if (tilemap != null)
+                        tilemap.gameObject.SetActive(false);
+
+                    grid = GetComponentInChildren<Grid>(true);
+                    if (grid != null)
+                        grid.enabled = false;
+
+                    Instantiate(
+                        biome.biomePrefab,
+                        transform.position,
+                        Quaternion.identity,
+                        transform
+                    );
+                }
+
+                if (!resourcesSpawned)
+                {
+                    yield return StartCoroutine(SpawnResourcesCoroutine());
+                    resourcesSpawned = true;
+                }
+
+                if (!enemiesSpawned)
+                {
+                    yield return StartCoroutine(SpawnEnemiesCoroutine());
+                    enemiesSpawned = true;
+                }
+
+                yield break;
+            }
+
+            // =========================
+            // TILEMAP-BASED BIOME
+            // =========================
             int halfsize = size / 2;
 
             for (int x = 0; x < size; x++)
@@ -91,18 +126,27 @@ namespace Yamigisa
             }
         }
 
+        bool UsesTilemap()
+        {
+            return groundTilemap != null && biome.groundTile != null;
+        }
+
         IEnumerator SpawnResourcesCoroutine()
         {
-            if (biome.resourcePrefabs == null) yield break;
+            if (biome.resourceSpawns == null) yield break;
 
-            for (int p = 0; p < biome.resourcePrefabs.Count; p++)
+            foreach (var entry in biome.resourceSpawns)
             {
-                GameObject prefab = biome.resourcePrefabs[p];
-                if (prefab == null) continue;
+                if (entry.prefab == null) continue;
 
-                for (int i = 0; i < resourceCount; i++)
+                int spawnCount = rng.Next(
+                    Mathf.Max(0, entry.minSpawn),
+                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
+                );
+
+                for (int i = 0; i < spawnCount; i++)
                 {
-                    Instantiate(prefab, GetRandomWorldPos(), Quaternion.identity, transform);
+                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
                     yield return null;
                 }
             }
@@ -110,29 +154,46 @@ namespace Yamigisa
 
         IEnumerator SpawnEnemiesCoroutine()
         {
-            if (biome.enemyPrefabs == null) yield break;
+            if (biome.creatureSpawns == null) yield break;
 
-            for (int p = 0; p < biome.enemyPrefabs.Count; p++)
+            foreach (var entry in biome.creatureSpawns)
             {
-                GameObject prefab = biome.enemyPrefabs[p];
-                if (prefab == null) continue;
+                if (entry.prefab == null) continue;
 
-                for (int i = 0; i < enemyCount; i++)
+                int spawnCount = rng.Next(
+                    Mathf.Max(0, entry.minSpawn),
+                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
+                );
+
+                for (int i = 0; i < spawnCount; i++)
                 {
-                    Instantiate(prefab, GetRandomWorldPos(), Quaternion.identity, transform);
+                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
+
                     yield return null;
                 }
             }
         }
 
-        Vector3 GetRandomWorldPos()
+        Vector3 GetUniqueRandomWorldPos()
         {
             int halfsize = size / 2;
 
-            float rx = (float)(rng.NextDouble() * (halfsize * 2) - halfsize);
-            float ry = (float)(rng.NextDouble() * (halfsize * 2) - halfsize);
+            for (int attempt = 0; attempt < 50; attempt++)
+            {
+                int x = rng.Next(-halfsize, halfsize + 1);
+                int y = rng.Next(-halfsize, halfsize + 1);
 
-            return transform.position + new Vector3(rx, ry, 0f);
+                Vector2Int cell = new Vector2Int(x, y);
+
+                if (usedSpawnCells.Contains(cell))
+                    continue;
+
+                usedSpawnCells.Add(cell);
+                return transform.position + new Vector3(x, y, 0f);
+            }
+
+            // fallback (very unlikely unless chunk is full)
+            return transform.position;
         }
 
         public void RestoreInteractiveObjects(List<InteractiveObjectSaveData> savedObjects)

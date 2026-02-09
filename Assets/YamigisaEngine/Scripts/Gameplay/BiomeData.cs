@@ -9,18 +9,30 @@ namespace Yamigisa
     {
         [Header("Identity")]
         public string biomeName;
-        public Color debugColor;
 
-        [Header("Tiles")]
+        [Header("Tiles (If using TileRule)")]
         public TileBase groundTile;
 
-        [Header("Spawning")]
-        public List<GameObject> resourcePrefabs;
-        public List<GameObject> enemyPrefabs;
+        [Header("Prefab (If not using TileRule)")]
+        public GameObject biomePrefab;
+
+        [Header("Spawning - Resources")]
+        public List<BiomeSpawnEntry> resourceSpawns;
+
+        [Header("Spawning - Creatures")]
+        public List<BiomeSpawnEntry> creatureSpawns;
 
         [Header("Environment Modifiers")]
-        public float speedAddition = 0f; // additive
-        public List<AttributeModifier> modifiers;
+        public float speedAddition = 0f;
+        public List<AttributeModifier> attributeModifiers;
+    }
+
+    [System.Serializable]
+    public class BiomeSpawnEntry
+    {
+        public GameObject prefab;
+        public int minSpawn;
+        public int maxSpawn;
     }
 
     [System.Serializable]
@@ -29,7 +41,7 @@ namespace Yamigisa
         public AttributeType type;
 
         [Header("Additive Modifiers")]
-        public float regenAddition = 0f;     // += to RegenerateValuePerMinute
-        public float depleteAddition = 0f;   // += to DepleteValuePerMinute
+        public float regenAddition = 0f;
+        public float depleteAddition = 0f;
     }
 }

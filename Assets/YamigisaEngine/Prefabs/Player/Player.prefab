@@ -406,24 +406,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c168f85953dfd9438294d35f3c9ecfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canMove: 1
+  canSprint: 1
+  canJump: 1
+  canCrouch: 1
   rb: {fileID: 4202189188480381823}
   spriteRenderer: {fileID: 6926324322210759816}
   playerCollider: {fileID: 6136506362100289820}
   walkSpeed: 3
-  playerCanMove: 1
-  playerCanSprint: 1
   unlimitedSprint: 0
   sprintSpeed: 3
   sprintDuration: 5
   sprintCooldown: 0.5
-  canJump: 1
   jumpForce: 0.4
   jumpDuration: 0.35
   jumpDistance: 1.2
   obstacleCheckDistance: 1
   crouchSpeedMultiplier: 0.45
   crouchSpriteScale: 0.7
-  canMove: 0
 --- !u!114 &6228037158487507412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -461,6 +461,7 @@ MonoBehaviour:
   useItemKey: 65000000
   craftingKey: 75000000
   cancelKey: 1b000000
+  pauseKey: 1b000000
 --- !u!114 &8627710104781531030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -491,12 +492,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3acdebc5e30418048b0398bfe425463a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterAnimation: {fileID: 0}
-  characterAttribute: {fileID: 0}
-  characterMovement: {fileID: 0}
-  characterCombat: {fileID: 0}
-  characterControls: {fileID: 0}
-  IsBusy: 0
+  interactObjectLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &336338363393975827
 MonoBehaviour:
   m_ObjectHideFlags: 0

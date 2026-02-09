@@ -259,7 +259,7 @@ namespace Yamigisa
 
         public void EnterBuildMode()
         {
-            Character.instance.IsBusy = true;
+            Character.instance.SetCharacterBusy(true);
 
             Inventory.Instance.HideInventory();
 
@@ -308,7 +308,7 @@ namespace Yamigisa
 
         public void ExitBuildMode()
         {
-            Character.instance.IsBusy = false;
+            Character.instance.SetCharacterBusy(false);
 
             buildMode = false;
 

@@ -121,6 +121,17 @@ namespace Yamigisa
             }
         }
 
+        public AttributeData GetAttributeData(AttributeType type)
+        {
+            foreach (AttributeData a in AttributeData)
+            {
+                if (a.type == type)
+                    return a;
+            }
+
+            return null;
+        }
+
         public List<AttributeSaveData> GetSaveData()
         {
             List<AttributeSaveData> result = new();

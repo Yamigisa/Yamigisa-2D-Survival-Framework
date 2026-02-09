@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3080972622584125484}
   - component: {fileID: 306218800986695694}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Outline
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2851441075894883431}
   - component: {fileID: 8106614610116538651}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -188,7 +188,7 @@ GameObject:
   - component: {fileID: 4494074185834777774}
   - component: {fileID: 3960729022453355888}
   - component: {fileID: 7871723582074470865}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Storage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -270,10 +270,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 16e73db7-37fc-4a2e-a4c0-2a8a8c152313
   interactRange: 1
   Actions:
   - {fileID: 11400000, guid: 42f815feffefabe429463cb3e996c868, type: 2}
-  Groups: []
   outlineObject: {fileID: 3715352576773496897}
 --- !u!114 &4494074185834777774
 MonoBehaviour:

@@ -19,5 +19,7 @@ namespace Yamigisa
         public Dictionary<string, DestroyableSaveData> destroyables;
         public List<InteractiveObjectSaveData> interactiveObjects = new();
         public List<ChunkSaveData> chunks = new();
+        public List<StorageSaveData> storages = new();
+
     }
 }

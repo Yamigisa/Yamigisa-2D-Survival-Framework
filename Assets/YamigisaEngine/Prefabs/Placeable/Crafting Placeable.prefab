@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1899701957099702139}
   - component: {fileID: 2793004078247533560}
   - component: {fileID: 3909186395159855356}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Crafting Placeable
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -114,6 +114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: a4104198-dddb-40c0-b289-8e3826476cd4
   interactRange: 2
   Actions:
   - {fileID: 11400000, guid: 4bed04256b4ab0842ae3c0f6ff129cd6, type: 2}
@@ -155,7 +156,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3733136775429103672}
   - component: {fileID: 776187110705868373}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Outline
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -242,7 +243,7 @@ GameObject:
   m_Component:
   - component: {fileID: 433613019052522594}
   - component: {fileID: 2563619514415391843}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Player
   m_Icon: {fileID: 0}

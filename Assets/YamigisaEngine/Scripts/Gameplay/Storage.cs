@@ -3,8 +3,10 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    public class Storage : MonoBehaviour
+    public class Storage : MonoBehaviour, ISavable
     {
+        [SerializeField] private string storageId;
+
         [Header("Storage Settings")]
         [SerializeField] private List<Inventory.StartingItem> startingItems;
         [SerializeField] private int storageSize = 20;
@@ -16,13 +18,24 @@ namespace Yamigisa
 
         private bool initialized = false;
 
+        private bool isOpened = false;
+
+        private void Awake()
+        {
+            if (string.IsNullOrEmpty(storageId))
+            {
+                storageId = $"{gameObject.scene.name}:{gameObject.name}:{transform.position}";
+            }
+        }
+
         public void OpenStorage()
         {
             if (Inventory.Instance.currentStorage != null) return;
 
-            Character.instance.DisableMovements();
+            isOpened = true;
 
-            if (!initialized)
+            // 🔴 CRITICAL FIX
+            if (!initialized && storedItems.Count == 0)
             {
                 InitializeStorage();
                 initialized = true;
@@ -30,22 +43,28 @@ namespace Yamigisa
 
             Inventory.Instance.ShowInventory();
             Inventory.Instance.currentStorage = this;
+
             inventoryStorage = Inventory.Instance.CreateInventoryPanel();
             inventoryStorage.sortButton.gameObject.SetActive(true);
 
             itemSlots.Clear();
 
+            inventoryStorage.ClearPanel();
+
             for (int i = 0; i < storageSize; i++)
             {
-                ItemSlot slot = Inventory.Instance.CreateItemSlot(inventoryStorage.inventoryContent);
+                ItemSlot slot =
+                    Inventory.Instance.CreateItemSlot(inventoryStorage.inventoryContent);
                 slot.SetOwnerStorage(this);
                 itemSlots.Add(slot);
-
             }
 
-            for (int i = 0; i < storedItems.Count; i++)
+            foreach (var stored in storedItems)
             {
-                itemSlots[i].SetItem(storedItems[i].item, storedItems[i].amount);
+                if (stored.index < 0 || stored.index >= itemSlots.Count)
+                    continue;
+
+                itemSlots[stored.index].SetItem(stored.item, stored.amount);
             }
         }
 
@@ -60,15 +79,6 @@ namespace Yamigisa
                     item = entry.item,
                     amount = Mathf.Max(1, entry.amount)
                 });
-            }
-        }
-
-        private void Update()
-        {
-            if (Character.instance.characterControls.IsAnyKeyPressedDown(
-                Character.instance.characterControls.cancelKey))
-            {
-                CloseStorage();
             }
         }
 
@@ -92,6 +102,9 @@ namespace Yamigisa
 
         public void CloseStorage()
         {
+            isOpened = false;
+            Character.instance.SetCharacterBusy(false);
+
             // 🔴 IMPORTANT: sync before destroying UI
             SyncStoredItemsFromUI();
 
@@ -118,24 +131,90 @@ namespace Yamigisa
         {
             storedItems.Clear();
 
-            foreach (ItemSlot slot in itemSlots)
+            for (int i = 0; i < itemSlots.Count; i++)
             {
+                ItemSlot slot = itemSlots[i];
                 if (slot == null || !slot.HasItem) continue;
 
                 storedItems.Add(new StoredItem
                 {
                     item = slot.ItemData,
-                    amount = slot.Amount
+                    amount = slot.Amount,
+                    index = i
                 });
             }
         }
 
+        public void Save(ref SaveGameData data)
+        {
+            if (data.storages == null)
+                data.storages = new List<StorageSaveData>();
+
+            // REMOVE OLD ENTRY
+            data.storages.RemoveAll(s => s.storageId == storageId);
+
+            StorageSaveData save = new StorageSaveData
+            {
+                storageId = storageId
+            };
+
+            foreach (var item in storedItems)
+            {
+                save.items.Add(new InventoryItemSaveData
+                {
+                    itemId = item.item.Id,
+                    amount = item.amount,
+                    isQuick = false,
+                    index = item.index
+                });
+            }
+
+            data.storages.Add(save);
+        }
+
+        public void Load(SaveGameData data)
+        {
+            if (data.storages == null)
+            {
+                return;
+            }
+
+            StorageSaveData save =
+                data.storages.Find(s => s.storageId == storageId);
+
+            if (save == null)
+            {
+                return;
+            }
+
+            storedItems.Clear();
+
+            foreach (var saved in save.items)
+            {
+                ItemData item = ItemDatabase.Get(saved.itemId);
+                if (item == null)
+                {
+
+                    continue;
+                }
+
+                storedItems.Add(new StoredItem
+                {
+                    item = item,
+                    amount = saved.amount,
+                    index = saved.index
+                });
+            }
+
+            initialized = true;
+        }
 
         [System.Serializable]
         public class StoredItem
         {
             public ItemData item;
             public int amount;
+            public int index; // ✅ REQUIRED
         }
     }
 }
