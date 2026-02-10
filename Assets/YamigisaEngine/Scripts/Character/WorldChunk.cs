@@ -9,7 +9,7 @@ namespace Yamigisa
     {
         private HashSet<Vector2Int> usedSpawnCells = new();
 
-        public BiomeData biome;
+        [HideInInspector] public BiomeData biome;
 
         [Header("Auto detects if use tilemap or not, can leave null")]
         public Tilemap groundTilemap;
@@ -24,6 +24,10 @@ namespace Yamigisa
         [HideInInspector] public bool enemiesSpawned;
 
         private Grid grid;
+
+        private Bounds biomeBounds;
+        private Collider2D[] biomeColliders2D;
+        private Collider[] biomeColliders3D;
 
         public void Initialize(BiomeData biome, int size, int seed)
         {
@@ -75,12 +79,17 @@ namespace Yamigisa
                     if (grid != null)
                         grid.enabled = false;
 
-                    Instantiate(
-                        biome.biomePrefab,
-                        transform.position,
-                        Quaternion.identity,
-                        transform
+                    GameObject biomeInstance = Instantiate(
+                    biome.biomePrefab,
+                    transform.position,
+                     Quaternion.identity,
+                    transform
                     );
+
+                    CacheBiomeBounds(biomeInstance);
+
+                    AutoResizeChunkToPrefab(biomeInstance);
+
                 }
 
                 if (!resourcesSpawned)
@@ -124,6 +133,30 @@ namespace Yamigisa
                 yield return StartCoroutine(SpawnEnemiesCoroutine());
                 enemiesSpawned = true;
             }
+        }
+
+        void AutoResizeChunkToPrefab(GameObject prefabInstance)
+        {
+            Bounds bounds = new Bounds(prefabInstance.transform.position, Vector3.zero);
+
+            Renderer[] renderers = prefabInstance.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+                bounds.Encapsulate(r.bounds);
+
+            Collider2D[] colliders2D = prefabInstance.GetComponentsInChildren<Collider2D>();
+            foreach (var c in colliders2D)
+                bounds.Encapsulate(c.bounds);
+
+            Collider[] colliders3D = prefabInstance.GetComponentsInChildren<Collider>();
+            foreach (var c in colliders3D)
+                bounds.Encapsulate(c.bounds);
+
+            Vector3 sizeWorld = bounds.size;
+
+            int newSize = Mathf.CeilToInt(Mathf.Max(sizeWorld.x, sizeWorld.y));
+            size = newSize;
+
+            transform.position = bounds.center;
         }
 
         bool UsesTilemap()
@@ -176,25 +209,27 @@ namespace Yamigisa
 
         Vector3 GetUniqueRandomWorldPos()
         {
-            int halfsize = size / 2;
-
-            for (int attempt = 0; attempt < 50; attempt++)
+            for (int attempt = 0; attempt < 60; attempt++)
             {
-                int x = rng.Next(-halfsize, halfsize + 1);
-                int y = rng.Next(-halfsize, halfsize + 1);
+                float x = Random.Range(biomeBounds.min.x, biomeBounds.max.x);
+                float y = Random.Range(biomeBounds.min.y, biomeBounds.max.y);
 
-                Vector2Int cell = new Vector2Int(x, y);
+                Vector3 worldPos = new Vector3(x, y, transform.position.z);
 
+                if (!IsInsideBiome(worldPos))
+                    continue;
+
+                Vector2Int cell = Vector2Int.RoundToInt(worldPos - transform.position);
                 if (usedSpawnCells.Contains(cell))
                     continue;
 
                 usedSpawnCells.Add(cell);
-                return transform.position + new Vector3(x, y, 0f);
+                return worldPos;
             }
 
-            // fallback (very unlikely unless chunk is full)
-            return transform.position;
+            return biomeBounds.center;
         }
+
 
         public void RestoreInteractiveObjects(List<InteractiveObjectSaveData> savedObjects)
         {
@@ -218,6 +253,56 @@ namespace Yamigisa
                     }
                 }
             }
+        }
+
+        void CacheBiomeBounds(GameObject biomeInstance)
+        {
+            Bounds bounds = new Bounds(biomeInstance.transform.position, Vector3.zero);
+
+            Renderer[] renderers = biomeInstance.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+                bounds.Encapsulate(r.bounds);
+
+            Collider2D[] col2D = biomeInstance.GetComponentsInChildren<Collider2D>();
+            foreach (var c in col2D)
+                bounds.Encapsulate(c.bounds);
+
+            Collider[] col3D = biomeInstance.GetComponentsInChildren<Collider>();
+            foreach (var c in col3D)
+                bounds.Encapsulate(c.bounds);
+
+            biomeBounds = bounds;
+
+            biomeColliders2D = col2D;
+            biomeColliders3D = col3D;
+
+            size = Mathf.CeilToInt(Mathf.Max(bounds.size.x, bounds.size.y));
+            transform.position = bounds.center;
+        }
+
+        bool IsInsideBiome(Vector3 worldPos)
+        {
+            if (biomeColliders2D != null && biomeColliders2D.Length > 0)
+            {
+                foreach (var col in biomeColliders2D)
+                {
+                    if (col.OverlapPoint(worldPos))
+                        return true;
+                }
+                return false;
+            }
+
+            if (biomeColliders3D != null && biomeColliders3D.Length > 0)
+            {
+                foreach (var col in biomeColliders3D)
+                {
+                    if (col.bounds.Contains(worldPos))
+                        return true;
+                }
+                return false;
+            }
+
+            return biomeBounds.Contains(worldPos);
         }
 
     }
