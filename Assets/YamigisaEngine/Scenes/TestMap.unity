@@ -573,6 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79f2485ace042284aa5919d55bde0f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  managersParent: {fileID: 464936077}
   timeClockPrefab: {fileID: 1958017048751818893, guid: 4507758c28d82ab48b698039c285c5e9, type: 3}
   inventoryPrefab: {fileID: 2475850283002874318, guid: 88555d3a1576c9140b17dd616135522d, type: 3}
   attributeUIPrefab: {fileID: 4323767742486244163, guid: 3ac50da3a9321ed49b81f0d387a1aaa0, type: 3}
@@ -601,6 +602,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 464936077}
   - {fileID: 1922083547}
   - {fileID: 1849411832}
   - {fileID: 1632084761}
@@ -674,6 +676,41 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 5
   m_TargetDisplay: 0
+--- !u!1 &464936076
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 464936077}
+  m_Layer: 0
+  m_Name: Managers Transform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &464936077
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 464936076}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 389563882}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &628950506
 GameObject:
   m_ObjectHideFlags: 0

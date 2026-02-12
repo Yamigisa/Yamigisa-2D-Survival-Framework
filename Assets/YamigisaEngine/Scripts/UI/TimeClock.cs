@@ -193,6 +193,7 @@ namespace Yamigisa
         {
             SetTime(data.minute, data.hour, data.day);
             RefreshVisuals();
+            ticking = StartCoroutine(Tick());
         }
     }
 }

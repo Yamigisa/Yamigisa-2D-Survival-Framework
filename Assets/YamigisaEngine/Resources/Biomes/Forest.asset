@@ -23,5 +23,5 @@ MonoBehaviour:
   speedAddition: 1
   attributeModifiers:
   - type: 0
-    regenAddition: 1
+    regenAddition: 0
     depleteAddition: 0

@@ -53,6 +53,16 @@ namespace Yamigisa
 
                 var bar = attributeUI.GetAttributeBar(a);
                 if (bar != null) bar.SetCurrentValue(a.CurrentValue);
+
+                if (a.type == AttributeType.Health && a.CurrentValue <= 0)
+                {
+                    a.CurrentValue = 0;
+
+                    if (bar != null)
+                        bar.SetCurrentValue(0);
+
+                    Character.instance.Die();
+                }
             }
         }
 
@@ -60,7 +70,6 @@ namespace Yamigisa
         {
             biomeRegenAdditions.Clear();
             biomeDepleteAdditions.Clear();
-
             foreach (var mod in modifiers)
             {
                 biomeRegenAdditions[mod.type] = mod.regenAddition;
@@ -74,6 +83,9 @@ namespace Yamigisa
 
             foreach (AttributeData a in AttributeData)
             {
+                if (a.type == AttributeType.Health && a.CurrentValue <= 0)
+                    continue;
+
                 if (a.CurrentValue >= a.MaxValue) continue;
 
                 float delta = a.RegenerateValuePerMinute;
@@ -128,7 +140,6 @@ namespace Yamigisa
                 if (a.type == type)
                     return a;
             }
-
             return null;
         }
 

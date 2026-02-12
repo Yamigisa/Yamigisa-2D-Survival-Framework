@@ -113,7 +113,7 @@ namespace Yamigisa
             }
         }
 
-        private void Die()
+        public void Die()
         {
             DisableMovements();
             SetCharacterBusy(true);

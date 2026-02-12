@@ -129,7 +129,15 @@ namespace Yamigisa
 
         public void OpenCraftingItemSelectionPanel(CraftGroupSlot slot)
         {
-            if (!slot) return;
+            if (craftingItemSelectionPanel.activeSelf)
+            {
+                CloseAllCraftingInterfaces();
+                Character.instance.SetCharacterBusy(false);
+                return;
+            }
+
+            if (!slot && Character.instance.CharacterIsBusy() && !GameManager.instance.IsPaused)
+                return;
 
             isOpened = true;
             craftingItemSelectionPanel.SetActive(true);

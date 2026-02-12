@@ -6,7 +6,9 @@ namespace Yamigisa
 {
     public class GameManager : MonoBehaviour
     {
-        [Header("Manager Prefabs")]
+        [Header("Manager Settings")]
+        [SerializeField] private Transform managersParent;
+
         [SerializeField] private TimeClock timeClockPrefab;
         [SerializeField] private Inventory inventoryPrefab;
         [SerializeField] private AttributeUI attributeUIPrefab;
@@ -82,13 +84,13 @@ namespace Yamigisa
 
         private void CreateObjects()
         {
-            timeClock = Instantiate(timeClockPrefab, transform);
-            inventory = Instantiate(inventoryPrefab, transform);
-            attributeUI = Instantiate(attributeUIPrefab, transform);
-            craftingInterface = Instantiate(craftingInterfacePrefab, transform);
-            worldGenerator = Instantiate(worldGeneratorPrefab, transform);
-            gridBuildingSystem = Instantiate(gridBuildingSystemPrefab, transform);
-            saveManager = Instantiate(saveManagerPrefab, transform);
+            timeClock = Instantiate(timeClockPrefab, managersParent);
+            inventory = Instantiate(inventoryPrefab, managersParent);
+            attributeUI = Instantiate(attributeUIPrefab, managersParent);
+            craftingInterface = Instantiate(craftingInterfacePrefab, managersParent);
+            worldGenerator = Instantiate(worldGeneratorPrefab, managersParent);
+            gridBuildingSystem = Instantiate(gridBuildingSystemPrefab, managersParent);
+            saveManager = Instantiate(saveManagerPrefab, managersParent);
         }
 
         private void PrepareGame()
@@ -119,15 +121,19 @@ namespace Yamigisa
         public void OnCharacterDeath()
         {
             Time.timeScale = 0;
+            Character.instance.SetCharacterBusy(true);
             deathPanel.SetActive(true);
+            timeClock.StopSystem();
         }
 
         public void OnGameStart()
         {
             Time.timeScale = 1;
-            Character.instance.EnableMovements();
+            Character.instance.SetCharacterBusy(false);
             pausePanel.SetActive(false);
             deathPanel.SetActive(false);
         }
+
+        public bool IsPaused { get { return isPaused; } }
     }
 }

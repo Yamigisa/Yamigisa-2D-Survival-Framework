@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using Unity.VisualScripting;
 
 namespace Yamigisa
 {
@@ -218,7 +219,7 @@ namespace Yamigisa
         private void Update()
         {
             // OPEN inventory (only if closed)
-            if (controls.IsAnyKeyPressedDown(controls.inventoryKey))
+            if (controls.IsAnyKeyPressedDown(controls.inventoryKey) && !Character.instance.CharacterIsBusy() && !GameManager.instance.IsPaused)
             {
                 if (!IsInventoryOpen)
                     ShowInventory();

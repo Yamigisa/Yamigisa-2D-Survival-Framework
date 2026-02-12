@@ -11,9 +11,9 @@ namespace Yamigisa
         public float MaxValue = 100f;
         public float CurrentValue = 100f;
         [Tooltip("Set to 0 to disable depleting")]
-        public float DepleteValuePerMinute = -10f;
+        public float DepleteValuePerMinute = -0f;
         [Tooltip("Set to 0 to disable regeneration")]
-        public float RegenerateValuePerMinute = 1f;
+        public float RegenerateValuePerMinute = 0f;
 
         [Space(3)]
 
