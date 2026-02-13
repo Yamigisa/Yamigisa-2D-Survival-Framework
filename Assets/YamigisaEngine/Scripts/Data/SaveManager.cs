@@ -4,6 +4,7 @@ namespace Yamigisa
 {
     public class SaveManager : MonoBehaviour
     {
+        [SerializeField] private bool saveGameOnQuit = true;
         private string path => Application.persistentDataPath + "/save.json";
 
         public void SaveGame()
@@ -43,6 +44,8 @@ namespace Yamigisa
 
         private void OnApplicationQuit()
         {
+            if (!saveGameOnQuit) return;
+
             SaveGame();
         }
 

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6cee5574ae8a9a24f87c08a39ba3e519, type: 3}
-  m_Name: Forest
+  m_Name: Forest 1
   m_EditorClassIdentifier: 
-  biomeName: Forest?
+  biomeName: Forest
   groundTile: {fileID: 0}
   biomePrefab: {fileID: 6773550762760936033, guid: d3e1606c0d95f5a499aa549b0f643427, type: 3}
   resourceSpawns:

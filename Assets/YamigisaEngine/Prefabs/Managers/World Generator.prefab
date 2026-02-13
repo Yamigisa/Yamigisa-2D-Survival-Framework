@@ -45,8 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkPrefab: {fileID: 5714733488464941041, guid: c24a02e868a7ac04394dd169fdda3e8a, type: 3}
-  availableBiomes:
-  - {fileID: 11400000, guid: 840441c9912c69448b227ee7b0110227, type: 2}
-  worldWidth: 1
-  worldHeight: 1
-  chunkSize: 1
+  biomeZones:
+  - zoneName: Forest
+    minDistance: 0
+    biomeGroup: {fileID: 11400000, guid: 6cacda48b184c5b4eaad87cbc538ddf8, type: 2}
+  loadRadius: 1
+  manualChunkWorldSize: {x: 25, y: 14.4}

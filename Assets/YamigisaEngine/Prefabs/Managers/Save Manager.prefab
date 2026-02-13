@@ -44,3 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62e8cd10f14f5fb48b03ecaba8f06718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  saveGameOnQuit: 0
