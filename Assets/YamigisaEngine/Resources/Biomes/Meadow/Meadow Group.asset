@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 51c5b69b1ded607419c1c171aec5f561, type: 3}
-  m_Name: Forest Group
+  m_Name: Meadow Group
   m_EditorClassIdentifier: 
-  groupName: Forest Group
+  groupName: Meadow
   biomes:
-  - {fileID: 11400000, guid: 840441c9912c69448b227ee7b0110227, type: 2}
-  - {fileID: 11400000, guid: a4b65d21f13c76d45a7c62be10873f24, type: 2}
+  - {fileID: 11400000, guid: 7a71a0227a935e4489c2da3abfdb1314, type: 2}
+  - {fileID: 11400000, guid: 197c55294d6492c4c88ced6eddff776b, type: 2}

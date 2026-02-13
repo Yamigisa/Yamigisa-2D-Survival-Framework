@@ -7,6 +7,14 @@ namespace Yamigisa
 {
     public class WorldChunk : MonoBehaviour
     {
+        private const float CHUNK_WIDTH = 25f;
+        private const float CHUNK_HEIGHT = 14.4f;
+
+        private const int TILE_WIDTH = 25;
+        private const int TILE_HEIGHT = 14;
+
+        private const float Y_SCALE = CHUNK_HEIGHT / TILE_HEIGHT;
+
         private HashSet<Vector2Int> usedSpawnCells = new();
 
         [HideInInspector] public BiomeData biome;
@@ -15,7 +23,6 @@ namespace Yamigisa
         public Tilemap groundTilemap;
 
         [HideInInspector] public int size = 16;
-
         [HideInInspector] public int seed;
 
         private System.Random rng;
@@ -23,18 +30,12 @@ namespace Yamigisa
         [HideInInspector] public bool resourcesSpawned;
         [HideInInspector] public bool enemiesSpawned;
 
-        private Grid grid;
-
         private Bounds biomeBounds;
-        private Collider2D[] biomeColliders2D;
-        private Collider[] biomeColliders3D;
 
         public void Initialize(BiomeData biome, int size, int seed)
         {
             this.biome = biome;
-            this.size = size;
             this.seed = seed;
-
             rng = new System.Random(seed);
 
             StopAllCoroutines();
@@ -56,7 +57,6 @@ namespace Yamigisa
         )
         {
             this.biome = biome;
-            this.size = size;
             this.seed = seed;
 
             this.resourcesSpawned = resourcesSpawned;
@@ -66,133 +66,29 @@ namespace Yamigisa
 
             StopAllCoroutines();
             StartCoroutine(BuildChunk());
-            Debug.Log(GetComponentInChildren<Renderer>().bounds.size);
-
         }
 
         private IEnumerator BuildChunk()
         {
-            if (biome == null)
-                yield break;
-
-            usedSpawnCells.Clear();
-
-            // =========================
-            // PREFAB-BASED BIOME
-            // =========================
-            if (!UsesTilemap())
-            {
-                if (biome.biomePrefab != null)
-                {
-                    Tilemap tilemap = GetComponentInChildren<Tilemap>(true);
-                    if (tilemap != null)
-                        tilemap.gameObject.SetActive(false);
-
-                    grid = GetComponentInChildren<Grid>(true);
-                    if (grid != null)
-                        grid.enabled = false;
-
-                    GameObject biomeInstance = Instantiate(
-                        biome.biomePrefab,
-                        transform.position,
-                        Quaternion.identity,
-                        transform
-                    );
-
-                    CacheBiomeBounds(biomeInstance);
-                    AutoResizeChunkToPrefab(biomeInstance);
-                }
-
-                if (!resourcesSpawned)
-                {
-                    yield return StartCoroutine(SpawnResourcesCoroutine());
-                    resourcesSpawned = true;
-                }
-
-                if (!enemiesSpawned)
-                {
-                    yield return StartCoroutine(SpawnEnemiesCoroutine());
-                    enemiesSpawned = true;
-                }
-
-                yield break;
-            }
-
-            // =========================
-            // TILEMAP-BASED BIOME (INSTANT TILE FILL)
-            // =========================
-            EnsureTilemapReady();
-
-            FillTilemapInstant();
-
-            CacheTilemapBoundsForSpawning();
-
-            if (!resourcesSpawned)
-            {
-                yield return StartCoroutine(SpawnResourcesCoroutine());
-                resourcesSpawned = true;
-            }
-
-            if (!enemiesSpawned)
-            {
-                yield return StartCoroutine(SpawnEnemiesCoroutine());
-                enemiesSpawned = true;
-            }
+            GenerateAllImmediately();
+            yield break;
         }
 
-        // =========================
-        // NEW: INSTANT GENERATION PATH
-        // =========================
         private void GenerateAllImmediately()
         {
-            if (biome == null)
-                return;
+            if (biome == null) return;
 
             usedSpawnCells.Clear();
 
+            // keep Grid cell size (1,1,1) but allow the chunk to represent 14.4 world height
+            transform.localScale = new Vector3(1f, Y_SCALE, 1f);
+
+            ClearPreviousChunkContent();
+
             if (!UsesTilemap())
-            {
-                if (biome.biomePrefab != null)
-                {
-                    Tilemap tilemap = GetComponentInChildren<Tilemap>(true);
-                    if (tilemap != null)
-                        tilemap.gameObject.SetActive(false);
-
-                    grid = GetComponentInChildren<Grid>(true);
-                    if (grid != null)
-                        grid.enabled = false;
-
-                    GameObject biomeInstance = Instantiate(
-                        biome.biomePrefab,
-                        transform.position,
-                        Quaternion.identity,
-                        transform
-                    );
-
-                    CacheBiomeBounds(biomeInstance);
-                    AutoResizeChunkToPrefab(biomeInstance);
-                }
-
-                if (!resourcesSpawned)
-                {
-                    SpawnResourcesImmediate();
-                    resourcesSpawned = true;
-                }
-
-                if (!enemiesSpawned)
-                {
-                    SpawnEnemiesImmediate();
-                    enemiesSpawned = true;
-                }
-
-                return;
-            }
-
-            EnsureTilemapReady();
-
-            FillTilemapInstant();
-
-            CacheTilemapBoundsForSpawning();
+                GeneratePrefabChunk();
+            else
+                GenerateTileChunk();
 
             if (!resourcesSpawned)
             {
@@ -207,98 +103,130 @@ namespace Yamigisa
             }
         }
 
-        private void EnsureTilemapReady()
+        private void ClearPreviousChunkContent()
         {
-            if (groundTilemap == null)
+            // destroy previous instantiated children but keep tilemap objects if they exist
+            for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                groundTilemap = GetComponentInChildren<Tilemap>(true);
+                Transform child = transform.GetChild(i);
+
+                // keep tilemap object (it should already be on the chunk)
+                if (groundTilemap != null && child == groundTilemap.transform) continue;
+
+                DestroyImmediate(child.gameObject);
             }
 
             if (groundTilemap != null)
-            {
-                groundTilemap.gameObject.SetActive(true);
-            }
-
-            grid = GetComponentInChildren<Grid>(true);
-            if (grid != null)
-                grid.enabled = true;
+                groundTilemap.ClearAllTiles();
         }
 
-        private void FillTilemapInstant()
+        private void GenerateTileChunk()
         {
-            if (groundTilemap == null || biome == null || biome.groundTile == null)
-                return;
+            if (groundTilemap == null)
+                groundTilemap = GetComponentInChildren<Tilemap>(true);
+
+            if (groundTilemap == null) return;
+
+            groundTilemap.gameObject.SetActive(true);
+            groundTilemap.transform.localPosition = Vector3.zero;
 
             groundTilemap.ClearAllTiles();
 
-            int halfSizeX = Mathf.FloorToInt(size * 0.5f);
-            int halfSizeY = Mathf.FloorToInt(size * 0.5f);
-
-            // Fill square size x size centered at (0,0)
-            for (int x = 0; x < size; x++)
+            // bottom-left anchored fill: tiles occupy [0..25) x [0..14)
+            for (int x = 0; x < TILE_WIDTH; x++)
             {
-                for (int y = 0; y < size; y++)
+                for (int y = 0; y < TILE_HEIGHT; y++)
                 {
-                    Vector3Int tilePos = new Vector3Int(x - halfSizeX, y - halfSizeY, 0);
-                    groundTilemap.SetTile(tilePos, biome.groundTile);
+                    groundTilemap.SetTile(new Vector3Int(x, y, 0), biome.groundTile);
                 }
             }
 
             groundTilemap.CompressBounds();
+
+            // chunk bounds in world (bottom-left origin at transform.position)
+            biomeBounds = new Bounds(
+                transform.position + new Vector3(CHUNK_WIDTH * 0.5f, CHUNK_HEIGHT * 0.5f, 0f),
+                new Vector3(CHUNK_WIDTH, CHUNK_HEIGHT, 0f)
+            );
         }
 
-        private void CacheTilemapBoundsForSpawning()
+        private void GeneratePrefabChunk()
         {
-            // This makes resource/enemy spawn area match the tile chunk area,
-            // instead of being (0,0) or some prefab bounds.
-            float cellW = 1f;
-            float cellH = 1f;
+            if (biome.biomePrefab == null) return;
 
-            if (grid != null)
-            {
-                cellW = Mathf.Abs(grid.cellSize.x);
-                cellH = Mathf.Abs(grid.cellSize.y);
-            }
+            // hide tilemap if present
+            if (groundTilemap != null)
+                groundTilemap.gameObject.SetActive(false);
 
-            float worldW = size * cellW;
-            float worldH = size * cellH;
-
-            biomeBounds = new Bounds(
+            GameObject instance = Instantiate(
+                biome.biomePrefab,
                 transform.position,
-                new Vector3(worldW, worldH, 0f)
+                Quaternion.identity,
+                transform
             );
 
-            biomeColliders2D = null;
-            biomeColliders3D = null;
+            // IMPORTANT: snap prefab bounds.min to chunk origin (edge-to-edge with tile chunks)
+            SnapChildBoundsMinToChunkOrigin(instance);
+
+            // chunk bounds in world (bottom-left origin at transform.position)
+            biomeBounds = new Bounds(
+                transform.position + new Vector3(CHUNK_WIDTH * 0.5f, CHUNK_HEIGHT * 0.5f, 0f),
+                new Vector3(CHUNK_WIDTH, CHUNK_HEIGHT, 0f)
+            );
         }
 
-        void AutoResizeChunkToPrefab(GameObject prefabInstance)
+        private void SnapChildBoundsMinToChunkOrigin(GameObject childRoot)
         {
-            Bounds bounds = new Bounds(prefabInstance.transform.position, Vector3.zero);
+            // Compute combined bounds in WORLD space
+            if (!TryGetWorldBounds(childRoot, out Bounds b))
+                return;
 
-            Renderer[] renderers = prefabInstance.GetComponentsInChildren<Renderer>();
-            foreach (var r in renderers)
-                bounds.Encapsulate(r.bounds);
+            Vector3 chunkOrigin = transform.position; // bottom-left origin for the chunk
+            Vector3 delta = b.min - chunkOrigin;
 
-            Collider2D[] colliders2D = prefabInstance.GetComponentsInChildren<Collider2D>();
-            foreach (var c in colliders2D)
-                bounds.Encapsulate(c.bounds);
+            // Move the child so that bounds.min == chunkOrigin
+            childRoot.transform.position -= new Vector3(delta.x, delta.y, 0f);
+        }
 
-            Collider[] colliders3D = prefabInstance.GetComponentsInChildren<Collider>();
-            foreach (var c in colliders3D)
-                bounds.Encapsulate(c.bounds);
+        private bool TryGetWorldBounds(GameObject root, out Bounds bounds)
+        {
+            bool has = false;
+            bounds = new Bounds(root.transform.position, Vector3.zero);
 
-            Vector3 sizeWorld = bounds.size;
+            var renderers = root.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (!has)
+                {
+                    bounds = renderers[i].bounds;
+                    has = true;
+                }
+                else bounds.Encapsulate(renderers[i].bounds);
+            }
 
-            size = Mathf.CeilToInt(Mathf.Max(sizeWorld.x, sizeWorld.y));
+            var col2D = root.GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < col2D.Length; i++)
+            {
+                if (!has)
+                {
+                    bounds = col2D[i].bounds;
+                    has = true;
+                }
+                else bounds.Encapsulate(col2D[i].bounds);
+            }
 
-            // 🔥 DO NOT MOVE CHUNK TRANSFORM
-            // Instead reposition prefab child so its bottom-left aligns with chunk origin
+            var col3D = root.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < col3D.Length; i++)
+            {
+                if (!has)
+                {
+                    bounds = col3D[i].bounds;
+                    has = true;
+                }
+                else bounds.Encapsulate(col3D[i].bounds);
+            }
 
-            Vector3 offset = bounds.center - transform.position;
-            prefabInstance.transform.position -= offset;
-
-            biomeBounds = bounds;
+            return has;
         }
 
         bool UsesTilemap()
@@ -306,49 +234,6 @@ namespace Yamigisa
             return groundTilemap != null && biome != null && biome.groundTile != null;
         }
 
-        IEnumerator SpawnResourcesCoroutine()
-        {
-            if (biome == null || biome.resourceSpawns == null) yield break;
-
-            foreach (var entry in biome.resourceSpawns)
-            {
-                if (entry.prefab == null) continue;
-
-                int spawnCount = rng.Next(
-                    Mathf.Max(0, entry.minSpawn),
-                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
-                );
-
-                for (int i = 0; i < spawnCount; i++)
-                {
-                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
-                    yield return null;
-                }
-            }
-        }
-
-        IEnumerator SpawnEnemiesCoroutine()
-        {
-            if (biome == null || biome.creatureSpawns == null) yield break;
-
-            foreach (var entry in biome.creatureSpawns)
-            {
-                if (entry.prefab == null) continue;
-
-                int spawnCount = rng.Next(
-                    Mathf.Max(0, entry.minSpawn),
-                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
-                );
-
-                for (int i = 0; i < spawnCount; i++)
-                {
-                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
-                    yield return null;
-                }
-            }
-        }
-
-        // NEW: immediate versions (so ForceImmediateGeneration is truly immediate)
         private void SpawnResourcesImmediate()
         {
             if (biome == null || biome.resourceSpawns == null) return;
@@ -357,15 +242,12 @@ namespace Yamigisa
             {
                 if (entry.prefab == null) continue;
 
-                int spawnCount = rng.Next(
-                    Mathf.Max(0, entry.minSpawn),
-                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
-                );
+                int min = Mathf.Max(0, entry.minSpawn);
+                int max = Mathf.Max(min, entry.maxSpawn);
+                int spawnCount = rng.Next(min, max + 1);
 
                 for (int i = 0; i < spawnCount; i++)
-                {
-                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
-                }
+                    Instantiate(entry.prefab, GetRandomPosInChunk(), Quaternion.identity, transform);
             }
         }
 
@@ -377,138 +259,25 @@ namespace Yamigisa
             {
                 if (entry.prefab == null) continue;
 
-                int spawnCount = rng.Next(
-                    Mathf.Max(0, entry.minSpawn),
-                    Mathf.Max(entry.minSpawn, entry.maxSpawn) + 1
-                );
+                int min = Mathf.Max(0, entry.minSpawn);
+                int max = Mathf.Max(min, entry.maxSpawn);
+                int spawnCount = rng.Next(min, max + 1);
 
                 for (int i = 0; i < spawnCount; i++)
-                {
-                    Instantiate(entry.prefab, GetUniqueRandomWorldPos(), Quaternion.identity, transform);
-                }
+                    Instantiate(entry.prefab, GetRandomPosInChunk(), Quaternion.identity, transform);
             }
         }
 
-        Vector3 GetUniqueRandomWorldPos()
+        private Vector3 GetRandomPosInChunk()
         {
-            // If bounds were never cached, fall back to chunk center
-            if (biomeBounds.size.x <= 0.0001f || biomeBounds.size.y <= 0.0001f)
-                biomeBounds = new Bounds(transform.position, new Vector3(size, size, 0f));
-
-            for (int attempt = 0; attempt < 60; attempt++)
-            {
-                float x = Random.Range(biomeBounds.min.x, biomeBounds.max.x);
-                float y = Random.Range(biomeBounds.min.y, biomeBounds.max.y);
-
-                Vector3 worldPos = new Vector3(x, y, transform.position.z);
-
-                if (!IsInsideBiome(worldPos))
-                    continue;
-
-                Vector2Int cell = Vector2Int.RoundToInt(worldPos - transform.position);
-                if (usedSpawnCells.Contains(cell))
-                    continue;
-
-                usedSpawnCells.Add(cell);
-                return worldPos;
-            }
-
-            return biomeBounds.center;
-        }
-
-        public void RestoreInteractiveObjects(List<InteractiveObjectSaveData> savedObjects)
-        {
-            if (savedObjects == null || savedObjects.Count == 0)
-                return;
-
-            InteractiveObject[] existing =
-                GetComponentsInChildren<InteractiveObject>(true);
-
-            foreach (var saved in savedObjects)
-            {
-                for (int i = 0; i < existing.Length; i++)
-                {
-                    if (existing[i].IdMatches(saved.id))
-                    {
-                        existing[i].Load(new SaveGameData
-                        {
-                            interactiveObjects = savedObjects
-                        });
-                        break;
-                    }
-                }
-            }
-        }
-
-        void CacheBiomeBounds(GameObject biomeInstance)
-        {
-            Bounds bounds = new Bounds(biomeInstance.transform.position, Vector3.zero);
-
-            Renderer[] renderers = biomeInstance.GetComponentsInChildren<Renderer>();
-            foreach (var r in renderers)
-                bounds.Encapsulate(r.bounds);
-
-            Collider2D[] col2D = biomeInstance.GetComponentsInChildren<Collider2D>();
-            foreach (var c in col2D)
-                bounds.Encapsulate(c.bounds);
-
-            Collider[] col3D = biomeInstance.GetComponentsInChildren<Collider>();
-            foreach (var c in col3D)
-                bounds.Encapsulate(c.bounds);
-
-            biomeBounds = bounds;
-
-            biomeColliders2D = col2D;
-            biomeColliders3D = col3D;
-
-            size = Mathf.CeilToInt(Mathf.Max(bounds.size.x, bounds.size.y));
-
-            // 🔥 DO NOT MODIFY transform.position HERE
-        }
-
-        bool IsInsideBiome(Vector3 worldPos)
-        {
-            if (biomeColliders2D != null && biomeColliders2D.Length > 0)
-            {
-                foreach (var col in biomeColliders2D)
-                {
-                    if (col != null && col.OverlapPoint(worldPos))
-                        return true;
-                }
-                return false;
-            }
-
-            if (biomeColliders3D != null && biomeColliders3D.Length > 0)
-            {
-                foreach (var col in biomeColliders3D)
-                {
-                    if (col != null && col.bounds.Contains(worldPos))
-                        return true;
-                }
-                return false;
-            }
-
-            return biomeBounds.Contains(worldPos);
+            float x = (float)rng.NextDouble() * CHUNK_WIDTH;
+            float y = (float)rng.NextDouble() * CHUNK_HEIGHT;
+            return transform.position + new Vector3(x, y, 0f);
         }
 
         public Vector2 GetWorldSize()
         {
-            if (UsesTilemap() && groundTilemap != null)
-            {
-                groundTilemap.CompressBounds();
-
-                var bounds = groundTilemap.localBounds;
-                Vector3 worldSize = groundTilemap.transform.TransformVector(bounds.size);
-
-                return new Vector2(
-                    Mathf.Abs(worldSize.x),
-                    Mathf.Abs(worldSize.y)
-                );
-            }
-
-            // fallback for prefab
-            return new Vector2(size, size);
+            return new Vector2(CHUNK_WIDTH, CHUNK_HEIGHT);
         }
-
     }
 }

@@ -30,7 +30,7 @@ namespace Yamigisa
 
         public void OpenStorage()
         {
-            if (Inventory.Instance.currentStorage != null) return;
+            if (Inventory.Instance.currentStorage != null && isOpened) return;
 
             isOpened = true;
 

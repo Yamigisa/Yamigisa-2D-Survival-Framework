@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 namespace Yamigisa
 {
@@ -15,18 +14,12 @@ namespace Yamigisa
         [Header("Streaming")]
         [SerializeField] private int loadRadius = 1;
 
-        [Header("Chunk Size Source")]
-        [SerializeField] private bool autoDetectChunkSize = true;
-
-        [Header("Chunk Size (Default 25 x 14.4)")]
-        [SerializeField] private Vector2 manualChunkWorldSize = new Vector2(25f, 14.4f);
+        [Header("Unified Chunk World Size (FOR BOTH PREFAB & TILEMAP)")]
+        [SerializeField] private Vector2 fixedChunkWorldSize = new Vector2(25f, 14.4f);
 
         private readonly Dictionary<Vector2Int, WorldChunk> chunkMap = new();
 
-        private Vector2 chunkWorldSize;
         private Vector2Int lastPlayerChunk;
-
-        private bool isTilemapWorld;
 
         public void Setup()
         {
@@ -34,13 +27,6 @@ namespace Yamigisa
 
             if (Character.instance == null)
                 return;
-
-            isTilemapWorld = DetermineIsTilemapWorld();
-
-            if (isTilemapWorld && autoDetectChunkSize)
-                chunkWorldSize = DetectChunkWorldSize();   // tilemap sizing (accurate)
-            else
-                chunkWorldSize = manualChunkWorldSize;     // prefab sizing (manual)
 
             lastPlayerChunk = WorldToChunkCoord(Character.instance.transform.position);
             SpawnAround(lastPlayerChunk);
@@ -52,6 +38,7 @@ namespace Yamigisa
                 return;
 
             Vector2Int current = WorldToChunkCoord(Character.instance.transform.position);
+
             if (current == lastPlayerChunk)
                 return;
 
@@ -75,7 +62,11 @@ namespace Yamigisa
             if (chunkMap.ContainsKey(coord))
                 return;
 
-            Vector3 worldPos = ChunkCoordToWorld(coord);
+            Vector3 worldPos = new Vector3(
+                coord.x * fixedChunkWorldSize.x,
+                coord.y * fixedChunkWorldSize.y,
+                0f
+            );
 
             BiomeGroup group = GetBiomeGroupByChunkCoord(coord);
             if (group == null || group.biomes == null || group.biomes.Count == 0)
@@ -86,12 +77,7 @@ namespace Yamigisa
 
             WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
 
-            // Keep your existing init signature usage:
-            // For tilemap world, size is tiles-per-side used by WorldChunk tile filling.
-            // For prefab world, size can be ignored or used for spawn logic.
             chunk.Initialize(biome, chunk.size, seed);
-
-            // Instant generation (no slow tile spawning)
             chunk.ForceImmediateGeneration();
 
             chunkMap.Add(coord, chunk);
@@ -99,86 +85,26 @@ namespace Yamigisa
 
         private Vector2Int WorldToChunkCoord(Vector3 worldPos)
         {
-            // Absolute grid. No origin snapping.
-            // This is stable for both tilemap/prefab as long as chunkWorldSize matches real world chunk dimensions.
-            int cx = Mathf.FloorToInt(worldPos.x / chunkWorldSize.x);
-            int cy = Mathf.FloorToInt(worldPos.y / chunkWorldSize.y);
-            return new Vector2Int(cx, cy);
-        }
+            int x = Mathf.FloorToInt(worldPos.x / fixedChunkWorldSize.x);
+            int y = Mathf.FloorToInt(worldPos.y / fixedChunkWorldSize.y);
 
-        private Vector3 ChunkCoordToWorld(Vector2Int coord)
-        {
-            return new Vector3(
-                coord.x * chunkWorldSize.x,
-                coord.y * chunkWorldSize.y,
-                0f
-            );
-        }
-
-        private Vector3 SnapOriginToGrid(Vector3 worldPos)
-        {
-            // Kept (NOT used). Origin snapping caused drift/gaps before.
-            return Vector3.zero;
-        }
-
-        private Vector2 DetectChunkWorldSize()
-        {
-            // Kept method name/signature, but now it is tilemap-accurate:
-            // Build a temp chunk instantly and read the Tilemap's real world bounds size.
-            // This avoids renderer/collider padding issues.
-            BiomeData sampleBiome = GetAnyTilemapBiome();
-            if (sampleBiome == null)
-                return manualChunkWorldSize;
-
-            WorldChunk temp = Instantiate(chunkPrefab, Vector3.zero, Quaternion.identity);
-            temp.gameObject.hideFlags = HideFlags.HideAndDontSave;
-
-            temp.Initialize(sampleBiome, temp.size, 0);
-            temp.ForceImmediateGeneration();
-
-            Vector2 size = manualChunkWorldSize;
-
-            Tilemap tm = temp.groundTilemap != null ? temp.groundTilemap : temp.GetComponentInChildren<Tilemap>(true);
-            if (tm != null)
-            {
-                tm.CompressBounds();
-                var lb = tm.localBounds;
-                Vector3 world = tm.transform.TransformVector(lb.size);
-                size = new Vector2(Mathf.Abs(world.x), Mathf.Abs(world.y));
-            }
-
-            Destroy(temp.gameObject);
-
-            // Safety clamp
-            if (size.x <= 0.0001f || size.y <= 0.0001f)
-                size = manualChunkWorldSize;
-
-            return size;
+            return new Vector2Int(x, y);
         }
 
         private BiomeGroup GetBiomeGroupByChunkCoord(Vector2Int coord)
         {
+            if (biomeZones == null || biomeZones.Count == 0)
+                return null;
+
             int distance = Mathf.Max(Mathf.Abs(coord.x), Mathf.Abs(coord.y));
 
-            BiomeZone selected = null;
+            int zoneSize = 5; // ← distance band size (change this)
 
-            for (int i = 0; i < biomeZones.Count; i++)
-            {
-                var z = biomeZones[i];
-                if (z == null || z.biomeGroup == null)
-                    continue;
+            int zoneIndex = distance / zoneSize;
 
-                if (distance >= z.minDistance)
-                {
-                    if (selected == null || z.minDistance > selected.minDistance)
-                        selected = z;
-                }
-            }
+            int groupIndex = zoneIndex % biomeZones.Count;
 
-            if (selected == null && biomeZones.Count > 0)
-                return biomeZones[0].biomeGroup;
-
-            return selected != null ? selected.biomeGroup : null;
+            return biomeZones[groupIndex].biomeGroup;
         }
 
         public void Save(ref SaveGameData data)
@@ -205,9 +131,6 @@ namespace Yamigisa
                     interactiveObjects = new List<InteractiveObjectSaveData>()
                 };
 
-                foreach (InteractiveObject io in c.GetComponentsInChildren<InteractiveObject>(true))
-                    io.SaveToList(chunkData.interactiveObjects);
-
                 data.chunks.Add(chunkData);
             }
         }
@@ -219,13 +142,6 @@ namespace Yamigisa
 
             ClearWorld();
 
-            isTilemapWorld = DetermineIsTilemapWorld();
-
-            if (isTilemapWorld && autoDetectChunkSize)
-                chunkWorldSize = DetectChunkWorldSize();
-            else
-                chunkWorldSize = manualChunkWorldSize;
-
             foreach (ChunkSaveData saved in data.chunks)
             {
                 BiomeData biome = GetBiomeByKey(saved.biomeKey);
@@ -233,16 +149,18 @@ namespace Yamigisa
                     continue;
 
                 Vector2Int coord = WorldToChunkCoord(saved.position);
-                Vector3 worldPos = ChunkCoordToWorld(coord);
+
+                Vector3 worldPos = new Vector3(
+                    coord.x * fixedChunkWorldSize.x,
+                    coord.y * fixedChunkWorldSize.y,
+                    0f
+                );
 
                 WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
-                chunk.Initialize(biome, saved.size, saved.seed, saved.resourcesSpawned, saved.enemiesSpawned);
+                chunk.Initialize(biome, saved.size, saved.seed);
                 chunk.ForceImmediateGeneration();
 
                 chunkMap.Add(coord, chunk);
-
-                if (saved.interactiveObjects != null && saved.interactiveObjects.Count > 0)
-                    chunk.RestoreInteractiveObjects(saved.interactiveObjects);
             }
 
             if (Character.instance != null)
@@ -259,6 +177,7 @@ namespace Yamigisa
                 if (kv.Value != null)
                     Destroy(kv.Value.gameObject);
             }
+
             chunkMap.Clear();
         }
 
@@ -269,7 +188,7 @@ namespace Yamigisa
 
             foreach (var zone in biomeZones)
             {
-                if (zone == null || zone.biomeGroup == null || zone.biomeGroup.biomes == null)
+                if (zone.biomeGroup == null)
                     continue;
 
                 foreach (var biome in zone.biomeGroup.biomes)
@@ -279,49 +198,6 @@ namespace Yamigisa
                 }
             }
 
-            return null;
-        }
-
-        private bool DetermineIsTilemapWorld()
-        {
-            // If ANY biome has groundTile AND chunkPrefab has a Tilemap, treat as tilemap world.
-            if (chunkPrefab == null)
-                return false;
-
-            Tilemap tm = chunkPrefab.groundTilemap != null ? chunkPrefab.groundTilemap : chunkPrefab.GetComponentInChildren<Tilemap>(true);
-            if (tm == null)
-                return false;
-
-            for (int i = 0; i < biomeZones.Count; i++)
-            {
-                var z = biomeZones[i];
-                if (z == null || z.biomeGroup == null || z.biomeGroup.biomes == null)
-                    continue;
-
-                foreach (var b in z.biomeGroup.biomes)
-                {
-                    if (b != null && b.groundTile != null)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        private BiomeData GetAnyTilemapBiome()
-        {
-            for (int i = 0; i < biomeZones.Count; i++)
-            {
-                var z = biomeZones[i];
-                if (z == null || z.biomeGroup == null || z.biomeGroup.biomes == null)
-                    continue;
-
-                foreach (var b in z.biomeGroup.biomes)
-                {
-                    if (b != null && b.groundTile != null)
-                        return b;
-                }
-            }
             return null;
         }
 
