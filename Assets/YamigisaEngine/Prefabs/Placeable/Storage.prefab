@@ -274,6 +274,7 @@ MonoBehaviour:
   interactRange: 1
   Actions:
   - {fileID: 11400000, guid: 42f815feffefabe429463cb3e996c868, type: 2}
+  - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
   outlineObject: {fileID: 3715352576773496897}
 --- !u!114 &4494074185834777774
 MonoBehaviour:
@@ -287,6 +288,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20a447b0b11989d4c8e6ba052a4cb859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  storageId: 
   startingItems:
   - item: {fileID: 11400000, guid: 8f122fa209b4a3746b9b12fd6de5bc2a, type: 2}
     amount: 2

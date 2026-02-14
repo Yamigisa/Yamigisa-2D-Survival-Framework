@@ -78,12 +78,14 @@ namespace Yamigisa
         {
             if (biome == null) return;
 
+            Debug.Log("Generating chunk: " + name);
+
             usedSpawnCells.Clear();
 
             // keep Grid cell size (1,1,1) but allow the chunk to represent 14.4 world height
             transform.localScale = new Vector3(1f, Y_SCALE, 1f);
 
-            ClearPreviousChunkContent();
+            //ClearPreviousChunkContent();
 
             if (!UsesTilemap())
                 GeneratePrefabChunk();
@@ -105,15 +107,13 @@ namespace Yamigisa
 
         private void ClearPreviousChunkContent()
         {
-            // destroy previous instantiated children but keep tilemap objects if they exist
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 Transform child = transform.GetChild(i);
 
-                // keep tilemap object (it should already be on the chunk)
                 if (groundTilemap != null && child == groundTilemap.transform) continue;
 
-                DestroyImmediate(child.gameObject);
+                Destroy(child.gameObject);
             }
 
             if (groundTilemap != null)
@@ -247,7 +247,12 @@ namespace Yamigisa
                 int spawnCount = rng.Next(min, max + 1);
 
                 for (int i = 0; i < spawnCount; i++)
-                    Instantiate(entry.prefab, GetRandomPosInChunk(), Quaternion.identity, transform);
+                {
+                    Vector3 pos = GetRandomPosInChunk();
+                    Debug.Log("Spawning at: " + pos);
+                    Instantiate(entry.prefab, pos, Quaternion.identity, transform);
+                }
+
             }
         }
 

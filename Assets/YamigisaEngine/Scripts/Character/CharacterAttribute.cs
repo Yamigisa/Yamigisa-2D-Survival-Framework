@@ -11,6 +11,9 @@ namespace Yamigisa
         private Dictionary<AttributeType, float> biomeRegenAdditions = new();
         private Dictionary<AttributeType, float> biomeDepleteAdditions = new();
 
+        private readonly Dictionary<AttributeType, float> depletedRegenAdds = new();
+        private readonly Dictionary<AttributeType, float> depletedDepleteAdds = new();
+
         void Start()
         {
             attributeUI = FindObjectOfType<AttributeUI>();
@@ -41,12 +44,17 @@ namespace Yamigisa
         {
             if (attributeUI == null) return;
 
+            RebuildDepletedModifiers();
+
             foreach (AttributeData a in AttributeData)
             {
                 float delta = a.DepleteValuePerMinute;
 
-                if (biomeDepleteAdditions.TryGetValue(a.type, out float add))
-                    delta += add;
+                if (biomeDepleteAdditions.TryGetValue(a.type, out float biomeAdd))
+                    delta += biomeAdd;
+
+                if (depletedDepleteAdds.TryGetValue(a.type, out float depletedAdd))
+                    delta += depletedAdd;
 
                 a.CurrentValue += delta;
                 if (a.CurrentValue < 0) a.CurrentValue = 0;
@@ -57,10 +65,7 @@ namespace Yamigisa
                 if (a.type == AttributeType.Health && a.CurrentValue <= 0)
                 {
                     a.CurrentValue = 0;
-
-                    if (bar != null)
-                        bar.SetCurrentValue(0);
-
+                    if (bar != null) bar.SetCurrentValue(0);
                     Character.instance.Die();
                 }
             }
@@ -81,17 +86,23 @@ namespace Yamigisa
         {
             if (attributeUI == null) return;
 
+            RebuildDepletedModifiers();
+
             foreach (AttributeData a in AttributeData)
             {
                 if (a.type == AttributeType.Health && a.CurrentValue <= 0)
                     continue;
 
-                if (a.CurrentValue >= a.MaxValue) continue;
+                if (a.CurrentValue >= a.MaxValue)
+                    continue;
 
                 float delta = a.RegenerateValuePerMinute;
 
-                if (biomeRegenAdditions.TryGetValue(a.type, out float add))
-                    delta += add;
+                if (biomeRegenAdditions.TryGetValue(a.type, out float biomeAdd))
+                    delta += biomeAdd;
+
+                if (depletedRegenAdds.TryGetValue(a.type, out float depletedAdd))
+                    delta += depletedAdd;
 
                 a.CurrentValue += delta;
                 if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
@@ -180,6 +191,32 @@ namespace Yamigisa
                             bar.SetCurrentValue(a.CurrentValue);
                         }
                     }
+                }
+            }
+        }
+
+        private void RebuildDepletedModifiers()
+        {
+            depletedRegenAdds.Clear();
+            depletedDepleteAdds.Clear();
+
+            foreach (AttributeData source in AttributeData)
+            {
+                if (source.CurrentValue > 0)
+                    continue;
+
+                if (source.DepletedModifiers == null)
+                    continue;
+
+                foreach (var mod in source.DepletedModifiers)
+                {
+                    if (!depletedRegenAdds.ContainsKey(mod.targetType))
+                        depletedRegenAdds[mod.targetType] = 0f;
+                    if (!depletedDepleteAdds.ContainsKey(mod.targetType))
+                        depletedDepleteAdds[mod.targetType] = 0f;
+
+                    depletedRegenAdds[mod.targetType] += mod.regenAddition;
+                    depletedDepleteAdds[mod.targetType] += mod.depleteAddition;
                 }
             }
         }

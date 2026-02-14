@@ -14,11 +14,16 @@ namespace Yamigisa
         public List<KeyCode> jumpKey;
         public List<KeyCode> crouchKey;
 
+        [Header("Interaction Inputs")]
+        public KeyCode interaction1 = KeyCode.Mouse0; // LMB
+        public KeyCode interaction2 = KeyCode.Mouse1; // RMB
+
+
         [Header("Inventory / Items")]
         public List<KeyCode> inventoryKey;
         public List<KeyCode> useItemKey;
 
-        [Header("Inventory / Items")]
+        [Header("Crafting")]
         public List<KeyCode> craftingKey;
 
         [Header("Cancel")]
@@ -26,7 +31,7 @@ namespace Yamigisa
 
         [Header("Pause")]
         public List<KeyCode> pauseKey;
-        
+
         public bool IsAnyKeyPressed(List<KeyCode> keyList)
         {
             foreach (KeyCode key in keyList)

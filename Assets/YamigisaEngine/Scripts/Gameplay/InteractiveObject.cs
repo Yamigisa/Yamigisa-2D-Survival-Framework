@@ -20,9 +20,7 @@ namespace Yamigisa
         private bool pickedUp = false;
 
         private static InteractiveObject hovered;
-        // =====================
-        // ID SAFETY
-        // =====================
+
         private void Awake()
         {
 #if UNITY_EDITOR
@@ -74,21 +72,45 @@ namespace Yamigisa
         void HandleMouseClick()
         {
             if (hovered == null) return;
-            if (!Input.GetMouseButtonDown(0)) return;
             if (Character.instance.IsBusy) return;
             if (IsPointerOverAnyUI()) return;
 
             Character character = Character.instance.GetCharacter();
+            CharacterControls controls = Character.instance.characterControls;
 
-            if (hovered.IsCharacterInRange(character))
-                hovered.InteractObject(character);
-            else
+            for (int i = 0; i < hovered.Actions.Count && i < 4; i++)
             {
-                character.characterMovement.MoveTo(
-                    hovered.transform.position,
-                    hovered.interactRange
-                );
-                character.SetPendingInteraction(hovered);
+                bool triggered = false;
+
+                switch (i)
+                {
+                    case 0:
+                        triggered = Input.GetKeyDown(controls.interaction1);
+                        break;
+
+                    case 1:
+                        triggered = Input.GetKeyDown(controls.interaction2);
+                        break;
+                }
+
+                if (!triggered) continue;
+
+                if (hovered.IsCharacterInRange(character))
+                {
+                    hovered.Actions[i].DoAction(character, hovered);
+                }
+                else
+                {
+                    character.characterMovement.MoveTo(
+                        hovered.transform.position,
+                        hovered.interactRange
+                    );
+
+                    character.SetPendingInteraction(hovered);
+                }
+
+                TextTooltip.Instance.CloseInteractiveObjectTexts();
+                return;
             }
         }
 
@@ -102,8 +124,10 @@ namespace Yamigisa
 
         public void InteractObject(Character character)
         {
-            foreach (ActionBase action in Actions)
-                action.DoAction(character, this);
+            if (Actions == null || Actions.Count == 0)
+                return;
+
+            Actions[0].DoAction(character, this);
 
             TextTooltip.Instance.CloseInteractiveObjectTexts();
         }
@@ -118,9 +142,6 @@ namespace Yamigisa
             if (outlineObject) outlineObject.SetActive(on);
         }
 
-        // =====================
-        // SAVE / LOAD
-        // =====================
         public void Save(ref SaveGameData data)
         {
             data.interactiveObjects.Add(new InteractiveObjectSaveData
@@ -139,8 +160,9 @@ namespace Yamigisa
 
             if (saved == null)
             {
-                return; // never saved before → keep it
+                return;
             }
+
             if (saved.pickedUp)
             {
                 Destroy(gameObject);
@@ -150,12 +172,8 @@ namespace Yamigisa
             transform.SetPositionAndRotation(saved.position, saved.rotation);
             gameObject.SetActive(saved.active);
             pickedUp = false;
-
         }
 
-        // =====================
-        // PICKUP
-        // =====================
         public void MarkPickedUp()
         {
             pickedUp = true;
@@ -177,6 +195,5 @@ namespace Yamigisa
         {
             return id == otherId;
         }
-
     }
 }

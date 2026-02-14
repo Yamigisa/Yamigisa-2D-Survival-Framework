@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Yamigisa
@@ -6,20 +7,22 @@ namespace Yamigisa
     public class AttributeData : ScriptableObject
     {
         public AttributeType type;
+
         [Space(3)]
         [Header("Attribute Settings")]
         public float MaxValue = 100f;
         public float CurrentValue = 100f;
+
         [Tooltip("Set to 0 to disable depleting")]
-        public float DepleteValuePerMinute = -0f;
+        public float DepleteValuePerMinute = 0f;
+
         [Tooltip("Set to 0 to disable regeneration")]
         public float RegenerateValuePerMinute = 0f;
 
         [Space(3)]
+        [Header("Effects while THIS attribute is depleted (<= 0)")]
+        public List<DepletedAttributeModifier> DepletedModifiers = new();
 
-        [Header("Effects if depleted")]
-        [Tooltip("Health loss per minute in game time when depleted")]
-        public float HealthLossValue = -1f;
         [Tooltip("Movement speed multiplier loss when depleted")]
         public float MoveSpeedLossValue = -0.2f;
 
@@ -27,10 +30,7 @@ namespace Yamigisa
         public Sprite FillImage;
         public Sprite BackgroundImage;
 
-        public AttributeType GetAttributeType()
-        {
-            return type;
-        }
+        public AttributeType GetAttributeType() => type;
     }
 
     [System.Serializable]
@@ -39,5 +39,17 @@ namespace Yamigisa
         Health,
         Hunger,
         Thirst,
+    }
+
+    [System.Serializable]
+    public class DepletedAttributeModifier
+    {
+        public AttributeType targetType;
+
+        [Tooltip("Extra regen per minute applied to target while THIS attribute is depleted")]
+        public float regenAddition = 0f;
+
+        [Tooltip("Extra deplete per minute applied to target while THIS attribute is depleted")]
+        public float depleteAddition = 0f;
     }
 }

@@ -65,19 +65,49 @@ namespace Yamigisa
 
             InteractiveObjectTextGameObject.SetActive(true);
 
+            CharacterControls controls = Character.instance.characterControls;
+
             for (int i = 0; i < InteractiveObjectTexts.Count; i++)
             {
-                if (i < interactiveObject.Actions.Count)
+                if (i < interactiveObject.Actions.Count && i < 4)
                 {
                     InteractiveObjectTexts[i].gameObject.SetActive(true);
+
+                    string inputText = "";
+
+                    switch (i)
+                    {
+                        case 0:
+                            inputText = GetReadableKeyName(controls.interaction1);
+                            break;
+
+                        case 1:
+                            inputText = GetReadableKeyName(controls.interaction2);
+                            break;
+                    }
+
                     InteractiveObjectTexts[i].text =
-                        interactiveObject.Actions[i].title + " " + interactiveObject.name;
+                        inputText + " to " +
+                        interactiveObject.Actions[i].title + " " +
+                        interactiveObject.name;
                 }
                 else
                 {
                     InteractiveObjectTexts[i].gameObject.SetActive(false);
                 }
             }
+        }
+
+        private string GetReadableKeyName(KeyCode key)
+        {
+            switch (key)
+            {
+                case KeyCode.Mouse0: return "LMB";
+                case KeyCode.Mouse1: return "RMB";
+                case KeyCode.Mouse2: return "MMB";
+            }
+
+            return key.ToString();
         }
 
         public void CloseInteractiveObjectTexts()
