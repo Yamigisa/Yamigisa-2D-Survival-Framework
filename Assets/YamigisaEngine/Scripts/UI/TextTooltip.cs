@@ -78,11 +78,11 @@ namespace Yamigisa
                     switch (i)
                     {
                         case 0:
-                            inputText = GetReadableKeyName(controls.interaction1);
+                            inputText = GetReadableBindingName(controls.interaction1);
                             break;
 
                         case 1:
-                            inputText = GetReadableKeyName(controls.interaction2);
+                            inputText = GetReadableBindingName(controls.interaction2);
                             break;
                     }
 
@@ -96,6 +96,23 @@ namespace Yamigisa
                     InteractiveObjectTexts[i].gameObject.SetActive(false);
                 }
             }
+        }
+
+        private string GetReadableBindingName(InputBinding binding)
+        {
+            // If controller is connected, prefer showing gamepad button
+            if (Character.instance.characterControls.gamepad != null && binding.gamepadButtons.Count > 0)
+            {
+                return binding.gamepadButtons[0].ToString();
+            }
+
+            // Otherwise show keyboard
+            if (binding.keyboardKeys.Count > 0)
+            {
+                return GetReadableKeyName(binding.keyboardKeys[0]);
+            }
+
+            return "";
         }
 
         private string GetReadableKeyName(KeyCode key)

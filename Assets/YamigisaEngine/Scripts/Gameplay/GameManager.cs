@@ -66,8 +66,8 @@ namespace Yamigisa
 
         private void Update()
         {
-            if (Character.instance.characterControls.IsAnyKeyPressedDown(
-                Character.instance.characterControls.pauseKey) && !Character.instance.CharacterIsBusy())
+            if (Character.instance.characterControls.IsPressed(
+                Character.instance.characterControls.pause) && !Character.instance.CharacterIsBusy())
             {
                 TogglePause();
             }

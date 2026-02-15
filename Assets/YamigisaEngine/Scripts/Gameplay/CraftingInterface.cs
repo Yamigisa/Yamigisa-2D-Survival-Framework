@@ -75,8 +75,8 @@ namespace Yamigisa
 
         private void Update()
         {
-            if (Character.instance.characterControls.IsAnyKeyPressedDown(
-                Character.instance.characterControls.cancelKey) && Character.instance.CharacterIsBusy() && isOpened)
+            if (Character.instance.characterControls.IsPressed(
+                Character.instance.characterControls.cancel) && Character.instance.CharacterIsBusy() && isOpened)
             {
                 Character.instance.SetCharacterBusy(false);
                 CloseAllCraftingInterfaces();

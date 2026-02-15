@@ -5,6 +5,10 @@ namespace Yamigisa
 {
     public class WorldGenerator : MonoBehaviour, ISavable
     {
+        [Header("Bools")]
+        [SerializeField] private bool generateOnStart = true;
+        [SerializeField] private bool generateProcedurally = true;
+
         [Header("Prefabs")]
         [SerializeField] private WorldChunk chunkPrefab;
 
@@ -23,6 +27,9 @@ namespace Yamigisa
 
         public void Setup()
         {
+            if (!generateOnStart)
+                return;
+
             ClearWorld();
 
             if (Character.instance == null)
@@ -34,6 +41,9 @@ namespace Yamigisa
 
         private void Update()
         {
+            if (!generateProcedurally)
+                return;
+
             if (Character.instance == null)
                 return;
 

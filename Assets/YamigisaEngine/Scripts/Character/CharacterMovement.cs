@@ -158,17 +158,16 @@ namespace Yamigisa
             if (!canMove) return;
 
             Vector2 inputDirection = Vector2.zero;
-
-            if (characterControls.IsAnyKeyPressed(characterControls.moveUpKey)) inputDirection.y += 1;
-            if (characterControls.IsAnyKeyPressed(characterControls.moveDownKey)) inputDirection.y -= 1;
-            if (characterControls.IsAnyKeyPressed(characterControls.moveRightKey)) inputDirection.x += 1;
-            if (characterControls.IsAnyKeyPressed(characterControls.moveLeftKey)) inputDirection.x -= 1;
+            if (characterControls.IsPressed(characterControls.moveUp)) inputDirection.y += 1;
+            if (characterControls.IsPressed(characterControls.moveDown)) inputDirection.y -= 1;
+            if (characterControls.IsPressed(characterControls.moveRight)) inputDirection.x += 1;
+            if (characterControls.IsPressed(characterControls.moveLeft)) inputDirection.x -= 1;
 
             StopAutoMove();
             if (inputDirection.x != 0 && inputDirection.y != 0)
                 inputDirection.y = 0;
 
-            bool isPressingSprint = characterControls.IsAnyKeyPressed(characterControls.sprintKey);
+            bool isPressingSprint = characterControls.IsPressed(characterControls.sprint);
             bool CharactercanSprint = canSprint && !isSprintCooldown && (unlimitedSprint || sprintRemaining > 0f);
 
             float currentSpeed = ((isPressingSprint && CharactercanSprint) ? sprintSpeed : walkSpeed) + speedAddition;
@@ -207,17 +206,17 @@ namespace Yamigisa
         private bool HasManualMoveInput()
         {
             return
-                characterControls.IsAnyKeyPressed(characterControls.moveUpKey) ||
-                characterControls.IsAnyKeyPressed(characterControls.moveDownKey) ||
-                characterControls.IsAnyKeyPressed(characterControls.moveLeftKey) ||
-                characterControls.IsAnyKeyPressed(characterControls.moveRightKey);
+                characterControls.IsPressed(characterControls.moveUp) ||
+                characterControls.IsPressed(characterControls.moveDown) ||
+                characterControls.IsPressed(characterControls.moveLeft) ||
+                characterControls.IsPressed(characterControls.moveRight);
         }
 
         private void HandleJump()
         {
             if (!isJumping)
             {
-                if (canJump && characterControls.IsAnyKeyPressed(characterControls.jumpKey) && !isCrouching)
+                if (canJump && characterControls.IsPressed(characterControls.jump) && !isCrouching)
                     TryJump();
                 return;
             }
@@ -267,7 +266,7 @@ namespace Yamigisa
 
         private void HandleCrouch()
         {
-            if (characterControls.IsAnyKeyPressed(characterControls.crouchKey) && canCrouch)
+            if (characterControls.IsPressed(characterControls.crouch) && canCrouch)
             {
                 if (!isCrouching && !isJumping)
                 {
@@ -306,7 +305,7 @@ namespace Yamigisa
             }
             else
             {
-                if (!characterControls.IsAnyKeyPressed(characterControls.sprintKey))
+                if (!characterControls.IsPressed(characterControls.sprint))
                     sprintRemaining = Mathf.Clamp(sprintRemaining + Time.deltaTime, 0, sprintDuration);
             }
         }

@@ -11,7 +11,10 @@ namespace Yamigisa
         {
             SaveGameData data = new SaveGameData();
 
-            foreach (var savable in FindObjectsOfType<MonoBehaviour>(true))
+            foreach (var savable in FindObjectsByType<MonoBehaviour>(
+    FindObjectsInactive.Include,
+    FindObjectsSortMode.None))
+
             {
                 if (savable is ISavable s)
                     s.Save(ref data);
@@ -30,7 +33,9 @@ namespace Yamigisa
             string json = System.IO.File.ReadAllText(path);
             SaveGameData data = JsonUtility.FromJson<SaveGameData>(json);
 
-            foreach (var savable in FindObjectsOfType<MonoBehaviour>(true))
+            foreach (var savable in FindObjectsByType<MonoBehaviour>(
+              FindObjectsInactive.Include,
+              FindObjectsSortMode.None))
             {
                 if (savable is ISavable s)
                 {

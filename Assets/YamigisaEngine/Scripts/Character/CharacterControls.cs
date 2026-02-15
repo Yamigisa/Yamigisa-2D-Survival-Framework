@@ -1,54 +1,107 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace Yamigisa
 {
     public class CharacterControls : MonoBehaviour
     {
-        [Header("Movement")]
-        public List<KeyCode> moveUpKey;
-        public List<KeyCode> moveDownKey;
-        public List<KeyCode> moveLeftKey;
-        public List<KeyCode> moveRightKey;
-        public List<KeyCode> sprintKey;
-        public List<KeyCode> jumpKey;
-        public List<KeyCode> crouchKey;
+        [Header("MOVEMENT")]
+        public InputBinding moveUp;
+        public InputBinding moveDown;
+        public InputBinding moveLeft;
+        public InputBinding moveRight;
+        public InputBinding sprint;
+        public InputBinding jump;
+        public InputBinding crouch;
 
-        [Header("Interaction Inputs")]
-        public KeyCode interaction1 = KeyCode.Mouse0; // LMB
-        public KeyCode interaction2 = KeyCode.Mouse1; // RMB
+        [Header("INTERACTION INPUTS")]
+        public InputBinding interaction1;
+        public InputBinding interaction2;
 
+        [Header("INVENTORY / USE ITEM")]
+        public InputBinding inventory;
+        public InputBinding useItem;
 
-        [Header("Inventory / Items")]
-        public List<KeyCode> inventoryKey;
-        public List<KeyCode> useItemKey;
+        [Header("CRAFTING")]
+        public InputBinding crafting;
 
-        [Header("Crafting")]
-        public List<KeyCode> craftingKey;
+        [Header("CANCEL ACTIONS")]
+        public InputBinding cancel;
 
-        [Header("Cancel")]
-        public List<KeyCode> cancelKey;
+        [Header("PAUSE")]
+        public InputBinding pause;
 
-        [Header("Pause")]
-        public List<KeyCode> pauseKey;
+        public Gamepad gamepad { get; private set; }
 
-        public bool IsAnyKeyPressed(List<KeyCode> keyList)
+        private void Update()
         {
-            foreach (KeyCode key in keyList)
+            gamepad = Gamepad.current;
+        }
+
+        public bool IsPressed(InputBinding binding)
+        {
+            // Keyboard
+            foreach (var key in binding.keyboardKeys)
             {
                 if (Input.GetKey(key))
                     return true;
             }
+
+            // Gamepad
+            if (gamepad != null)
+            {
+                foreach (var button in binding.gamepadButtons)
+                {
+                    if (gamepad[button].isPressed)
+                        return true;
+                }
+            }
+
             return false;
         }
 
-        public bool IsAnyKeyPressedDown(List<KeyCode> keyList)
+        public bool IsPressedDown(InputBinding binding)
         {
-            foreach (KeyCode key in keyList)
+            // Keyboard
+            foreach (var key in binding.keyboardKeys)
             {
                 if (Input.GetKeyDown(key))
                     return true;
             }
+
+            // Gamepad
+            if (gamepad != null)
+            {
+                foreach (var button in binding.gamepadButtons)
+                {
+                    if (gamepad[button].wasPressedThisFrame)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsPressedUp(InputBinding binding)
+        {
+            foreach (var key in binding.keyboardKeys)
+            {
+                if (Input.GetKeyUp(key))
+                    return true;
+            }
+
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad != null)
+            {
+                foreach (var button in binding.gamepadButtons)
+                {
+                    if (gamepad[button].wasReleasedThisFrame)
+                        return true;
+                }
+            }
+
             return false;
         }
 
@@ -57,4 +110,12 @@ namespace Yamigisa
             return Camera.main.ScreenPointToRay(Input.mousePosition);
         }
     }
+
+    [System.Serializable]
+    public class InputBinding
+    {
+        public List<KeyCode> keyboardKeys = new();
+        public List<GamepadButton> gamepadButtons = new();
+    }
+
 }

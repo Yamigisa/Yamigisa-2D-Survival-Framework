@@ -450,22 +450,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34b250045e9694b45a84b1e7c846de4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveUpKey: 1101000077000000
-  moveDownKey: 1201000073000000
-  moveLeftKey: 1401000061000000
-  moveRightKey: 1301000064000000
-  sprintKey: 30010000
-  jumpKey: 20000000
-  crouchKey: 32010000
-  interaction1: 323
-  interaction2: 324
-  interaction3: 323
-  interaction4: 324
-  inventoryKey: 69000000
-  useItemKey: 65000000
-  craftingKey: 75000000
-  cancelKey: 1b000000
-  pauseKey: 1b000000
+  moveUp:
+    keyboardKeys: 77000000
+    gamepadButtons: 00000000
+  moveDown:
+    keyboardKeys: 73000000
+    gamepadButtons: 01000000
+  moveLeft:
+    keyboardKeys: 61000000
+    gamepadButtons: 02000000
+  moveRight:
+    keyboardKeys: 64000000
+    gamepadButtons: 03000000
+  sprint:
+    keyboardKeys: 30010000
+    gamepadButtons: 0e000000
+  jump:
+    keyboardKeys: 6a000000
+    gamepadButtons: 0f000000
+  crouch:
+    keyboardKeys: 32010000
+    gamepadButtons: 0a000000
+  interaction1:
+    keyboardKeys: 43010000
+    gamepadButtons: 04000000
+  interaction2:
+    keyboardKeys: 44010000
+    gamepadButtons: 05000000
+  inventory:
+    keyboardKeys: 69000000
+    gamepadButtons: 06000000
+  useItem:
+    keyboardKeys: 
+    gamepadButtons: 
+  crafting:
+    keyboardKeys: 75000000
+    gamepadButtons: 0f000000
+  cancel:
+    keyboardKeys: 1b000000
+    gamepadButtons: 08000000
+  pause:
+    keyboardKeys: 1b000000
+    gamepadButtons: 0c000000
 --- !u!114 &8627710104781531030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,3 +552,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0ed756ed0cf374ab048d80e56aa68a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canApplyBiome: 1

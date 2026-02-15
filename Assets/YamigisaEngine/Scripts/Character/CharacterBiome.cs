@@ -4,10 +4,13 @@ namespace Yamigisa
 {
     public class CharacterBiome : MonoBehaviour
     {
+        [SerializeField] private bool canApplyBiome = true;
         private BiomeData currentBiome;
 
         public void SetBiome(BiomeData biome)
         {
+            if (!canApplyBiome) return;
+
             currentBiome = biome;
             ApplyBiome();
         }

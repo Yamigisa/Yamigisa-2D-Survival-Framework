@@ -104,7 +104,7 @@ namespace Yamigisa
             // Edit mode → find grid in scene
             else
             {
-                grid = FindObjectOfType<GridLayout>();
+                grid = FindAnyObjectByType<GridLayout>();
             }
 
             if (grid == null) return;

@@ -78,8 +78,6 @@ namespace Yamigisa
         {
             if (biome == null) return;
 
-            Debug.Log("Generating chunk: " + name);
-
             usedSpawnCells.Clear();
 
             // keep Grid cell size (1,1,1) but allow the chunk to represent 14.4 world height
@@ -249,7 +247,6 @@ namespace Yamigisa
                 for (int i = 0; i < spawnCount; i++)
                 {
                     Vector3 pos = GetRandomPosInChunk();
-                    Debug.Log("Spawning at: " + pos);
                     Instantiate(entry.prefab, pos, Quaternion.identity, transform);
                 }
 

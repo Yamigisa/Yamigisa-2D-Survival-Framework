@@ -16,7 +16,7 @@ namespace Yamigisa
 
         void Start()
         {
-            attributeUI = FindObjectOfType<AttributeUI>();
+            attributeUI = FindAnyObjectByType<AttributeUI>();
             if (attributeUI == null) return;
 
             foreach (AttributeData a in AttributeData)

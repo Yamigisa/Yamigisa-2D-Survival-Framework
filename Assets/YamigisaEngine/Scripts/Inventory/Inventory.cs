@@ -219,14 +219,14 @@ namespace Yamigisa
         private void Update()
         {
             // OPEN inventory (only if closed)
-            if (controls.IsAnyKeyPressedDown(controls.inventoryKey) && !Character.instance.CharacterIsBusy() && !GameManager.instance.IsPaused)
+            if (controls.IsPressed(controls.inventory) && !Character.instance.CharacterIsBusy() && !GameManager.instance.IsPaused)
             {
                 if (!IsInventoryOpen)
                     ShowInventory();
             }
 
             // CLOSE inventory (ONLY with cancel key)
-            if (controls.IsAnyKeyPressedDown(controls.cancelKey))
+            if (controls.IsPressed(controls.cancel))
             {
                 if (currentStorage != null)
                 {
@@ -259,7 +259,7 @@ namespace Yamigisa
                 }
             }
 
-            if (!isDragging && controls.IsAnyKeyPressedDown(controls.useItemKey) && selectedQuickIndex >= 0)
+            if (!isDragging && controls.IsPressed(controls.useItem) && selectedQuickIndex >= 0)
                 UseQuickSlot(selectedQuickIndex);
 
             if (!IsInventoryOpen)

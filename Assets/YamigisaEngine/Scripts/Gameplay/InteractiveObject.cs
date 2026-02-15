@@ -85,11 +85,11 @@ namespace Yamigisa
                 switch (i)
                 {
                     case 0:
-                        triggered = Input.GetKeyDown(controls.interaction1);
+                        triggered = controls.IsPressedDown(controls.interaction1);
                         break;
 
                     case 1:
-                        triggered = Input.GetKeyDown(controls.interaction2);
+                        triggered = controls.IsPressedDown(controls.interaction2);
                         break;
                 }
 
