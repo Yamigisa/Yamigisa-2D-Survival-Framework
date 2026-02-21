@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Yamigisa
 {
     public class CharacterAttribute : MonoBehaviour
@@ -57,15 +61,17 @@ namespace Yamigisa
                     delta += depletedAdd;
 
                 a.CurrentValue += delta;
-                if (a.CurrentValue < 0) a.CurrentValue = 0;
+
+                if (a.CurrentValue < 0)
+                    a.CurrentValue = 0;
 
                 var bar = attributeUI.GetAttributeBar(a);
-                if (bar != null) bar.SetCurrentValue(a.CurrentValue);
+                if (bar != null)
+                    bar.SetCurrentValue(a.CurrentValue);
 
-                if (a.type == AttributeType.Health && a.CurrentValue <= 0)
+                // 🔥 DATA-DRIVEN GAME OVER
+                if (a.CurrentValue <= 0 && a.triggerGameOver)
                 {
-                    a.CurrentValue = 0;
-                    if (bar != null) bar.SetCurrentValue(0);
                     Character.instance.Die();
                 }
             }
@@ -221,5 +227,40 @@ namespace Yamigisa
             }
         }
 
+        public void EditorInitializeUI()
+        {
+            attributeUI = FindAnyObjectByType<AttributeUI>();
+
+            if (attributeUI == null)
+            {
+                Debug.LogWarning("No AttributeUI found in scene.");
+                return;
+            }
+
+            // Clear existing bars
+            for (int i = attributeUI.attributeBars.Count - 1; i >= 0; i--)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    DestroyImmediate(attributeUI.attributeBars[i].gameObject);
+                else
+                    Destroy(attributeUI.attributeBars[i].gameObject);
+#else
+        Destroy(attributeUI.attributeBars[i].gameObject);
+#endif
+            }
+
+            attributeUI.attributeBars.Clear();
+
+            // Recreate bars
+            foreach (AttributeData a in AttributeData)
+            {
+                attributeUI.InitializeAttributeBar(a);
+            }
+
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(attributeUI);
+#endif
+        }
     }
 }

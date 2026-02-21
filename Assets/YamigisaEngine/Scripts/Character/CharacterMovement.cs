@@ -63,6 +63,7 @@ namespace Yamigisa
 
         public bool IsAutoMoving => isAutoMoving;
 
+        private float totalSpeedBuff = 0f;
         public void StopAutoMoveExternal()
         {
             StopAutoMove();
@@ -308,6 +309,18 @@ namespace Yamigisa
                 if (!characterControls.IsPressed(characterControls.sprint))
                     sprintRemaining = Mathf.Clamp(sprintRemaining + Time.deltaTime, 0, sprintDuration);
             }
+        }
+
+        public void AddSpeedBuff(float amount)
+        {
+            totalSpeedBuff += amount;
+            SetSpeedMultiplier(totalSpeedBuff);
+        }
+
+        public void RemoveSpeedBuff(float amount)
+        {
+            totalSpeedBuff -= amount;
+            SetSpeedMultiplier(totalSpeedBuff);
         }
     }
 }

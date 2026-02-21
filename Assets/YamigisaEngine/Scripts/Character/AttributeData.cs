@@ -21,6 +21,7 @@ namespace Yamigisa
 
         [Space(3)]
         [Header("Effects while THIS attribute is depleted (<= 0)")]
+        public bool triggerGameOver = false;
         public List<DepletedAttributeModifier> DepletedModifiers = new();
 
         [Tooltip("Movement speed multiplier loss when depleted")]

@@ -1024,6 +1024,33 @@ namespace Yamigisa
             NotifyChanged();
         }
 
+        public bool CanAddItem(ItemData data, int amount)
+        {
+            if (data == null) return false;
+
+            // Example simple logic:
+            // 1. If stackable, check existing stacks
+            // 2. If not stackable, check empty slot count
+
+            if (data.isStackable)
+            {
+                foreach (var slot in itemSlots)
+                {
+                    if (slot.HasItem && slot.ItemData == data && slot.Amount < data.maxAmount)
+                        return true;
+                }
+            }
+
+            // Check empty slot
+            foreach (var slot in itemSlots)
+            {
+                if (!slot.HasItem)
+                    return true;
+            }
+
+            return false;
+        }
+
         [System.Serializable]
         public class StartingItem
         {

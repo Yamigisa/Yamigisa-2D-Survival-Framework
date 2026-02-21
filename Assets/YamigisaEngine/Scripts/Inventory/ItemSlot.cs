@@ -102,16 +102,26 @@ namespace Yamigisa
             Transform child = buttonContainer.GetChild(index);
             child.gameObject.SetActive(true);
 
-            ButtonInteractiveObject InteractiveObjectButton = child.GetComponent<ButtonInteractiveObject>();
-            if (InteractiveObjectButton == null) return;
+            ButtonInteractiveObject interactiveButton = child.GetComponent<ButtonInteractiveObject>();
+            if (interactiveButton == null) return;
 
-            InteractiveObjectButton.SetText(action.title);
-            InteractiveObjectButton.Button.onClick.RemoveAllListeners();
-            InteractiveObjectButton.Button.onClick.AddListener(() =>
+            interactiveButton.SetText(action.title);
+
+            // 🔥 CHECK CanDoAction
+            bool canDo = action.CanDoAction(this);
+
+            interactiveButton.Button.interactable = canDo;
+
+            interactiveButton.Button.onClick.RemoveAllListeners();
+
+            if (canDo)
             {
-                action.DoAction(Character.instance.GetCharacter(), this);
-                HideButton();
-            });
+                interactiveButton.Button.onClick.AddListener(() =>
+                {
+                    action.DoAction(Character.instance.GetCharacter(), this);
+                    HideButton();
+                });
+            }
         }
 
         public void ShowButton()

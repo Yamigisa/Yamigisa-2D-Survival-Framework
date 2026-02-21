@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -96,9 +97,66 @@ namespace Yamigisa
 
         public void ConsumeItem(ItemData itemData)
         {
-            characterAttribute.AddCurrentAttributeValue(AttributeType.Health, itemData.increaseHealth);
-            characterAttribute.AddCurrentAttributeValue(AttributeType.Hunger, itemData.increaseHunger);
-            characterAttribute.AddCurrentAttributeValue(AttributeType.Thirst, itemData.increaseThirst);
+            foreach (var effect in itemData.consumableEffects)
+            {
+                switch (effect.effectType)
+                {
+                    case ConsumableEffectType.Instant:
+                        characterAttribute.AddCurrentAttributeValue(
+                            effect.attributeType,
+                            effect.instantAmount
+                        );
+                        break;
+
+                    case ConsumableEffectType.OverTime:
+                        StartCoroutine(ApplyOverTime(effect)
+                         );
+                        break;
+
+                    case ConsumableEffectType.DurationBuff:
+                        StartCoroutine(ApplyBuff(effect)
+                        );
+                        break;
+                }
+            }
+        }
+
+        private IEnumerator ApplyOverTime(ConsumableEffect effect)
+        {
+            float elapsed = 0f;
+
+            while (elapsed < effect.duration)
+            {
+                characterAttribute.AddCurrentAttributeValue(effect.attributeType, effect.amountPerTick);
+
+                yield return new WaitForSeconds(effect.tickInterval);
+                elapsed += effect.tickInterval;
+            }
+        }
+
+
+        private IEnumerator ApplyBuff(ConsumableEffect effect)
+        {
+            switch (effect.buffType)
+            {
+                case BuffType.MovementSpeedMultiplier:
+
+                    characterMovement.AddSpeedBuff(effect.buffAmount);
+
+                    yield return new WaitForSeconds(effect.duration);
+
+                    characterMovement.RemoveSpeedBuff(effect.buffAmount);
+                    break;
+
+                case BuffType.DamageMultiplier:
+
+                    characterCombat.AddDamageBuff(effect.buffAmount);
+
+                    yield return new WaitForSeconds(effect.duration);
+
+                    characterCombat.RemoveDamageBuff(effect.buffAmount);
+                    break;
+            }
         }
 
         public void TakeDamage(int damage)

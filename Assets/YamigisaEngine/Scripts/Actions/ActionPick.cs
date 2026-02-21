@@ -14,8 +14,30 @@ namespace Yamigisa
             Inventory.Instance.AddItem(item.itemData, item.quantity);
 
             InteractiveObject.MarkPickedUp();
-            
+
             Destroy(InteractiveObject.gameObject);
+        }
+
+        public override bool CanDoAction(Component context)
+        {
+            if (context == null) return false;
+
+            InteractiveObject interactiveObject = context as InteractiveObject;
+            if (interactiveObject == null) return false;
+
+            Item item = interactiveObject.GetComponent<Item>();
+            if (item == null) return false;
+
+            if (item.itemData == null) return false;
+            if (item.quantity <= 0) return false;
+
+            if (Inventory.Instance == null) return false;
+
+            // 🔥 Important: Check if inventory has space
+            if (!Inventory.Instance.CanAddItem(item.itemData, item.quantity))
+                return false;
+
+            return true;
         }
     }
 }

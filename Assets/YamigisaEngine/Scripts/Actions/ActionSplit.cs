@@ -26,5 +26,29 @@ namespace Yamigisa
 
             slot.SetItem(data, remainAmount);
         }
+
+        public override bool CanDoAction(Component context)
+        {
+            ItemSlot slot = context as ItemSlot;
+            if (slot == null) return false;
+            if (!slot.HasItem) return false;
+
+            ItemData data = slot.ItemData;
+            if (data == null) return false;
+            if (!data.isStackable) return false;
+
+            if (slot.Amount < 2) return false;
+
+            Inventory inv = Inventory.Instance;
+            if (inv == null) return false;
+
+            int splitAmount = slot.Amount / 2;
+
+            // 🔥 Important check
+            if (!inv.CanAddItem(data, splitAmount))
+                return false;
+
+            return true;
+        }
     }
 }

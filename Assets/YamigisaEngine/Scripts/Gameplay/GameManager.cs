@@ -7,6 +7,7 @@ namespace Yamigisa
     public class GameManager : MonoBehaviour
     {
         [Header("Manager Settings")]
+        [Header("If no child in managersParent, GameManager will instantiate prefabs.")]
         [SerializeField] private Transform managersParent;
 
         [SerializeField] private TimeClock timeClockPrefab;
@@ -14,7 +15,7 @@ namespace Yamigisa
         [SerializeField] private AttributeUI attributeUIPrefab;
         [SerializeField] private CraftingInterface craftingInterfacePrefab;
         [SerializeField] private WorldGenerator worldGeneratorPrefab;
-        [SerializeField] private PlaceableSystem gridBuildingSystemPrefab;
+        [SerializeField] private PlaceableSystem placeableSystemPrefab;
         [SerializeField] private SaveManager saveManagerPrefab;
 
         [Header("Pause Settings")]
@@ -104,7 +105,7 @@ namespace Yamigisa
             attributeUI = Instantiate(attributeUIPrefab, managersParent);
             craftingInterface = Instantiate(craftingInterfacePrefab, managersParent);
             worldGenerator = Instantiate(worldGeneratorPrefab, managersParent);
-            PlaceableSystem = Instantiate(gridBuildingSystemPrefab, managersParent);
+            PlaceableSystem = Instantiate(placeableSystemPrefab, managersParent);
             saveManager = Instantiate(saveManagerPrefab, managersParent);
         }
 

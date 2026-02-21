@@ -9,7 +9,6 @@ namespace Yamigisa
         public float attackRange = 1f;
         public float attackCooldown = 0.4f;
 
-        private Character character;
         private CharacterMovement characterMovement;
 
         private Destroyable currentTarget;
@@ -19,11 +18,7 @@ namespace Yamigisa
 
         public bool IsAttacking => isAttacking;
 
-        private void Awake()
-        {
-            character = GetComponent<Character>();
-            characterMovement = GetComponent<CharacterMovement>();
-        }
+        private float damageBuff = 0f;
 
         private void Update()
         {
@@ -55,11 +50,14 @@ namespace Yamigisa
 
             cooldownTimer = attackCooldown;
 
-            int dmg = currentDamage;
-            if (dmg <= 0)
-                dmg = Mathf.Max(1, Mathf.RoundToInt(handDamage));
+            int baseDamage = currentDamage;
 
-            currentTarget.TakeDamage(dmg);
+            if (baseDamage <= 0)
+                baseDamage = Mathf.Max(1, Mathf.RoundToInt(handDamage));
+
+            int finalDamage = GetFinalDamage(baseDamage);
+
+            currentTarget.TakeDamage(finalDamage);
         }
 
         public void StartAutoAttack(Destroyable target, int damagePerHit = 0)
@@ -79,6 +77,22 @@ namespace Yamigisa
             currentDamage = 0;
             cooldownTimer = 0f;
             characterMovement?.StopAutoMoveExternal();
+        }
+
+
+        public void AddDamageBuff(float amount)
+        {
+            damageBuff += amount;
+        }
+
+        public void RemoveDamageBuff(float amount)
+        {
+            damageBuff -= amount;
+        }
+
+        public int GetFinalDamage(int baseDamage)
+        {
+            return Mathf.RoundToInt(baseDamage + damageBuff);
         }
     }
 }

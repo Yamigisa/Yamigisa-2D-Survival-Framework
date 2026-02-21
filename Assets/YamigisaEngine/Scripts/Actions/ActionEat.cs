@@ -10,5 +10,11 @@ namespace Yamigisa
             character.ConsumeItem(slot.ItemData);
             Inventory.Instance.ReduceSlotAmount(slot);
         }
+
+        public override bool CanDoAction(Component context)
+        {
+            ItemSlot slot = context as ItemSlot;
+            return slot.ItemData.itemType == ItemType.Consumable;
+        }
     }
 }

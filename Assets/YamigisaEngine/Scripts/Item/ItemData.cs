@@ -74,12 +74,10 @@ namespace Yamigisa
         [Header("Item Actions")]
         public List<ActionBase> itemActions;
 
-        [Header("Consumable Effect")]
-        public int increaseHealth = 0;
-        public int increaseHunger = 0;
-        public int increaseThirst = 0;
+        [Header("Consumable Effects")]
+        public List<ConsumableEffect> consumableEffects = new List<ConsumableEffect>();
 
-        // Equipment Effect
+        [Header("Equipment Effects")]
         public int damage = 0;
 
         [Header("Crafting (Recipe)")]
@@ -119,5 +117,40 @@ namespace Yamigisa
         public ItemData item;
         [Min(1)] public int amount = 1;
         [Range(0f, 100f)] public float dropChancePercent = 100f;
+    }
+
+    [System.Serializable]
+    public class ConsumableEffect
+    {
+        public ConsumableEffectType effectType;
+
+        [Header("Target")]
+        public AttributeType attributeType;
+
+        [Header("Instant")]
+        public int instantAmount;
+
+        [Header("Over Time")]
+        public int amountPerTick;
+        public float tickInterval;     // seconds between ticks
+        public float duration;         // total duration
+
+        [Header("Buff Settings")]
+        public BuffType buffType;
+        public float buffAmount;
+    }
+
+    public enum BuffType
+    {
+        None,
+        MovementSpeedMultiplier,
+        DamageMultiplier,
+    }
+
+    public enum ConsumableEffectType
+    {
+        Instant,
+        OverTime,
+        DurationBuff
     }
 }

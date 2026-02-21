@@ -9,5 +9,13 @@ namespace Yamigisa
         {
             slot.DropItem(character.transform.position, slot.Amount);
         }
+
+        public override bool CanDoAction(Component context)
+        {
+            ItemSlot slot = context as ItemSlot;
+            if (slot == null) return false;
+
+            return slot.ItemData != null && slot.ItemData.isDroppable;
+        }
     }
 }
