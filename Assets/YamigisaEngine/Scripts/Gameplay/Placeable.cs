@@ -39,31 +39,31 @@ namespace Yamigisa
         private void OnDestroy()
         {
             if (!Placed) return;
-            if (GridBuildingSystem.instance == null) return;
+            if (PlaceableSystem.instance == null) return;
 
             // NEW: only release area if grid mode is used
-            if (!GridBuildingSystem.instance.useGrid) return;
+            if (!PlaceableSystem.instance.useGrid) return;
 
-            GridBuildingSystem.instance.ReleaseArea(placedArea);
+            PlaceableSystem.instance.ReleaseArea(placedArea);
         }
 
         public void Place()
         {
             // NEW: if not using grid, do not snap or take area
-            if (GridBuildingSystem.instance != null && !GridBuildingSystem.instance.useGrid)
+            if (PlaceableSystem.instance != null && !PlaceableSystem.instance.useGrid)
             {
                 Placed = true;
                 return;
             }
 
             Vector3Int positionInt =
-                GridBuildingSystem.instance.gridLayout.LocalToCell(transform.position);
+                PlaceableSystem.instance.gridLayout.LocalToCell(transform.position);
 
             BoundsInt areaTemp = area;
             areaTemp.position = positionInt;
 
             Vector3 worldPos =
-                GridBuildingSystem.instance.gridLayout.CellToWorld(positionInt)
+                PlaceableSystem.instance.gridLayout.CellToWorld(positionInt)
                 + new Vector3(
                     area.size.x * 0.5f,
                     area.size.y * 0.5f,
@@ -75,7 +75,7 @@ namespace Yamigisa
             Placed = true;
             placedArea = areaTemp;
 
-            GridBuildingSystem.instance.TakeArea(areaTemp);
+            PlaceableSystem.instance.TakeArea(areaTemp);
         }
 
         public void SetSpriteColor(bool canPlace)
@@ -97,9 +97,9 @@ namespace Yamigisa
             GridLayout grid = null;
 
             // Play mode → use singleton
-            if (Application.isPlaying && GridBuildingSystem.instance != null)
+            if (Application.isPlaying && PlaceableSystem.instance != null)
             {
-                grid = GridBuildingSystem.instance.gridLayout;
+                grid = PlaceableSystem.instance.gridLayout;
             }
             // Edit mode → find grid in scene
             else

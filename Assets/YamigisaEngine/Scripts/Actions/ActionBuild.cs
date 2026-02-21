@@ -7,7 +7,7 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, ItemSlot slot)
         {
-            GridBuildingSystem.instance.InitializeBuilding(slot.ItemData.itemPrefab);
+            PlaceableSystem.instance.InitializeBuilding(slot.ItemData.itemPrefab);
             Inventory.Instance.ReduceSlotAmount(slot);
         }
     }

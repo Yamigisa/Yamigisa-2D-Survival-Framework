@@ -11,9 +11,27 @@ public class SaveManagerEditor : Editor
     {
         DrawDefaultInspector();
 
-        GUILayout.Space(10);
+        GUILayout.Space(15);
+        GUILayout.Label("Save Controls", EditorStyles.boldLabel);
 
         SaveManager saveManager = (SaveManager)target;
+
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("Save Game"))
+        {
+            if (Application.isPlaying)
+                saveManager.SaveGame();
+            else
+                Debug.LogWarning("Enter Play Mode to save.");
+        }
+
+        if (GUILayout.Button("Load Game"))
+        {
+            saveManager.LoadGame();
+        }
+
+        GUILayout.Space(10);
 
         if (GUILayout.Button("Delete Save"))
         {

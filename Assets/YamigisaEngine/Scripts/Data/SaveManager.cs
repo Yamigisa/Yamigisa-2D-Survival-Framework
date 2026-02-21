@@ -9,12 +9,17 @@ namespace Yamigisa
 
         public void SaveGame()
         {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Cannot save game outside Play Mode.");
+                return;
+            }
+
             SaveGameData data = new SaveGameData();
 
             foreach (var savable in FindObjectsByType<MonoBehaviour>(
-    FindObjectsInactive.Include,
-    FindObjectsSortMode.None))
-
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None))
             {
                 if (savable is ISavable s)
                     s.Save(ref data);
@@ -28,19 +33,23 @@ namespace Yamigisa
 
         public void LoadGame()
         {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Cannot load game outside Play Mode.");
+                return;
+            }
+
             if (!System.IO.File.Exists(path)) return;
 
             string json = System.IO.File.ReadAllText(path);
             SaveGameData data = JsonUtility.FromJson<SaveGameData>(json);
 
             foreach (var savable in FindObjectsByType<MonoBehaviour>(
-              FindObjectsInactive.Include,
-              FindObjectsSortMode.None))
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None))
             {
                 if (savable is ISavable s)
-                {
                     s.Load(data);
-                }
             }
 
             GameManager.instance.OnGameStart();

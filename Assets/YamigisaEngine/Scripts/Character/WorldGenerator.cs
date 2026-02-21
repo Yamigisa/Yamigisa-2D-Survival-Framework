@@ -89,7 +89,7 @@ namespace Yamigisa
             BiomeData biome = group.biomes[Random.Range(0, group.biomes.Count)];
             int seed = Random.Range(int.MinValue, int.MaxValue);
 
-            WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
+            WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
 
             // IMPORTANT: pass spawnObjects into the chunk
             chunk.Initialize(biome, chunk.size, seed, spawnObjects);
@@ -170,7 +170,7 @@ namespace Yamigisa
                     0f
                 );
 
-                WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
+                WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
                 chunk.Initialize(biome, saved.size, saved.seed, false); // terrain only
                 chunk.SetSpawnFlags(saved.resourcesSpawned, saved.enemiesSpawned);
 
@@ -189,20 +189,27 @@ namespace Yamigisa
 
         private void ClearWorld()
         {
-            foreach (var kv in chunkMap)
-            {
-                if (kv.Value == null)
-                    continue;
-
 #if UNITY_EDITOR
-                if (!Application.isPlaying)
-                    DestroyImmediate(kv.Value.gameObject);
-                else
-                    Destroy(kv.Value.gameObject);
-#else
-        Destroy(kv.Value.gameObject);
-#endif
+            if (!Application.isPlaying)
+            {
+                for (int i = transform.childCount - 1; i >= 0; i--)
+                {
+                    DestroyImmediate(transform.GetChild(i).gameObject);
+                }
             }
+            else
+            {
+                for (int i = transform.childCount - 1; i >= 0; i--)
+                {
+                    Destroy(transform.GetChild(i).gameObject);
+                }
+            }
+#else
+    for (int i = transform.childCount - 1; i >= 0; i--)
+    {
+        Destroy(transform.GetChild(i).gameObject);
+    }
+#endif
 
             chunkMap.Clear();
         }

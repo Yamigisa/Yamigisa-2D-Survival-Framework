@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 namespace Yamigisa
 {
-    public class GridBuildingSystem : MonoBehaviour
+    public class PlaceableSystem : MonoBehaviour
     {
         [Header("Mode")]
         public bool useGrid = true; // <==== NEW: if false = free placement anywhere
@@ -41,7 +41,7 @@ namespace Yamigisa
         private Vector3Int lastAnchorCell;
         private readonly HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
 
-        public static GridBuildingSystem instance;
+        public static PlaceableSystem instance;
         private void Awake()
         {
             instance = this;

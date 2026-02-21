@@ -14,7 +14,7 @@ namespace Yamigisa
         [SerializeField] private AttributeUI attributeUIPrefab;
         [SerializeField] private CraftingInterface craftingInterfacePrefab;
         [SerializeField] private WorldGenerator worldGeneratorPrefab;
-        [SerializeField] private GridBuildingSystem gridBuildingSystemPrefab;
+        [SerializeField] private PlaceableSystem gridBuildingSystemPrefab;
         [SerializeField] private SaveManager saveManagerPrefab;
 
         [Header("Pause Settings")]
@@ -39,7 +39,7 @@ namespace Yamigisa
         private AttributeUI attributeUI;
         private CraftingInterface craftingInterface;
         private WorldGenerator worldGenerator;
-        private GridBuildingSystem gridBuildingSystem;
+        private PlaceableSystem PlaceableSystem;
         private SaveManager saveManager;
 
         public static GameManager instance;
@@ -92,7 +92,7 @@ namespace Yamigisa
                 attributeUI = managersParent.GetComponentInChildren<AttributeUI>();
                 craftingInterface = managersParent.GetComponentInChildren<CraftingInterface>();
                 worldGenerator = managersParent.GetComponentInChildren<WorldGenerator>();
-                gridBuildingSystem = managersParent.GetComponentInChildren<GridBuildingSystem>();
+                PlaceableSystem = managersParent.GetComponentInChildren<PlaceableSystem>();
                 saveManager = managersParent.GetComponentInChildren<SaveManager>();
 
                 return;
@@ -104,7 +104,7 @@ namespace Yamigisa
             attributeUI = Instantiate(attributeUIPrefab, managersParent);
             craftingInterface = Instantiate(craftingInterfacePrefab, managersParent);
             worldGenerator = Instantiate(worldGeneratorPrefab, managersParent);
-            gridBuildingSystem = Instantiate(gridBuildingSystemPrefab, managersParent);
+            PlaceableSystem = Instantiate(gridBuildingSystemPrefab, managersParent);
             saveManager = Instantiate(saveManagerPrefab, managersParent);
         }
 
@@ -114,7 +114,7 @@ namespace Yamigisa
             inventory.Setup();
             craftingInterface.Setup();
             worldGenerator.Setup();
-            gridBuildingSystem.Setup();
+            PlaceableSystem.Setup();
         }
 
         private void TogglePause()
