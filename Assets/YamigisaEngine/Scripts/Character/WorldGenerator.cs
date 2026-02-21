@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Yamigisa
 {
     public class WorldGenerator : MonoBehaviour, ISavable
@@ -56,18 +60,18 @@ namespace Yamigisa
             SpawnAround(current);
         }
 
-        private void SpawnAround(Vector2Int center)
+        private void SpawnAround(Vector2Int center, bool spawnObjects = true)
         {
             for (int x = -loadRadius; x <= loadRadius; x++)
             {
                 for (int y = -loadRadius; y <= loadRadius; y++)
                 {
-                    SpawnChunkAt(center + new Vector2Int(x, y));
+                    SpawnChunkAt(center + new Vector2Int(x, y), spawnObjects);
                 }
             }
         }
 
-        private void SpawnChunkAt(Vector2Int coord)
+        private void SpawnChunkAt(Vector2Int coord, bool spawnObjects = true)
         {
             if (chunkMap.ContainsKey(coord))
                 return;
@@ -87,8 +91,8 @@ namespace Yamigisa
 
             WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
 
-            chunk.Initialize(biome, chunk.size, seed);
-            chunk.ForceImmediateGeneration();
+            // IMPORTANT: pass spawnObjects into the chunk
+            chunk.Initialize(biome, chunk.size, seed, spawnObjects);
 
             chunkMap.Add(coord, chunk);
         }
@@ -167,8 +171,11 @@ namespace Yamigisa
                 );
 
                 WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity);
-                chunk.Initialize(biome, saved.size, saved.seed);
-                chunk.ForceImmediateGeneration();
+                chunk.Initialize(biome, saved.size, saved.seed, false); // terrain only
+                chunk.SetSpawnFlags(saved.resourcesSpawned, saved.enemiesSpawned);
+
+                if (saved.resourcesSpawned || saved.enemiesSpawned)
+                    chunk.GenerateObjectsOnlyImmediate(); // only if save says so
 
                 chunkMap.Add(coord, chunk);
             }
@@ -184,8 +191,17 @@ namespace Yamigisa
         {
             foreach (var kv in chunkMap)
             {
-                if (kv.Value != null)
+                if (kv.Value == null)
+                    continue;
+
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    DestroyImmediate(kv.Value.gameObject);
+                else
                     Destroy(kv.Value.gameObject);
+#else
+        Destroy(kv.Value.gameObject);
+#endif
             }
 
             chunkMap.Clear();
@@ -209,6 +225,43 @@ namespace Yamigisa
             }
 
             return null;
+        }
+
+
+        // Editor
+        public void EditorCreateWorld()
+        {
+            ClearWorld();
+
+            Vector2Int center = Vector2Int.zero;
+
+            if (Character.instance != null)
+                center = WorldToChunkCoord(Character.instance.transform.position);
+
+            SpawnAround(center, false); // ← false means DO NOT spawn content
+        }
+
+        public void EditorDeleteWorld()
+        {
+            ClearWorld();
+        }
+
+        public void EditorCreateObjects()
+        {
+            foreach (var kv in chunkMap)
+            {
+                if (kv.Value != null)
+                    kv.Value.GenerateObjectsOnlyImmediate();
+            }
+        }
+
+        public void EditorDeleteObjects()
+        {
+            foreach (var kv in chunkMap)
+            {
+                if (kv.Value != null)
+                    kv.Value.ClearSpawnedObjects();
+            }
         }
 
         [System.Serializable]

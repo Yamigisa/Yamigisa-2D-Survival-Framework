@@ -84,6 +84,21 @@ namespace Yamigisa
 
         private void CreateObjects()
         {
+            // If managersParent already has children, use them
+            if (managersParent.childCount > 0)
+            {
+                timeClock = managersParent.GetComponentInChildren<TimeClock>();
+                inventory = managersParent.GetComponentInChildren<Inventory>();
+                attributeUI = managersParent.GetComponentInChildren<AttributeUI>();
+                craftingInterface = managersParent.GetComponentInChildren<CraftingInterface>();
+                worldGenerator = managersParent.GetComponentInChildren<WorldGenerator>();
+                gridBuildingSystem = managersParent.GetComponentInChildren<GridBuildingSystem>();
+                saveManager = managersParent.GetComponentInChildren<SaveManager>();
+
+                return;
+            }
+
+            // Otherwise instantiate dynamically
             timeClock = Instantiate(timeClockPrefab, managersParent);
             inventory = Instantiate(inventoryPrefab, managersParent);
             attributeUI = Instantiate(attributeUIPrefab, managersParent);

@@ -30,12 +30,18 @@ namespace Yamigisa
         [HideInInspector] public bool resourcesSpawned;
         [HideInInspector] public bool enemiesSpawned;
 
+        private Transform spawnedObjectsParent;
         private Bounds biomeBounds;
+
+        private bool _spawnObjectsOnBuild;
+        private bool _terrainBuilt;
 
         public void Initialize(BiomeData biome, int size, int seed)
         {
             this.biome = biome;
+            this.size = size;
             this.seed = seed;
+
             rng = new System.Random(seed);
 
             StopAllCoroutines();
@@ -44,25 +50,20 @@ namespace Yamigisa
 
         public void ForceImmediateGeneration()
         {
+            EnsureSpawnParent();
             StopAllCoroutines();
             GenerateAllImmediately();
         }
 
-        public void Initialize(
-            BiomeData biome,
-            int size,
-            int seed,
-            bool resourcesSpawned,
-            bool enemiesSpawned
-        )
+        public void Initialize(BiomeData biome, int size, int seed, bool spawnObjectsOnBuild)
         {
             this.biome = biome;
+            this.size = size;
             this.seed = seed;
 
-            this.resourcesSpawned = resourcesSpawned;
-            this.enemiesSpawned = enemiesSpawned;
-
             rng = new System.Random(seed);
+
+            _spawnObjectsOnBuild = spawnObjectsOnBuild;
 
             StopAllCoroutines();
             StartCoroutine(BuildChunk());
@@ -70,8 +71,61 @@ namespace Yamigisa
 
         private IEnumerator BuildChunk()
         {
-            GenerateAllImmediately();
+            GenerateTerrainImmediate();
+            _terrainBuilt = true;
+
+            if (_spawnObjectsOnBuild)
+            {
+                GenerateObjectsOnlyImmediate();
+            }
+
             yield break;
+        }
+
+        private void GenerateTerrainImmediate()
+        {
+            if (biome == null) return;
+
+            usedSpawnCells.Clear();
+
+            transform.localScale = new Vector3(1f, Y_SCALE, 1f);
+
+            if (!UsesTilemap())
+                GeneratePrefabChunk();
+            else
+                GenerateTileChunk();
+        }
+
+        public void GenerateObjectsOnlyImmediate()
+        {
+            if (biome == null) return;
+
+            EnsureSpawnParent();
+
+            // Make sure terrain exists (safe in case someone presses create objects first)
+            if (!_terrainBuilt)
+            {
+                GenerateTerrainImmediate();
+                _terrainBuilt = true;
+            }
+
+            if (!resourcesSpawned)
+            {
+                SpawnResourcesImmediate();
+                resourcesSpawned = true;
+            }
+
+            if (!enemiesSpawned)
+            {
+                SpawnEnemiesImmediate();
+                enemiesSpawned = true;
+            }
+        }
+
+        public void SetSpawnFlags(bool resources, bool enemies)
+        {
+            resourcesSpawned = resources;
+            enemiesSpawned = enemies;
         }
 
         private void GenerateAllImmediately()
@@ -227,6 +281,31 @@ namespace Yamigisa
             return has;
         }
 
+        public void ClearSpawnedObjects()
+        {
+            if (spawnedObjectsParent == null)
+                return;
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                for (int i = spawnedObjectsParent.childCount - 1; i >= 0; i--)
+                    DestroyImmediate(spawnedObjectsParent.GetChild(i).gameObject);
+            }
+            else
+            {
+                for (int i = spawnedObjectsParent.childCount - 1; i >= 0; i--)
+                    Destroy(spawnedObjectsParent.GetChild(i).gameObject);
+            }
+#else
+    for (int i = spawnedObjectsParent.childCount - 1; i >= 0; i--)
+        Destroy(spawnedObjectsParent.GetChild(i).gameObject);
+#endif
+
+            resourcesSpawned = false;
+            enemiesSpawned = false;
+        }
+
         bool UsesTilemap()
         {
             return groundTilemap != null && biome != null && biome.groundTile != null;
@@ -235,6 +314,8 @@ namespace Yamigisa
         private void SpawnResourcesImmediate()
         {
             if (biome == null || biome.resourceSpawns == null) return;
+
+            EnsureSpawnParent();
 
             foreach (var entry in biome.resourceSpawns)
             {
@@ -247,15 +328,16 @@ namespace Yamigisa
                 for (int i = 0; i < spawnCount; i++)
                 {
                     Vector3 pos = GetRandomPosInChunk();
-                    Instantiate(entry.prefab, pos, Quaternion.identity, transform);
+                    Instantiate(entry.prefab, pos, Quaternion.identity, spawnedObjectsParent);
                 }
-
             }
         }
 
         private void SpawnEnemiesImmediate()
         {
             if (biome == null || biome.creatureSpawns == null) return;
+
+            EnsureSpawnParent();
 
             foreach (var entry in biome.creatureSpawns)
             {
@@ -266,7 +348,7 @@ namespace Yamigisa
                 int spawnCount = rng.Next(min, max + 1);
 
                 for (int i = 0; i < spawnCount; i++)
-                    Instantiate(entry.prefab, GetRandomPosInChunk(), Quaternion.identity, transform);
+                    Instantiate(entry.prefab, GetRandomPosInChunk(), Quaternion.identity, spawnedObjectsParent);
             }
         }
 
@@ -280,6 +362,17 @@ namespace Yamigisa
         public Vector2 GetWorldSize()
         {
             return new Vector2(CHUNK_WIDTH, CHUNK_HEIGHT);
+        }
+
+        private void EnsureSpawnParent()
+        {
+            if (spawnedObjectsParent == null)
+            {
+                GameObject go = new GameObject("SpawnedObjects");
+                go.transform.SetParent(transform);
+                go.transform.localPosition = Vector3.zero;
+                spawnedObjectsParent = go.transform;
+            }
         }
     }
 }
