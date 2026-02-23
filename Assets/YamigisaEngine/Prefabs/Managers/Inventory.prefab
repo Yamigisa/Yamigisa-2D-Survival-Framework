@@ -9117,6 +9117,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2618959128428328252, guid: 2cc53987e08e58b40ba3144e274210e9, type: 3}
+      propertyPath: m_Text
+      value: Sort
+      objectReference: {fileID: 0}
+    - target: {fileID: 2618959128428328252, guid: 2cc53987e08e58b40ba3144e274210e9, type: 3}
+      propertyPath: m_FontData.m_MaxSize
+      value: 92
+      objectReference: {fileID: 0}
+    - target: {fileID: 2618959128428328252, guid: 2cc53987e08e58b40ba3144e274210e9, type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 48
+      objectReference: {fileID: 0}
     - target: {fileID: 2722133415487021986, guid: 2cc53987e08e58b40ba3144e274210e9, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

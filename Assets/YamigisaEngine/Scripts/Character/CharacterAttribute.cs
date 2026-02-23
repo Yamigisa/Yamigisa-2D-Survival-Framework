@@ -18,6 +18,10 @@ namespace Yamigisa
         private readonly Dictionary<AttributeType, float> depletedRegenAdds = new();
         private readonly Dictionary<AttributeType, float> depletedDepleteAdds = new();
 
+        // ✅ Equipment modifiers (MAX + PERCENT ONLY)
+        private Dictionary<AttributeType, float> equipmentMax = new();
+        private Dictionary<AttributeType, float> equipmentPercent = new();
+
         void Start()
         {
             attributeUI = FindAnyObjectByType<AttributeUI>();
@@ -69,7 +73,6 @@ namespace Yamigisa
                 if (bar != null)
                     bar.SetCurrentValue(a.CurrentValue);
 
-                // 🔥 DATA-DRIVEN GAME OVER
                 if (a.CurrentValue <= 0 && a.triggerGameOver)
                 {
                     Character.instance.Die();
@@ -81,6 +84,7 @@ namespace Yamigisa
         {
             biomeRegenAdditions.Clear();
             biomeDepleteAdditions.Clear();
+
             foreach (var mod in modifiers)
             {
                 biomeRegenAdditions[mod.type] = mod.regenAddition;
@@ -111,10 +115,13 @@ namespace Yamigisa
                     delta += depletedAdd;
 
                 a.CurrentValue += delta;
-                if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
+
+                if (a.CurrentValue > a.MaxValue)
+                    a.CurrentValue = a.MaxValue;
 
                 var bar = attributeUI.GetAttributeBar(a);
-                if (bar != null) bar.SetCurrentValue(a.CurrentValue);
+                if (bar != null)
+                    bar.SetCurrentValue(a.CurrentValue);
             }
         }
 
@@ -127,12 +134,15 @@ namespace Yamigisa
                 if (a.type == type)
                 {
                     a.MaxValue += value;
+
                     var bar = attributeUI.GetAttributeBar(a);
-                    if (bar != null) bar.SetMaxValue(a.MaxValue);
+                    if (bar != null)
+                        bar.SetMaxValue(a.MaxValue);
                 }
             }
         }
 
+        // ✅ Consumables ONLY affect current value
         public void AddCurrentAttributeValue(AttributeType type, float value)
         {
             if (attributeUI == null) return;
@@ -142,10 +152,13 @@ namespace Yamigisa
                 if (a.type == type)
                 {
                     a.CurrentValue += value;
-                    if (a.CurrentValue > a.MaxValue) a.CurrentValue = a.MaxValue;
+
+                    if (a.CurrentValue > a.MaxValue)
+                        a.CurrentValue = a.MaxValue;
 
                     var bar = attributeUI.GetAttributeBar(a);
-                    if (bar != null) bar.SetCurrentValue(a.CurrentValue);
+                    if (bar != null)
+                        bar.SetCurrentValue(a.CurrentValue);
                 }
             }
         }
@@ -170,7 +183,7 @@ namespace Yamigisa
                 {
                     type = a.type,
                     current = a.CurrentValue,
-                    max = a.MaxValue
+                    baseMax = a.BaseMaxValue // save BASE only
                 });
             }
 
@@ -185,7 +198,13 @@ namespace Yamigisa
                 {
                     if (a.type != saved.type) continue;
 
-                    a.MaxValue = saved.max;
+                    // restore BASE max
+                    a.BaseMaxValue = saved.baseMax;
+
+                    // reset max to base first (equipment will re-apply later)
+                    a.MaxValue = a.BaseMaxValue;
+
+                    // restore current
                     a.CurrentValue = Mathf.Clamp(saved.current, 0, a.MaxValue);
 
                     if (attributeUI != null)
@@ -199,6 +218,10 @@ namespace Yamigisa
                     }
                 }
             }
+
+            // IMPORTANT:
+            // If equipment is already loaded (order varies), apply its modifiers on top of base.
+            RecalculateAttributes();
         }
 
         private void RebuildDepletedModifiers()
@@ -218,6 +241,7 @@ namespace Yamigisa
                 {
                     if (!depletedRegenAdds.ContainsKey(mod.targetType))
                         depletedRegenAdds[mod.targetType] = 0f;
+
                     if (!depletedDepleteAdds.ContainsKey(mod.targetType))
                         depletedDepleteAdds[mod.targetType] = 0f;
 
@@ -233,11 +257,9 @@ namespace Yamigisa
 
             if (attributeUI == null)
             {
-                Debug.LogWarning("No AttributeUI found in scene.");
                 return;
             }
 
-            // Clear existing bars
             for (int i = attributeUI.attributeBars.Count - 1; i >= 0; i--)
             {
 #if UNITY_EDITOR
@@ -246,13 +268,12 @@ namespace Yamigisa
                 else
                     Destroy(attributeUI.attributeBars[i].gameObject);
 #else
-        Destroy(attributeUI.attributeBars[i].gameObject);
+                Destroy(attributeUI.attributeBars[i].gameObject);
 #endif
             }
 
             attributeUI.attributeBars.Clear();
 
-            // Recreate bars
             foreach (AttributeData a in AttributeData)
             {
                 attributeUI.InitializeAttributeBar(a);
@@ -261,6 +282,49 @@ namespace Yamigisa
 #if UNITY_EDITOR
             EditorUtility.SetDirty(attributeUI);
 #endif
+        }
+
+        // ✅ Equipment modifies MAX only
+        public void SetEquipmentModifiers(
+            Dictionary<AttributeType, float> max,
+            Dictionary<AttributeType, float> percent)
+        {
+            equipmentMax = max ?? new();
+            equipmentPercent = percent ?? new();
+
+            RecalculateAttributes();
+        }
+
+        private void RecalculateAttributes()
+        {
+            foreach (AttributeData a in AttributeData)
+            {
+                float baseMax = a.BaseMaxValue;
+
+                float flat = equipmentMax.TryGetValue(a.type, out float m) ? m : 0f;
+                float percent = equipmentPercent.TryGetValue(a.type, out float p) ? p : 0f;
+
+                float finalMax = baseMax + flat;
+                finalMax += baseMax * percent;
+
+                a.MaxValue = finalMax;
+
+                if (a.CurrentValue > finalMax)
+                    a.CurrentValue = finalMax;
+
+                if (a.CurrentValue < 0)
+                    a.CurrentValue = 0;
+
+                if (attributeUI != null)
+                {
+                    var bar = attributeUI.GetAttributeBar(a);
+                    if (bar != null)
+                    {
+                        bar.SetMaxValue(finalMax);
+                        bar.SetCurrentValue(a.CurrentValue);
+                    }
+                }
+            }
         }
     }
 }

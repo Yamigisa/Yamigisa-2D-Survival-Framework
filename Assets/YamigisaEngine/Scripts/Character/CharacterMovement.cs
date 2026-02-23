@@ -171,8 +171,12 @@ namespace Yamigisa
             bool isPressingSprint = characterControls.IsPressed(characterControls.sprint);
             bool CharactercanSprint = canSprint && !isSprintCooldown && (unlimitedSprint || sprintRemaining > 0f);
 
-            float currentSpeed = ((isPressingSprint && CharactercanSprint) ? sprintSpeed : walkSpeed) + speedAddition;
+            float baseSpeed = (isPressingSprint && CharactercanSprint) ? sprintSpeed : walkSpeed;
 
+            float currentSpeed = baseSpeed;
+            currentSpeed += equipmentFlatSpeed;
+            currentSpeed += baseSpeed * equipmentPercentSpeed;
+            currentSpeed += speedAddition;
 
             if (isCrouching)
                 currentSpeed *= crouchSpeedMultiplier;
@@ -321,6 +325,15 @@ namespace Yamigisa
         {
             totalSpeedBuff -= amount;
             SetSpeedMultiplier(totalSpeedBuff);
+        }
+
+        private float equipmentFlatSpeed = 0f;
+        private float equipmentPercentSpeed = 0f;
+
+        public void SetEquipmentMoveSpeedBonus(float flat, float percent)
+        {
+            equipmentFlatSpeed = flat;
+            equipmentPercentSpeed = percent;
         }
     }
 }

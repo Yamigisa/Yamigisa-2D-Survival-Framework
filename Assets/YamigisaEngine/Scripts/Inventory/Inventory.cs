@@ -82,7 +82,6 @@ namespace Yamigisa
         [HideInInspector] public Storage currentStorage;
 
         public static event System.Action OnChanged;
-
         private static void NotifyChanged()
         {
             if (OnChanged != null) OnChanged();
@@ -119,17 +118,21 @@ namespace Yamigisa
                 ItemSlot slot = Instantiate(
                     ItemSlotPrefab,
                     mainInventoryPanel.inventoryContent
+
                 );
                 itemSlots.Add(slot);
+                slot.MarkAsQuickSlot(false);
             }
 
             // Quick inventory slots
             for (int i = 0; i < quickSlotCount; i++)
             {
                 ItemSlot slot = Instantiate(
-                    ItemSlotPrefab,
-                    quickInventoryPanel.inventoryContent
-                );
+    ItemSlotPrefab,
+    quickInventoryPanel.inventoryContent
+);
+
+                slot.MarkAsQuickSlot(true, i);
                 quickItemSlot.Add(slot);
             }
 
@@ -225,7 +228,6 @@ namespace Yamigisa
                     ShowInventory();
             }
 
-            // CLOSE inventory (ONLY with cancel key)
             if (controls.IsPressed(controls.cancel))
             {
                 if (currentStorage != null)
@@ -238,9 +240,16 @@ namespace Yamigisa
                 }
             }
 
-            for (int i = 0; i < quickItemSlot.Count; i++)
+            for (int i = 0; i < quickItemSlot.Count && i < 10; i++)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                KeyCode key;
+
+                if (i == 9) // 10th slot → key 0
+                    key = KeyCode.Alpha0;
+                else
+                    key = KeyCode.Alpha1 + i;
+
+                if (Input.GetKeyDown(key))
                     SelectQuickSlot(i);
             }
 
@@ -345,34 +354,76 @@ namespace Yamigisa
         {
             if (data == null || amountToAdd <= 0) return;
 
+            // 🔥 If no specific panel, use smart priority
             if (panel == null)
-                panel = mainInventoryPanel;
-
-            List<ItemSlot> targetList = GetSlotListFromPanel(panel);
-            if (targetList == null) return;
-
-            // stack
-            if (data.isStackable && TryStackInList(targetList, data, amountToAdd))
             {
-                NotifyChanged();
-                return;
-            }
-
-            if (!data.isStackable && amountToAdd > 1)
-            {
-                for (int i = 0; i < amountToAdd; i++)
+                // 1️⃣ Try Quick Inventory first
+                if (TryAddToPanel(quickInventoryPanel, data, amountToAdd))
                 {
-                    AddItem(data, 1, panel);
+                    NotifyChanged();
+                    return;
                 }
+
+                // 2️⃣ Then Main Inventory
+                if (TryAddToPanel(mainInventoryPanel, data, amountToAdd))
+                {
+                    NotifyChanged();
+                    return;
+                }
+
+                // No space
                 return;
             }
 
-            // empty
-            if (TryPlaceInEmptySlot(targetList, data, amountToAdd))
+            // If specific panel provided, use that only
+            if (TryAddToPanel(panel, data, amountToAdd))
             {
                 NotifyChanged();
                 return;
             }
+        }
+
+        private bool TryAddToPanel(InventoryPanel panel, ItemData data, int amountToAdd)
+        {
+            List<ItemSlot> targetList = GetSlotListFromPanel(panel);
+            if (targetList == null) return false;
+
+            int remaining = amountToAdd;
+
+            // Stack first
+            if (data.isStackable)
+            {
+                for (int i = 0; i < targetList.Count; i++)
+                {
+                    ItemSlot slot = targetList[i];
+                    if (slot.HasItem && slot.ItemData == data)
+                    {
+                        int cap = Mathf.Max(1, data.maxAmount);
+                        int space = cap - slot.Amount;
+                        if (space <= 0) continue;
+
+                        int moved = Mathf.Min(space, remaining);
+                        slot.SetItem(data, slot.Amount + moved);
+                        remaining -= moved;
+
+                        if (remaining <= 0)
+                            return true;
+                    }
+                }
+            }
+
+            // Empty slots
+            for (int i = 0; i < targetList.Count; i++)
+            {
+                ItemSlot slot = targetList[i];
+                if (!slot.HasItem)
+                {
+                    slot.SetItem(data, remaining);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<ItemSlot> GetSlotListFromPanel(InventoryPanel panel)
@@ -605,56 +656,114 @@ namespace Yamigisa
 
             if (target != null && target != dragOrigin)
             {
-                if (!target.HasItem)
+                EquipmentSlot equipSlot = target.GetComponentInParent<EquipmentSlot>();
+
+                // ================= EQUIPMENT SLOT =================
+                if (equipSlot != null)
                 {
-                    target.SetItem(dragData, dragAmount);
-                    dragOrigin.ResetSlot();
-                    success = true;
-                }
-                else if (target.ItemData == dragData && dragData.isStackable)
-                {
-                    int cap = Mathf.Max(1, dragData.maxAmount);
-                    int space = cap - target.Amount;
-                    if (space > 0)
+                    // Must be equipment
+                    if (dragData.itemType != ItemType.Equipment)
                     {
-                        int moved = Mathf.Min(space, dragAmount);
-                        target.SetItem(dragData, target.Amount + moved);
-                        int left = dragAmount - moved;
-                        if (left <= 0) dragOrigin.ResetSlot();
-                        else dragOrigin.SetItem(dragData, left);
+                        CancelDragState();
+                        return;
+                    }
+
+                    // Must match slot type
+                    if (!equipSlot.CanEquip(dragData))
+                    {
+                        CancelDragState();
+                        return;
+                    }
+
+                    if (EquipmentManager.instance == null)
+                    {
+                        CancelDragState();
+                        return;
+                    }
+
+                    // If slot already has equipment → return it to inventory
+                    ItemData previouslyEquipped = equipSlot.GetEquippedItem();
+
+                    bool equipped = EquipmentManager.instance.Equip(dragData);
+
+                    if (equipped)
+                    {
+                        dragOrigin.ResetSlot();
+
+                        if (previouslyEquipped != null)
+                        {
+                            AddItem(previouslyEquipped, 1);
+                        }
+
                         success = true;
                     }
                 }
+
+                // ================= NORMAL INVENTORY =================
                 else
                 {
-                    ItemData td = target.ItemData;
-                    int ta = target.Amount;
-                    target.SetItem(dragData, dragAmount);
-                    dragOrigin.SetItem(td, ta);
-                    success = true;
+                    if (!target.HasItem)
+                    {
+                        target.SetItem(dragData, dragAmount);
+                        dragOrigin.ResetSlot();
+                        success = true;
+                    }
+                    else if (target.ItemData == dragData && dragData.isStackable)
+                    {
+                        int cap = Mathf.Max(1, dragData.maxAmount);
+                        int space = cap - target.Amount;
+
+                        if (space > 0)
+                        {
+                            int moved = Mathf.Min(space, dragAmount);
+                            target.SetItem(dragData, target.Amount + moved);
+
+                            int left = dragAmount - moved;
+
+                            if (left <= 0)
+                                dragOrigin.ResetSlot();
+                            else
+                                dragOrigin.SetItem(dragData, left);
+
+                            success = true;
+                        }
+                    }
+                    else
+                    {
+                        // swap
+                        ItemData tempData = target.ItemData;
+                        int tempAmount = target.Amount;
+
+                        target.SetItem(dragData, dragAmount);
+                        dragOrigin.SetItem(tempData, tempAmount);
+
+                        success = true;
+                    }
                 }
             }
             else
             {
-                if (dragOrigin != null && dragData != null)
-                {
-                    dragOrigin.DropItem(Character.transform.position, dragAmount);
-                    dragOrigin.ResetSlot();
-                    success = true;
-                }
+                dragOrigin.DropItem(Character.transform.position, dragAmount);
+                dragOrigin.ResetSlot();
+                success = true;
             }
 
-            DestroyDragIcon();
-            isDragging = false;
-            dragOrigin = null;
-            dragData = null;
-            dragAmount = 0;
+            CancelDragState();
 
             if (success)
             {
                 UpdateQuickIndicators();
                 NotifyChanged();
             }
+        }
+
+        private void CancelDragState()
+        {
+            DestroyDragIcon();
+            isDragging = false;
+            dragOrigin = null;
+            dragData = null;
+            dragAmount = 0;
         }
 
         private void CancelDrag()
@@ -721,8 +830,11 @@ namespace Yamigisa
 
         private ItemSlot RaycastItemSlotAtMouse()
         {
-            if (raycaster == null && rootCanvas != null) raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
-            if (raycaster == null) return null;
+            if (raycaster == null && rootCanvas != null)
+                raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
+
+            if (raycaster == null)
+                return null;
 
             PointerEventData eventData = new PointerEventData(EventSystem.current);
             eventData.position = Input.mousePosition;
@@ -730,12 +842,22 @@ namespace Yamigisa
             List<RaycastResult> results = new List<RaycastResult>();
             raycaster.Raycast(eventData, results);
 
+            ItemSlot normalSlot = null;
+
             for (int i = 0; i < results.Count; i++)
             {
                 ItemSlot slot = results[i].gameObject.GetComponentInParent<ItemSlot>();
-                if (slot != null) return slot;
+                if (slot == null) continue;
+
+                // PRIORITY: Equipment slot
+                if (slot.GetComponent<EquipmentSlot>() != null)
+                    return slot;
+
+                if (normalSlot == null)
+                    normalSlot = slot;
             }
-            return null;
+
+            return normalSlot;
         }
 
         // ===================== QUICK SELECT ACCESSORS =====================
@@ -1049,6 +1171,11 @@ namespace Yamigisa
             }
 
             return false;
+        }
+
+        public InventoryPanel GetMainInventoryPanel()
+        {
+            return mainInventoryPanel;
         }
 
         [System.Serializable]

@@ -77,8 +77,12 @@ namespace Yamigisa
         [Header("Consumable Effects")]
         public List<ConsumableEffect> consumableEffects = new List<ConsumableEffect>();
 
+        [Header("Equipment")]
+        [Tooltip("Only used if ItemType = Equipment")]
+        public EquipmentSlotType equipmentSlotType = EquipmentSlotType.None;
+
         [Header("Equipment Effects")]
-        public int damage = 0;
+        public List<EquipmentStatModifier> equipmentStats = new();
 
         [Header("Crafting (Recipe)")]
         public bool isCraftable = false;
@@ -152,5 +156,40 @@ namespace Yamigisa
         Instant,
         OverTime,
         DurationBuff
+    }
+
+    public enum EquipmentSlotType
+    {
+        None,
+        Head,
+        Chest,
+        Legs,
+        Accessory
+    }
+
+    [System.Serializable]
+    public class EquipmentStatModifier
+    {
+        public StatType statType;
+
+        [Tooltip("Only used if statType == Attribute")]
+        public AttributeType attributeType;
+
+        public StatValueType valueType;
+
+        public float value;
+    }
+
+    public enum StatType
+    {
+        Damage,
+        MovementSpeed,
+        Attribute
+    }
+
+    public enum StatValueType
+    {
+        Additive,   // +10
+        Percent     // +20%
     }
 }

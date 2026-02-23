@@ -18,6 +18,6 @@ namespace Yamigisa
     {
         public AttributeType type;
         public float current;
-        public float max;
+        public float baseMax; // IMPORTANT: store base, not final
     }
 }

@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    /// <summary>
-    /// Default settings used by CreateObject editor tool
-    /// </summary>
     [CreateAssetMenu(
         fileName = "CreateObjectSettings",
         menuName = "Yamigisa/Create Object Settings",
@@ -12,26 +9,30 @@ namespace Yamigisa
     public class CreateObjectSettings : ScriptableObject
     {
         [Header("Save Folders")]
-        [Tooltip("Base folder for prefabs")]
         public string prefabFolder = "Assets/YamigisaEngine/Prefabs";
-
-        [Tooltip("Folder for item prefabs")]
         public string prefabItemsFolder = "Assets/YamigisaEngine/Prefabs/Items";
-
-        [Tooltip("Folder for item ScriptableObjects")]
         public string itemsFolder = "Assets/YamigisaEngine/Resources/Items";
 
         [Header("Animal Folders")]
         public string prefabAnimalsFolder = "Assets/YamigisaEngine/Prefabs/Animals";
         public string animalDataFolder = "Assets/YamigisaEngine/Resources/Animals";
+
         // -------------------------------------------------------
 
-        [Header("Default ItemData Actions")]
-        [Tooltip("Default actions assigned to ItemData (ScriptableObject)")]
+        [Header("Layer Settings")]
+        [Tooltip("All Interactive Objects will use this layer")]
+        public LayerMask interactiveObjectLayer;
+
+        [Header("Default ItemData Actions (All Items)")]
         public ActionBase[] defaultItemActions;
 
+        [Header("Default Consumable Actions")]
+        public ActionBase[] defaultConsumableActions;
+
+        [Header("Default Equipment Actions")]
+        public ActionBase[] defaultEquipmentActions;
+
         [Header("Default Interactive Object Actions")]
-        [Tooltip("Default actions assigned to the interactive object prefab (ScriptableObject)")]
         public ActionBase[] defaultInteractiveObjectActions;
 
         [Header("Default Animal Interactive Actions")]
@@ -39,7 +40,6 @@ namespace Yamigisa
 
         [Header("Default Placeable Actions")]
         public PlaceableDefaultActions[] defaultPlaceableActions;
-
     }
 
     [System.Serializable]

@@ -1,8 +1,6 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using UnityEngine.Animations;
 
 namespace Yamigisa
 {
@@ -21,8 +19,11 @@ namespace Yamigisa
         [SerializeField] private Color selectedColor = Color.red;
         [SerializeField] private Color normalColor = Color.white;
 
-        public ItemData ItemData;
-        public int Amount;
+        [Header("Quick Slot Only (Index)")]
+        [SerializeField] private Text quickSlotIndexText;
+        private int quickSlotIndex = -1;
+        [HideInInspector] public ItemData ItemData;
+        [HideInInspector] public int Amount;
         private bool hasItem;
         public bool HasItem => hasItem;
 
@@ -46,9 +47,25 @@ namespace Yamigisa
             buttonContainer.gameObject.SetActive(false);
         }
 
-        public void MarkAsQuickSlot(bool value)
+        public void MarkAsQuickSlot(bool value, int index = -1)
         {
             isQuickSlot = value;
+            quickSlotIndex = index;
+
+            if (quickSlotIndexText == null)
+                return;
+
+            quickSlotIndexText.gameObject.SetActive(isQuickSlot);
+
+            if (!isQuickSlot || index < 0)
+            {
+                quickSlotIndexText.text = "";
+                return;
+            }
+
+            // 🔥 Proper 1–0 mapping
+            int displayNumber = (index + 1) % 10;
+            quickSlotIndexText.text = displayNumber.ToString();
         }
 
         public void SetSelectedVisual(bool selected)
@@ -105,7 +122,7 @@ namespace Yamigisa
             ButtonInteractiveObject interactiveButton = child.GetComponent<ButtonInteractiveObject>();
             if (interactiveButton == null) return;
 
-            interactiveButton.SetText(action.title);
+            interactiveButton.SetText(action.GetActionName(this));
 
             // 🔥 CHECK CanDoAction
             bool canDo = action.CanDoAction(this);
@@ -186,7 +203,6 @@ namespace Yamigisa
             {
                 Instantiate(ItemData.itemPrefab, spawnPoint, Quaternion.identity);
             }
-
             ResetSlot();
         }
 

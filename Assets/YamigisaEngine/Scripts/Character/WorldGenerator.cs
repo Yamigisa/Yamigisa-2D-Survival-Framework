@@ -29,6 +29,7 @@ namespace Yamigisa
 
         private Vector2Int lastPlayerChunk;
 
+        private bool isLoadingFromSave = false;
         public void Setup()
         {
             if (!generateOnStart)
@@ -45,6 +46,9 @@ namespace Yamigisa
 
         private void Update()
         {
+            if (isLoadingFromSave)
+                return;
+
             if (!generateProcedurally)
                 return;
 
@@ -94,7 +98,8 @@ namespace Yamigisa
             // IMPORTANT: pass spawnObjects into the chunk
             chunk.Initialize(biome, chunk.size, seed, spawnObjects);
 
-            chunkMap.Add(coord, chunk);
+            if (!chunkMap.ContainsKey(coord))
+                chunkMap.Add(coord, chunk);
         }
 
         private Vector2Int WorldToChunkCoord(Vector3 worldPos)
@@ -130,61 +135,80 @@ namespace Yamigisa
 
             foreach (var kv in chunkMap)
             {
+                Vector2Int coord = kv.Key;
                 WorldChunk c = kv.Value;
-                if (c == null)
-                    continue;
+                if (c == null) continue;
 
-                ChunkSaveData chunkData = new ChunkSaveData
+                data.chunks.Add(new ChunkSaveData
                 {
-                    position = c.transform.position,
+                    coord = coord, // ✅ ALWAYS use this
+                    position = c.transform.position, // optional legacy
                     biomeKey = c.biome != null ? c.biome.name : "",
                     size = c.size,
                     seed = c.seed,
                     resourcesSpawned = c.resourcesSpawned,
                     enemiesSpawned = c.enemiesSpawned,
                     interactiveObjects = new List<InteractiveObjectSaveData>()
-                };
-
-                data.chunks.Add(chunkData);
+                });
             }
         }
 
         public void Load(SaveGameData data)
         {
-            if (data.chunks == null || data.chunks.Count == 0)
-                return;
+            isLoadingFromSave = true;
 
             ClearWorld();
 
-            foreach (ChunkSaveData saved in data.chunks)
+            if (data.chunks != null && data.chunks.Count > 0)
             {
-                BiomeData biome = GetBiomeByKey(saved.biomeKey);
-                if (biome == null)
-                    continue;
+                foreach (ChunkSaveData saved in data.chunks)
+                {
+                    BiomeData biome = GetBiomeByKey(saved.biomeKey);
+                    if (biome == null) continue;
 
-                Vector2Int coord = WorldToChunkCoord(saved.position);
+                    // ✅ Backward compatible: if coord not present (old saves), derive once using SAFE rounding
+                    Vector2Int coord = saved.coord != default ? saved.coord : WorldToChunkCoordSafe(saved.position);
 
-                Vector3 worldPos = new Vector3(
-                    coord.x * fixedChunkWorldSize.x,
-                    coord.y * fixedChunkWorldSize.y,
-                    0f
-                );
+                    Vector3 worldPos = ChunkToWorldPos(coord);
 
-                WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
-                chunk.Initialize(biome, saved.size, saved.seed, false); // terrain only
-                chunk.SetSpawnFlags(saved.resourcesSpawned, saved.enemiesSpawned);
+                    WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
+                    chunk.Initialize(biome, saved.size, saved.seed, false);
+                    chunk.SetSpawnFlags(saved.resourcesSpawned, saved.enemiesSpawned);
 
-                if (saved.resourcesSpawned || saved.enemiesSpawned)
-                    chunk.GenerateObjectsOnlyImmediate(); // only if save says so
+                    if (saved.resourcesSpawned || saved.enemiesSpawned)
+                        chunk.GenerateObjectsOnlyImmediate();
 
-                chunkMap.Add(coord, chunk);
+                    if (!chunkMap.ContainsKey(coord))
+                        chunkMap.Add(coord, chunk);
+                }
             }
 
             if (Character.instance != null)
-            {
                 lastPlayerChunk = WorldToChunkCoord(Character.instance.transform.position);
-                SpawnAround(lastPlayerChunk);
-            }
+
+            isLoadingFromSave = false;
+        }
+
+        private Vector3 ChunkToWorldPos(Vector2Int coord)
+        {
+            return new Vector3(
+                coord.x * fixedChunkWorldSize.x,
+                coord.y * fixedChunkWorldSize.y,
+                0f
+            );
+        }
+
+        // ✅ SAFE conversion for legacy saves only (no FloorToInt)
+        private Vector2Int WorldToChunkCoordSafe(Vector3 worldPos)
+        {
+            float fx = worldPos.x / fixedChunkWorldSize.x;
+            float fy = worldPos.y / fixedChunkWorldSize.y;
+
+            // Round, not floor (floor is the reason your bottom shifts)
+            int x = Mathf.RoundToInt(fx);
+            int y = Mathf.RoundToInt(fy);
+
+            return new Vector2Int(x, y);
         }
 
         private void ClearWorld()

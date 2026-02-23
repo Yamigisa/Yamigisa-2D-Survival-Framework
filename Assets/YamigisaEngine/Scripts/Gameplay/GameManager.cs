@@ -67,8 +67,16 @@ namespace Yamigisa
 
         private void Update()
         {
-            if (Character.instance.characterControls.IsPressed(
-                Character.instance.characterControls.pause) && !Character.instance.CharacterIsBusy())
+            var controls = Character.instance.characterControls;
+
+            // If cancel (ESC) is pressed, do nothing here.
+            // Let whoever needs cancel handle it.
+            if (controls.IsPressedDown(controls.cancel))
+                return;
+
+            // Only pause if pause was pressed and character is not busy
+            if (controls.IsPressedDown(controls.pause) &&
+                !Character.instance.CharacterIsBusy())
             {
                 TogglePause();
             }
@@ -116,6 +124,8 @@ namespace Yamigisa
             craftingInterface.Setup();
             worldGenerator.Setup();
             PlaceableSystem.Setup();
+
+            timeClock.StartSystem();
         }
 
         private void TogglePause()
@@ -149,7 +159,6 @@ namespace Yamigisa
             pausePanel.SetActive(false);
             deathPanel.SetActive(false);
         }
-
         public bool IsPaused { get { return isPaused; } }
     }
 }

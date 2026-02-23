@@ -6,6 +6,7 @@ namespace Yamigisa
     [System.Serializable]
     public class ChunkSaveData
     {
+        public Vector2Int coord;
         public Vector3 position;
         public string biomeKey;
         public int size;

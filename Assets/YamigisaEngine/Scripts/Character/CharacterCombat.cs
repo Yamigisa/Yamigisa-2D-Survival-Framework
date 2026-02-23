@@ -12,19 +12,27 @@ namespace Yamigisa
         private CharacterMovement characterMovement;
 
         private Destroyable currentTarget;
-        private int currentDamage;
+
         private float cooldownTimer;
         private bool isAttacking;
 
         public bool IsAttacking => isAttacking;
 
         private float damageBuff = 0f;
+        private int equipmentDamage = 0;
+
+        private void Awake()
+        {
+            characterMovement = GetComponent<CharacterMovement>();
+        }
 
         private void Update()
         {
             if (!isAttacking) return;
 
-            if (characterMovement != null && characterMovement.IsWalking && !characterMovement.IsAutoMoving)
+            if (characterMovement != null &&
+                characterMovement.IsWalking &&
+                !characterMovement.IsAutoMoving)
             {
                 StopAttack();
                 return;
@@ -41,7 +49,10 @@ namespace Yamigisa
 
             if (toTarget.sqrMagnitude > rangeSqr)
             {
-                characterMovement?.MoveTo(currentTarget.transform.position, Mathf.Max(0.05f, attackRange * 0.9f));
+                characterMovement?.MoveTo(
+                    currentTarget.transform.position,
+                    Mathf.Max(0.05f, attackRange * 0.9f)
+                );
                 return;
             }
 
@@ -50,22 +61,40 @@ namespace Yamigisa
 
             cooldownTimer = attackCooldown;
 
-            int baseDamage = currentDamage;
-
-            if (baseDamage <= 0)
-                baseDamage = Mathf.Max(1, Mathf.RoundToInt(handDamage));
-
+            int baseDamage = CalculateBaseDamage();
             int finalDamage = GetFinalDamage(baseDamage);
 
             currentTarget.TakeDamage(finalDamage);
         }
 
-        public void StartAutoAttack(Destroyable target, int damagePerHit = 0)
+        // ===============================
+        // DAMAGE CALCULATION
+        // ===============================
+
+        private int CalculateBaseDamage()
+        {
+            // If equipment provides damage, use it
+            if (equipmentDamage > 0)
+                return equipmentDamage;
+
+            // Otherwise fallback to hand damage
+            return Mathf.Max(1, Mathf.RoundToInt(handDamage));
+        }
+
+        public int GetFinalDamage(int baseDamage)
+        {
+            return Mathf.RoundToInt(baseDamage + damageBuff);
+        }
+
+        // ===============================
+        // ATTACK CONTROL
+        // ===============================
+
+        public void StartAutoAttack(Destroyable target)
         {
             if (target == null) return;
 
             currentTarget = target;
-            currentDamage = damagePerHit;
             isAttacking = true;
             cooldownTimer = 0f;
         }
@@ -74,11 +103,14 @@ namespace Yamigisa
         {
             isAttacking = false;
             currentTarget = null;
-            currentDamage = 0;
             cooldownTimer = 0f;
+
             characterMovement?.StopAutoMoveExternal();
         }
 
+        // ===============================
+        // BUFFS
+        // ===============================
 
         public void AddDamageBuff(float amount)
         {
@@ -90,9 +122,13 @@ namespace Yamigisa
             damageBuff -= amount;
         }
 
-        public int GetFinalDamage(int baseDamage)
+        // ===============================
+        // EQUIPMENT
+        // ===============================
+
+        public void SetEquipmentDamage(int value)
         {
-            return Mathf.RoundToInt(baseDamage + damageBuff);
+            equipmentDamage = Mathf.Max(0, value);
         }
     }
 }

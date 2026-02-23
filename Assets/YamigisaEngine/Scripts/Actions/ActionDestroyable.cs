@@ -8,25 +8,36 @@ namespace Yamigisa
     {
         public override void DoAction(Character character, Component context)
         {
-            InteractiveObject InteractiveObject = context as InteractiveObject;
+            if (character == null) return;
 
-            ItemData equipped = Inventory.Instance.GetSelectedQuickItemData();
-            Destroyable destroyable = InteractiveObject.GetComponent<Destroyable>();
-            CharacterCombat combat = character != null ? character.GetComponent<CharacterCombat>() : null;
+            InteractiveObject interactiveObject = context as InteractiveObject;
+            if (interactiveObject == null) return;
 
+            Destroyable destroyable = interactiveObject.GetComponent<Destroyable>();
             if (destroyable == null) return;
 
-            if (equipped != null && equipped.groups != null && destroyable.requiredItems != null &&
-                equipped.groups.Any(g => destroyable.requiredItems.Contains(g)))
-            {
-                int dmg = Mathf.Max(1, equipped.damage);
-                destroyable.TakeDamage(dmg);
-                combat?.StartAutoAttack(destroyable, dmg);
-            }
-            else if (destroyable.requiredItems == null || destroyable.requiredItems.Count == 0)
-            {
-                combat?.StartAutoAttack(destroyable, 0);
-            }
+            CharacterCombat combat = character.GetComponent<CharacterCombat>();
+            if (combat == null) return;
+
+            ItemData equippedQuickItem = Inventory.Instance != null
+                ? Inventory.Instance.GetSelectedQuickItemData()
+                : null;
+
+            bool canAttackBareHand =
+                destroyable.requiredItems == null ||
+                destroyable.requiredItems.Count == 0;
+
+            bool canAttackWithTool =
+                equippedQuickItem != null &&
+                equippedQuickItem.groups != null &&
+                destroyable.requiredItems != null &&
+                equippedQuickItem.groups.Any(g => destroyable.requiredItems.Contains(g));
+
+            if (!canAttackBareHand && !canAttackWithTool)
+                return;
+
+            // Damage is now handled internally by CharacterCombat
+            combat.StartAutoAttack(destroyable);
         }
     }
 }

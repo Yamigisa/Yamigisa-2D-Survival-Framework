@@ -83,11 +83,7 @@ namespace Yamigisa
 
             if (!canAttackBareHand && !canAttackWithTool) return;
 
-            int damagePerHit = 0;
-            if (canAttackWithTool)
-                damagePerHit = Mathf.Max(1, equipped.damage);
-
-            characterCombat.StartAutoAttack(destroyable, damagePerHit);
+            characterCombat.StartAutoAttack(destroyable);
 
             float stopDist = Mathf.Max(0.05f, characterCombat.attackRange * 0.9f);
             characterMovement.MoveTo(destroyable.transform.position, stopDist);

@@ -20,6 +20,6 @@ namespace Yamigisa
         public List<InteractiveObjectSaveData> interactiveObjects = new();
         public List<ChunkSaveData> chunks = new();
         public List<StorageSaveData> storages = new();
-
+        public List<EquipmentSaveData> equippedItems = new();
     }
 }

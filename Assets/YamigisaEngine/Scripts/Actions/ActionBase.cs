@@ -16,5 +16,10 @@ namespace Yamigisa
         {
             return true;
         }
+
+        public virtual string GetActionName(Component context = null)
+        {
+            return title;
+        }
     }
 }

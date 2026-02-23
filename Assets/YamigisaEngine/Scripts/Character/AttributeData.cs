@@ -12,6 +12,7 @@ namespace Yamigisa
         [Header("Attribute Settings")]
         public float MaxValue = 100f;
         public float CurrentValue = 100f;
+        [HideInInspector] public float BaseMaxValue;
 
         [Tooltip("Set to 0 to disable depleting")]
         public float DepleteValuePerMinute = 0f;
@@ -32,6 +33,11 @@ namespace Yamigisa
         public Sprite BackgroundImage;
 
         public AttributeType GetAttributeType() => type;
+
+        private void OnEnable()
+        {
+            BaseMaxValue = MaxValue;
+        }
     }
 
     [System.Serializable]
