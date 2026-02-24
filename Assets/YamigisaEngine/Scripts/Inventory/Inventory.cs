@@ -338,7 +338,7 @@ namespace Yamigisa
         {
             Character.instance.SetCharacterBusy(true);
             mainInventoryPanel.gameObject.SetActive(true);
-            mainInventoryPanel.sortButton.gameObject.SetActive(true);
+            EquipmentManager.instance.ShowEquipmentPanel();
         }
 
         public void HideInventory()
@@ -346,6 +346,7 @@ namespace Yamigisa
             Character.instance.SetCharacterBusy(false);
             mainInventoryPanel.gameObject.SetActive(false);
             CancelPendingPick();
+            EquipmentManager.instance.HideEquipmentPanel();
             if (isDragging) CancelDrag();
         }
 

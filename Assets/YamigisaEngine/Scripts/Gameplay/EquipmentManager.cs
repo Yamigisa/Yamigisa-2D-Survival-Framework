@@ -5,6 +5,7 @@ namespace Yamigisa
 {
     public class EquipmentManager : MonoBehaviour, ISavable
     {
+        [SerializeField] private GameObject equipmentPanel;
         [SerializeField] private List<EquipmentSlot> equipmentSlots;
 
         private Dictionary<EquipmentSlotType, EquipmentSlot> slotLookup;
@@ -21,6 +22,8 @@ namespace Yamigisa
             {
                 slotLookup[slot.SlotType] = slot;
             }
+
+            equipmentPanel.SetActive(false);
         }
 
         public bool Equip(ItemData item)
@@ -191,6 +194,16 @@ namespace Yamigisa
             }
 
             RecalculateStats();
+        }
+
+        public void ShowEquipmentPanel()
+        {
+            equipmentPanel.SetActive(true);
+        }
+
+        public void HideEquipmentPanel()
+        {
+            equipmentPanel.SetActive(false);
         }
     }
     [System.Serializable]
