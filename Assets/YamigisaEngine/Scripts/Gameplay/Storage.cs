@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Yamigisa
 {
@@ -66,6 +67,16 @@ namespace Yamigisa
 
                 itemSlots[stored.index].SetItem(stored.item, stored.amount);
             }
+
+            Canvas.ForceUpdateCanvases();
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(
+                inventoryStorage.GetComponent<RectTransform>()
+            );
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(
+                inventoryStorage.inventoryContent.GetComponent<RectTransform>()
+            );
         }
 
         private void InitializeStorage()

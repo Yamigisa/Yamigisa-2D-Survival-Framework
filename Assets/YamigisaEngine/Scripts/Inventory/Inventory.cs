@@ -122,6 +122,7 @@ namespace Yamigisa
                 );
                 itemSlots.Add(slot);
                 slot.MarkAsQuickSlot(false);
+                slot.HideQuickSlotIndex();
             }
 
             // Quick inventory slots
@@ -337,6 +338,7 @@ namespace Yamigisa
         {
             Character.instance.SetCharacterBusy(true);
             mainInventoryPanel.gameObject.SetActive(true);
+            mainInventoryPanel.sortButton.gameObject.SetActive(true);
         }
 
         public void HideInventory()

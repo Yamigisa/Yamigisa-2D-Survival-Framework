@@ -12,11 +12,20 @@ namespace Yamigisa
 
         [HideInInspector]
         public Inventory inventoryOwner;
-        
+
         public void ClearPanel()
         {
-            foreach (Transform child in inventoryContent)
+            // If sortButton exists and is under inventoryContent, preserve it.
+            Transform sortT = (sortButton != null) ? sortButton.transform : null;
+
+            for (int i = inventoryContent.childCount - 1; i >= 0; i--)
             {
+                Transform child = inventoryContent.GetChild(i);
+
+                // Keep sort button (or anything that contains it)
+                if (sortT != null && (child == sortT || sortT.IsChildOf(child)))
+                    continue;
+
                 Destroy(child.gameObject);
             }
         }

@@ -330,9 +330,9 @@ namespace Yamigisa
 
             string safeName = MakeSafeFileName(objectName);
 
-            EnsureItemTypeFolderExists(ItemType.Placeable);
+            EnsureItemTypeFolderExists(itemType);
 
-            string soFolder = GetItemDataFolderForType(ItemType.Placeable);
+            string soFolder = GetItemDataFolderForType(itemType);
             string soPath = $"{soFolder}/{safeName}.asset";
 
             AssetDatabase.CreateAsset(so, soPath);

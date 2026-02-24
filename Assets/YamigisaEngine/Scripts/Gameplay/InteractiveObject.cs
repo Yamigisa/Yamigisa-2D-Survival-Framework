@@ -42,6 +42,14 @@ namespace Yamigisa
 
         void HandleMouseHover()
         {
+            // 🔒 HARD BLOCK interaction while building
+            if (PlaceableSystem.instance != null)
+            {
+                if (PlaceableSystem.instance.IsInBuildMode ||
+                    PlaceableSystem.instance.IsInteractionBlocked)
+                    return;
+            }
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.GetRayIntersection(
                 ray,
@@ -52,7 +60,8 @@ namespace Yamigisa
             InteractiveObject current =
                 hit.collider ? hit.collider.GetComponent<InteractiveObject>() : null;
 
-            if (hovered == current) return;
+            if (hovered == current)
+                return;
 
             if (hovered != null)
             {
@@ -71,6 +80,13 @@ namespace Yamigisa
 
         void HandleMouseClick()
         {
+            if (PlaceableSystem.instance != null)
+            {
+                if (PlaceableSystem.instance.IsInBuildMode ||
+                    PlaceableSystem.instance.IsInteractionBlocked)
+                    return;
+            }
+
             if (hovered == null) return;
             if (Character.instance.IsBusy) return;
             if (IsPointerOverAnyUI()) return;

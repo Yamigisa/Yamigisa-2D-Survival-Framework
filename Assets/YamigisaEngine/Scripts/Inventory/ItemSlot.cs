@@ -66,8 +66,13 @@ namespace Yamigisa
             // 🔥 Proper 1–0 mapping
             int displayNumber = (index + 1) % 10;
             quickSlotIndexText.text = displayNumber.ToString();
+
         }
 
+        public void HideQuickSlotIndex()
+        {
+            quickSlotIndexText.gameObject.SetActive(false);
+        }
         public void SetSelectedVisual(bool selected)
         {
             if (slotButton == null || slotButton.image == null) return;

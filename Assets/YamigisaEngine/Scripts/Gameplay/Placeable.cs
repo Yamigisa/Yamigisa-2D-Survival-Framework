@@ -57,18 +57,18 @@ namespace Yamigisa
             }
 
             Vector3Int positionInt =
-                PlaceableSystem.instance.gridLayout.LocalToCell(transform.position);
+     PlaceableSystem.instance.gridLayout.WorldToCell(transform.position);
 
             BoundsInt areaTemp = area;
             areaTemp.position = positionInt;
 
             Vector3 worldPos =
-                PlaceableSystem.instance.gridLayout.CellToWorld(positionInt)
-                + new Vector3(
-                    area.size.x * 0.5f,
-                    area.size.y * 0.5f,
-                    0f
-                );
+      PlaceableSystem.instance.gridLayout.CellToWorld(positionInt)
+      + new Vector3(
+          PlaceableSystem.instance.gridLayout.cellSize.x * area.size.x * 0.5f,
+          PlaceableSystem.instance.gridLayout.cellSize.y * area.size.y * 0.5f,
+          0f
+      );
 
             transform.position = worldPos;
 

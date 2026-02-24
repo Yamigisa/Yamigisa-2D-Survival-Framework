@@ -27,6 +27,8 @@ namespace Yamigisa
 
         //[SerializeField] private LayerMask blockingLayers;
 
+        private float interactionBlockTimer = 0f;
+        [SerializeField] private float interactionBlockDuration = 0.2f;
         private bool buildMode;
         private BoundsInt buildBounds;
 
@@ -41,6 +43,8 @@ namespace Yamigisa
         private Vector3Int lastAnchorCell;
         private readonly HashSet<Vector3Int> occupiedCells = new HashSet<Vector3Int>();
 
+        public bool IsInBuildMode => buildMode;
+        public bool IsInteractionBlocked => interactionBlockTimer > 0f;
         public static PlaceableSystem instance;
         private void Awake()
         {
@@ -64,10 +68,14 @@ namespace Yamigisa
 
         void Update()
         {
+            // 🔥 TIMER MUST RUN ALWAYS
+            if (interactionBlockTimer > 0f)
+                interactionBlockTimer -= Time.deltaTime;
+
             if (!buildMode)
                 return;
 
-            // If we are not using grid -> FREE PLACEMENT MODE
+            // ================= FREE PLACEMENT =================
             if (!useGrid)
             {
                 if (!temp || temp.Placed)
@@ -77,28 +85,30 @@ namespace Yamigisa
                     return;
 
                 Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                mouseWorld.z = temp.transform.position.z; // keep current Z
+                mouseWorld.z = temp.transform.position.z;
                 temp.transform.position = mouseWorld;
 
                 bool canPlace = !HasBlockingColliderWorld(temp);
                 temp.SetSpriteColor(canPlace);
 
-                // PLACE WITH LEFT CLICK (free)
                 if (Input.GetMouseButtonDown(0))
                 {
-                    if (HasBlockingColliderWorld(temp))
+                    if (!canPlace)
                     {
                         Debug.Log("Cannot place here (blocked by collider)");
                         return;
                     }
 
-                    temp.Place(); // Placeable.Place() will NOT snap/take area when useGrid=false
+                    temp.Place();
                     temp = null;
+
+                    // 🔒 BLOCK INTERACTION AFTER PLACE
+                    interactionBlockTimer = interactionBlockDuration;
+
                     ExitBuildMode();
                     return;
                 }
 
-                // CANCEL
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     Destroy(temp.gameObject);
@@ -110,15 +120,15 @@ namespace Yamigisa
                 return;
             }
 
-            // ====== ORIGINAL GRID MODE (UNCHANGED BEHAVIOR) ======
+            // ================= GRID MODE =================
+
             Vector3Int currentAnchorCell = gridLayout.WorldToCell(buildAnchor.position);
 
             if (currentAnchorCell != lastAnchorCell)
             {
                 lastAnchorCell = currentAnchorCell;
                 RebuildGrid(currentAnchorCell);
-
-                prevArea = new BoundsInt(); // reset preview footprint
+                prevArea = new BoundsInt();
             }
 
             if (!temp || temp.Placed)
@@ -127,37 +137,43 @@ namespace Yamigisa
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
                 return;
 
-            // === FOLLOW CURSOR ALWAYS ===
-            Vector2 mouseWorldGrid = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 mouseWorldGrid = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int cellPos = gridLayout.WorldToCell(mouseWorldGrid);
 
             if (prevPos != cellPos)
             {
-                temp.transform.localPosition =
-                    gridLayout.CellToLocalInterpolated(cellPos + new Vector3(.5f, .5f, 0f));
+                Vector3 worldPos =
+                    gridLayout.CellToWorld(cellPos) +
+                    new Vector3(
+                        gridLayout.cellSize.x * 0.5f,
+                        gridLayout.cellSize.y * 0.5f,
+                        0f
+                    );
+
+                temp.transform.position = worldPos;
 
                 prevPos = cellPos;
                 FollowBuilding();
             }
 
-            // === PLACE WITH LEFT CLICK ===
             if (Input.GetMouseButtonDown(0))
             {
-                // IMPORTANT: prevent overwrite
                 if (!CanTakeArea(prevArea))
                 {
                     Debug.Log("Cannot place here (area blocked)");
                     return;
                 }
 
-                temp.Place();      // Placeable.Place() already calls TakeArea(areaTemp)
+                temp.Place();
                 temp = null;
+
+                // 🔒 BLOCK INTERACTION AFTER PLACE
+                interactionBlockTimer = interactionBlockDuration;
+
                 ExitBuildMode();
                 return;
-
             }
 
-            // === CANCEL ===
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 ClearArea();
@@ -166,7 +182,6 @@ namespace Yamigisa
             }
         }
 
-
         public void InitializeBuilding(GameObject Placeable)
         {
             if (buildMode)
@@ -174,8 +189,13 @@ namespace Yamigisa
 
             EnterBuildMode();
 
-            temp = Instantiate(Placeable, Vector3.zero, Quaternion.identity)
-                .GetComponent<Placeable>();
+            temp = Instantiate(
+      Placeable,
+      Vector3.zero,
+      Quaternion.identity
+  ).GetComponent<Placeable>();
+
+            temp.transform.position = buildAnchor.position;
 
             // Only do grid preview if using grid
             if (useGrid)
@@ -331,6 +351,8 @@ namespace Yamigisa
 
             buildBounds = new BoundsInt();
             prevArea = new BoundsInt();
+
+            interactionBlockTimer = interactionBlockDuration;
         }
 
         public void ReleaseArea(BoundsInt area)
