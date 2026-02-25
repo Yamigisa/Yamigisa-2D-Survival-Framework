@@ -75,11 +75,38 @@ namespace Yamigisa
 
         private void Update()
         {
-            if (Character.instance.characterControls.IsPressed(
-                Character.instance.characterControls.cancel) && Character.instance.CharacterIsBusy() && isOpened)
+            if (!isOpened)
+                return;
+
+            var controls = Character.instance.characterControls;
+
+            // CANCEL
+            if (controls.IsPressedDown(controls.cancel) && Character.instance.CharacterIsBusy())
             {
                 Character.instance.SetCharacterBusy(false);
                 CloseAllCraftingInterfaces();
+                return;
+            }
+
+            // CONFIRM (A / Enter / interaction1)
+            if (controls.IsPressedDown(controls.crafting))
+            {
+                var selected = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
+
+                if (selected != null)
+                {
+                    var button = selected.GetComponent<Button>();
+                    if (button != null && button.interactable)
+                    {
+                        button.onClick.Invoke();
+                    }
+                }
+            }
+
+            // OPTIONAL: force selection if nothing selected
+            if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == null)
+            {
+                SelectFirstCraftItem();
             }
         }
 
@@ -126,9 +153,10 @@ namespace Yamigisa
             }
         }
 
-
         public void OpenCraftingItemSelectionPanel(CraftGroupSlot slot)
         {
+            GameManager.instance.SetCanPause(true);
+
             if (craftingItemSelectionPanel.activeSelf)
             {
                 CloseAllCraftingInterfaces();
@@ -148,6 +176,7 @@ namespace Yamigisa
             Character.instance.SetCharacterBusy(true);
             AddItemsForGroup(slot.Group);
             RefreshAllItemSlotsInteractable();
+            SelectFirstCraftItem();
         }
 
         private void ClearItemList()
@@ -197,6 +226,9 @@ namespace Yamigisa
                 spawnedItems.Add(item);
 
                 CraftItemSlot slot = Instantiate(itemSelectionSlotPrefab, itemListRoot);
+                Navigation nav = slot.button.navigation;
+                nav.mode = Navigation.Mode.Automatic;
+                slot.button.navigation = nav;
                 slot.BindItem(item);
                 slot.button.onClick.AddListener(() => OpenItemCraftingPanel(item));
                 itemSlots.Add(slot);
@@ -325,6 +357,7 @@ namespace Yamigisa
 
         public void CloseAllCraftingInterfaces()
         {
+            GameManager.instance.SetCanPause(true);
             isOpened = false;
             // Hide panels
             if (craftingItemSelectionPanel)
@@ -424,7 +457,19 @@ namespace Yamigisa
             AddItemsForGroup(additionalGroup);
 
             RefreshAllItemSlotsInteractable();
+            SelectFirstCraftItem();
         }
 
+        private void SelectFirstCraftItem()
+        {
+            if (itemSlots == null || itemSlots.Count == 0)
+                return;
+
+            var first = itemSlots[0];
+            if (first != null && first.button != null)
+            {
+                first.button.Select();
+            }
+        }
     }
 }

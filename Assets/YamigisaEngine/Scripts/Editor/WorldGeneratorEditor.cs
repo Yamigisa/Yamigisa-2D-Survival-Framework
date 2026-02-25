@@ -16,9 +16,16 @@ public class WorldGeneratorEditor : Editor
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("Create World"))
+        GUILayout.Label("World Controls", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("Create World (Add)"))
         {
             generator.EditorCreateWorld();
+        }
+
+        if (GUILayout.Button("Refresh World"))
+        {
+            generator.EditorRefreshWorld();
         }
 
         if (GUILayout.Button("Delete World"))

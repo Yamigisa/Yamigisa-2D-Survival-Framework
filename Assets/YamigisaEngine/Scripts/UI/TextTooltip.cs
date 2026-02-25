@@ -10,6 +10,10 @@ namespace Yamigisa
         [SerializeField] private GameObject InteractiveObjectTextGameObject;
         [SerializeField] private List<Text> InteractiveObjectTexts;
 
+        [Header("Text Colors")]
+        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color disabledColor = new Color(1f, 1f, 1f, 0.4f);
+
         [Header("Screen Offset")]
         [SerializeField] private Vector3 screenOffset = new Vector3(0f, 50f, 0f);
 
@@ -86,10 +90,20 @@ namespace Yamigisa
                             break;
                     }
 
+                    ActionBase action = interactiveObject.Actions[i];
+
+                    // Use GetActionName instead of raw title (more flexible)
+                    string actionName = action.GetActionName(interactiveObject);
+
                     InteractiveObjectTexts[i].text =
                         inputText + " to " +
-                        interactiveObject.Actions[i].title + " " +
+                        actionName + " " +
                         interactiveObject.name;
+
+                    // 🔥 CHECK CanDoAction()
+                    bool canDo = action.CanDoAction(interactiveObject);
+
+                    InteractiveObjectTexts[i].color = canDo ? normalColor : disabledColor;
                 }
                 else
                 {

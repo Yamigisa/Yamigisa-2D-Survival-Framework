@@ -158,6 +158,9 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveStorages)
+                return;
+
             if (data.storages == null)
                 data.storages = new List<StorageSaveData>();
 

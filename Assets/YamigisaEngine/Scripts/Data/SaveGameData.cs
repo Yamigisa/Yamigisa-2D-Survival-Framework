@@ -6,6 +6,7 @@ namespace Yamigisa
     [System.Serializable]
     public class SaveGameData
     {
+        [System.NonSerialized] public SaveManager saveManager;
         // World
         public int day;
         public int hour;

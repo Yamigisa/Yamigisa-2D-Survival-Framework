@@ -4,7 +4,26 @@ namespace Yamigisa
 {
     public class SaveManager : MonoBehaviour
     {
+        [Header("Save Settings")]
         [SerializeField] private bool saveGameOnQuit = true;
+
+        [Header("Save Toggles")]
+        [SerializeField] private bool saveWorldTime = true;
+        [SerializeField] private bool savePlayer = true;
+        [SerializeField] private bool saveInventory = true;
+        [SerializeField] private bool saveDestroyables = true;
+        [SerializeField] private bool saveInteractiveObjects = true;
+        [SerializeField] private bool saveChunks = true;
+        [SerializeField] private bool saveStorages = true;
+        [SerializeField] private bool saveEquipment = true;
+        public bool SaveWorldTime => saveWorldTime;
+        public bool SavePlayer => savePlayer;
+        public bool SaveInventory => saveInventory;
+        public bool SaveDestroyables => saveDestroyables;
+        public bool SaveInteractiveObjects => saveInteractiveObjects;
+        public bool SaveChunks => saveChunks;
+        public bool SaveStorages => saveStorages;
+        public bool SaveEquipment => saveEquipment;
         private string path => Application.persistentDataPath + "/save.json";
 
         public void SaveGame()
@@ -16,6 +35,7 @@ namespace Yamigisa
             }
 
             SaveGameData data = new SaveGameData();
+            data.saveManager = this;
 
             foreach (var savable in FindObjectsByType<MonoBehaviour>(
                 FindObjectsInactive.Include,

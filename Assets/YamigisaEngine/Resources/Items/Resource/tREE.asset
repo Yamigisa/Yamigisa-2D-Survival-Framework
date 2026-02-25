@@ -10,29 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: tREE
+  m_Name: Tree
   m_EditorClassIdentifier: 
-  itemName: tREE
+  id: 798fd916-0d65-4245-95a1-01e826b46d3f
+  itemPrefab: {fileID: 2358930305471353791, guid: 3249a26d51e8c924c9c572acb8920888, type: 3}
+  itemName: Tree
   iconWorld: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
   iconInventory: {fileID: 2061441458, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  description: tree
+  description: 
   itemType: 0
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
   groups:
-  - {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
-  itemActions:
-  - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
-  increaseHealth: 0
-  increaseHunger: 0
-  increaseThirst: 0
-  damage: 0
-  isCraftable: 0
-  craftGroupsNeeded: []
+  - {fileID: 11400000, guid: 681dc2c85d3cf6e4d811359e1283c11e, type: 2}
+  itemActions: []
+  consumableEffects: []
+  equipmentSlotType: 0
+  equipmentStats: []
+  isCraftable: 1
+  craftGroupsNeeded:
+  - GroupData: {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
+    Amount: 1
   craftItemsNeeded: []
   craftResultAmount: 1
-  destructible: 1
-  destructibleHP: 100
-  destructibleRequiredGroups: []
-  destructibleLoots: []

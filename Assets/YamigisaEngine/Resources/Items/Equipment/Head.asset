@@ -10,25 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: Wood
+  m_Name: Head
   m_EditorClassIdentifier: 
-  id: 6585b734-e04a-463f-96c5-7d144f7bf3d1
-  itemPrefab: {fileID: 8617235027819217651, guid: df8b1b851a9ac9f4a918354ec357ef9b, type: 3}
-  itemName: Wood
-  iconWorld: {fileID: -825250436, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
-  iconInventory: {fileID: -825250436, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  id: 6df7b7ab-fd1d-4277-81a8-dd9deba02a87
+  itemPrefab: {fileID: 8093853878760001692, guid: 913a7b4060e259e4bbe4f1f5ef410e68, type: 3}
+  itemName: NewItem
+  iconWorld: {fileID: -667022295125873936, guid: aeec374205e631942b665bae4aad4680, type: 3}
+  iconInventory: {fileID: -667022295125873936, guid: aeec374205e631942b665bae4aad4680, type: 3}
   description: 
-  itemType: 0
+  itemType: 1
   maxAmount: 99
   isDroppable: 1
-  isStackable: 1
+  isStackable: 0
   groups: []
   itemActions:
+  - {fileID: 11400000, guid: 1f51a7742fc3fff4bb302c22f041d896, type: 2}
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
   - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
   consumableEffects: []
-  equipmentSlotType: 0
-  equipmentStats: []
+  equipmentSlotType: 1
+  equipmentStats:
+  - statType: 2
+    attributeType: 0
+    valueType: 0
+    value: 10
   isCraftable: 0
   craftGroupsNeeded: []
   craftItemsNeeded: []

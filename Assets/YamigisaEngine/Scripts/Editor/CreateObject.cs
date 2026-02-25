@@ -306,26 +306,33 @@ namespace Yamigisa
             if (itemType == ItemType.Equipment)
                 so.equipmentStats = new List<EquipmentStatModifier>(tempEquipmentStats);
 
-            so.itemActions = new List<ActionBase>();
-
-            so.itemActions = new List<ActionBase>();
-
-            // 1️⃣ Add specific type actions FIRST
-            if (itemType == ItemType.Equipment &&
-                settings.defaultEquipmentActions != null)
+            // Only items get default item actions
+            if (objectType == ObjectType.Item)
             {
-                so.itemActions.AddRange(settings.defaultEquipmentActions);
+                so.itemActions = new List<ActionBase>();
+
+                // 1️⃣ Add specific type actions FIRST
+                if (itemType == ItemType.Equipment &&
+                    settings.defaultEquipmentActions != null)
+                {
+                    so.itemActions.AddRange(settings.defaultEquipmentActions);
+                }
+                else if (itemType == ItemType.Consumable &&
+                         settings.defaultConsumableActions != null)
+                {
+                    so.itemActions.AddRange(settings.defaultConsumableActions);
+                }
+
+                // 2️⃣ Add generic actions LAST (Drop, Split, etc)
+                if (settings.defaultItemActions != null)
+                {
+                    so.itemActions.AddRange(settings.defaultItemActions);
+                }
             }
-            else if (itemType == ItemType.Consumable &&
-                     settings.defaultConsumableActions != null)
+            else
             {
-                so.itemActions.AddRange(settings.defaultConsumableActions);
-            }
-
-            // 2️⃣ Add generic actions LAST (Drop, Split, etc)
-            if (settings.defaultItemActions != null)
-            {
-                so.itemActions.AddRange(settings.defaultItemActions);
+                // Destroyable → no item actions
+                so.itemActions = new List<ActionBase>();
             }
 
             string safeName = MakeSafeFileName(objectName);
@@ -339,15 +346,21 @@ namespace Yamigisa
 
             GameObject root = new GameObject(objectName);
             root.layer = Mathf.RoundToInt(Mathf.Log(settings.interactiveObjectLayer.value, 2));
-            root.AddComponent<BoxCollider2D>();
+            var collider = root.AddComponent<BoxCollider2D>();
 
             var interactive = root.AddComponent<InteractiveObject>();
 
-            if (settings.defaultInteractiveObjectActions != null &&
+            // Only items get default interactive actions
+            if (objectType == ObjectType.Item &&
+                settings.defaultInteractiveObjectActions != null &&
                 settings.defaultInteractiveObjectActions.Length > 0)
             {
                 interactive.Actions = new List<ActionBase>(
                     settings.defaultInteractiveObjectActions);
+            }
+            else
+            {
+                interactive.Actions = new List<ActionBase>();
             }
 
             if (objectType == ObjectType.Item)
@@ -365,6 +378,12 @@ namespace Yamigisa
             var visual = new GameObject("Visual");
             visual.transform.SetParent(root.transform, false);
             var sr = visual.AddComponent<SpriteRenderer>();
+            // 🔥 AUTO RESIZE COLLIDER TO SPRITE
+            if (iconWorld != null)
+            {
+                collider.size = iconWorld.bounds.size;
+                collider.offset = iconWorld.bounds.center;
+            }
             sr.sprite = iconWorld;
             sr.sortingLayerName = "Object";
             sr.sortingOrder = 0;

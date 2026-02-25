@@ -159,6 +159,8 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveEquipment)
+                return;
             data.equippedItems.Clear();
 
             foreach (var slot in equipmentSlots)

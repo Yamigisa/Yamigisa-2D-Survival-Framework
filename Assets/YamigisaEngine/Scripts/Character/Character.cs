@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Yamigisa
@@ -19,6 +18,7 @@ namespace Yamigisa
         public LayerMask interactObjectLayer;
         public static Character instance { get; private set; }
 
+        private Coroutine busyDelayRoutine;
         private void Awake()
         {
             instance = this;
@@ -46,14 +46,46 @@ namespace Yamigisa
             }
         }
 
-        public bool SetCharacterBusy(bool _isBusy)
+        public bool SetCharacterBusy(bool _isBusy, float delayIfFalse = 0.1f)
         {
-            if (_isBusy == true)
-                DisableMovements();
-            else
-                EnableMovements();
+            if (_isBusy)
+            {
+                if (busyDelayRoutine != null)
+                {
+                    StopCoroutine(busyDelayRoutine);
+                    busyDelayRoutine = null;
+                }
 
-            return IsBusy = _isBusy;
+                DisableMovements();
+                IsBusy = true;
+                return true;
+            }
+            else
+            {
+                if (delayIfFalse > 0f)
+                {
+                    if (busyDelayRoutine != null)
+                        StopCoroutine(busyDelayRoutine);
+
+                    busyDelayRoutine = StartCoroutine(DelayedUnbusy(delayIfFalse));
+                }
+                else
+                {
+                    EnableMovements();
+                    IsBusy = false;
+                }
+
+                return false;
+            }
+        }
+
+        private IEnumerator DelayedUnbusy(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            EnableMovements();
+            IsBusy = false;
+            busyDelayRoutine = null;
         }
 
         public bool CharacterIsBusy()
@@ -186,6 +218,8 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SavePlayer)
+                return;
             data.player = new CharacterData
             {
                 position = transform.position,

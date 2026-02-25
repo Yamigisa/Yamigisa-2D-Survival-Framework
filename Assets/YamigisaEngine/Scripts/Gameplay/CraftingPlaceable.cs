@@ -16,7 +16,7 @@ namespace Yamigisa
 
         private void Update()
         {
-            if (Character.instance.characterControls.IsPressed(
+            if (Character.instance.characterControls.IsPressedDown(
                 Character.instance.characterControls.cancel) && Character.instance.CharacterIsBusy() && isOpened)
             {
                 isOpened = false;
@@ -29,6 +29,7 @@ namespace Yamigisa
         {
             if (!craftingInterface || !additionalCraftGroup) return;
 
+            GameManager.instance.SetCanPause(false);
             isOpened = true;
             Character.instance.DisableMovements();
             Character.instance.SetCharacterBusy(true);

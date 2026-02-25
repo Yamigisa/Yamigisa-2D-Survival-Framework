@@ -46,6 +46,8 @@ namespace Yamigisa
         public bool IsInBuildMode => buildMode;
         public bool IsInteractionBlocked => interactionBlockTimer > 0f;
         public static PlaceableSystem instance;
+        public bool IsPlacingObject => temp != null;
+        private ItemSlot sourceBuildSlot;
         private void Awake()
         {
             instance = this;
@@ -68,6 +70,14 @@ namespace Yamigisa
 
         void Update()
         {
+            if (buildMode &&
+    Character.instance.characterControls.IsPressedDown(
+        Character.instance.characterControls.cancel))
+            {
+                CancelBuild();
+                return;
+            }
+
             // 🔥 TIMER MUST RUN ALWAYS
             if (interactionBlockTimer > 0f)
                 interactionBlockTimer -= Time.deltaTime;
@@ -100,19 +110,25 @@ namespace Yamigisa
                     }
 
                     temp.Place();
+                    ConsumeBuildItemIfNeeded();
                     temp = null;
 
-                    // 🔒 BLOCK INTERACTION AFTER PLACE
                     interactionBlockTimer = interactionBlockDuration;
 
                     ExitBuildMode();
                     return;
                 }
 
-                if (Input.GetKeyDown(KeyCode.Escape))
+                if (Character.instance.characterControls.IsPressedDown(
+           Character.instance.characterControls.cancel))
                 {
-                    Destroy(temp.gameObject);
+                    ClearArea();
+
+                    if (temp != null)
+                        Destroy(temp.gameObject);
+
                     temp = null;
+
                     ExitBuildMode();
                     return;
                 }
@@ -165,21 +181,44 @@ namespace Yamigisa
                 }
 
                 temp.Place();
+                ConsumeBuildItemIfNeeded();
                 temp = null;
 
-                // 🔒 BLOCK INTERACTION AFTER PLACE
                 interactionBlockTimer = interactionBlockDuration;
 
                 ExitBuildMode();
                 return;
             }
+        }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+        private void CancelBuild()
+        {
+            if (temp != null)
             {
-                ClearArea();
                 Destroy(temp.gameObject);
                 temp = null;
             }
+
+            // no refund needed, item was never removed
+            sourceBuildSlot = null;
+
+            ExitBuildMode();
+        }
+
+        public void InitializeBuilding(GameObject Placeable, ItemSlot sourceSlot)
+        {
+            sourceBuildSlot = sourceSlot;  // remember which slot triggered build
+            InitializeBuilding(Placeable); // call your existing method
+        }
+
+        private void ConsumeBuildItemIfNeeded()
+        {
+            if (sourceBuildSlot == null) return;
+
+            // Consume ONE item only after successful placement
+            Inventory.Instance.ReduceSlotAmount(sourceBuildSlot);
+
+            sourceBuildSlot = null;
         }
 
         public void InitializeBuilding(GameObject Placeable)
@@ -280,7 +319,7 @@ namespace Yamigisa
         public void EnterBuildMode()
         {
             Character.instance.SetCharacterBusy(true);
-
+            GameManager.instance.SetCanPause(false);
             Inventory.Instance.HideInventory();
 
             buildMode = true;
@@ -329,7 +368,7 @@ namespace Yamigisa
         public void ExitBuildMode()
         {
             Character.instance.SetCharacterBusy(false);
-
+            GameManager.instance.SetCanPause(true);
             buildMode = false;
 
             // If not using grid -> just ensure maps are off and reset vars

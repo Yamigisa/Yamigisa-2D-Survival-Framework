@@ -73,7 +73,7 @@ namespace Yamigisa
         private ItemSlot pendingPickSlot;
 
         public bool IsDragging { get { return isDragging; } }
-        public bool IsInventoryOpen { get { return mainInventoryPanel != null && mainInventoryPanel.inventoryPanelGameObject.activeSelf; } }
+        public bool IsInventoryOpen { get { return mainInventoryPanel != null && mainInventoryPanel.gameObject.activeSelf; } }
 
         private CharacterControls controls;
         private Character Character;
@@ -222,14 +222,23 @@ namespace Yamigisa
 
         private void Update()
         {
-            // OPEN inventory (only if closed)
-            if (controls.IsPressed(controls.inventory) && !Character.instance.CharacterIsBusy() && !GameManager.instance.IsPaused)
+            // Inventory Toggle
+            if (controls.IsPressedDown(controls.inventory))
             {
-                if (!IsInventoryOpen)
+                if (currentStorage != null)
+                {
+                    currentStorage.CloseStorage();
+                }
+                else if (IsInventoryOpen)
+                {
+                    HideInventory();
+                }
+                else if (!Character.instance.CharacterIsBusy())
+                {
                     ShowInventory();
+                }
             }
-
-            if (controls.IsPressed(controls.cancel))
+            else if (controls.IsPressedDown(controls.cancel))
             {
                 if (currentStorage != null)
                 {
@@ -337,17 +346,19 @@ namespace Yamigisa
         public void ShowInventory()
         {
             Character.instance.SetCharacterBusy(true);
+            GameManager.instance.SetCanPause(false);
+
             mainInventoryPanel.gameObject.SetActive(true);
             EquipmentManager.instance.ShowEquipmentPanel();
         }
 
         public void HideInventory()
         {
-            Character.instance.SetCharacterBusy(false);
+            Character.instance.SetCharacterBusy(false, 0.1f);
+            GameManager.instance.SetCanPause(true);
+
             mainInventoryPanel.gameObject.SetActive(false);
-            CancelPendingPick();
             EquipmentManager.instance.HideEquipmentPanel();
-            if (isDragging) CancelDrag();
         }
 
 
@@ -1067,6 +1078,9 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveInventory)
+                return;
+
             InventorySaveData inv = new InventorySaveData();
             inv.selectedQuickIndex = selectedQuickIndex;
 

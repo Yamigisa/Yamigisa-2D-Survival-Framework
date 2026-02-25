@@ -24,10 +24,19 @@ namespace Yamigisa
         [Header("Loot Scatter")]
         [SerializeField] private float lootScatterRadius = 0.5f;
 
+        [Header("Damage Feedback")]
+        [SerializeField] private bool flashOnDamage = true;
+        [SerializeField] private Color damageFlashColor = Color.red;
+        [SerializeField] private float damageFlashDuration = 0.1f;
+
         public event Action<Destroyable> OnKilled;
 
         private bool isDying;
         private bool deathAnimFinished;
+
+        private SpriteRenderer spriteRenderer;
+        private Color originalColor;
+        private Coroutine flashRoutine;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -40,13 +49,44 @@ namespace Yamigisa
         }
 #endif
 
+        private void Awake()
+        {
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer != null)
+                originalColor = spriteRenderer.color;
+        }
+
         public void TakeDamage(int damage)
         {
             if (isDying) return;
 
             hp -= damage;
+
+            TriggerDamageFlash();
+
             if (hp <= 0)
                 Kill();
+        }
+
+        private void TriggerDamageFlash()
+        {
+            if (!flashOnDamage) return;
+            if (spriteRenderer == null) return;
+
+            if (flashRoutine != null)
+                StopCoroutine(flashRoutine);
+
+            flashRoutine = StartCoroutine(DamageFlashRoutine());
+        }
+
+        private IEnumerator DamageFlashRoutine()
+        {
+            spriteRenderer.color = damageFlashColor;
+
+            yield return new WaitForSeconds(damageFlashDuration);
+
+            spriteRenderer.color = originalColor;
         }
 
         public void Kill()
@@ -110,6 +150,9 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveDestroyables)
+                return;
+
             if (data.destroyables == null)
                 data.destroyables = new Dictionary<string, DestroyableSaveData>();
 

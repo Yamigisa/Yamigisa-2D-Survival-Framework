@@ -10,7 +10,7 @@ namespace Yamigisa
             if (PlaceableSystem.instance == null)
                 return false;
 
-            if (PlaceableSystem.instance.IsInBuildMode)
+            if (PlaceableSystem.instance.IsPlacingObject)
                 return false;
 
             if (context is ItemSlot slot)
@@ -30,8 +30,8 @@ namespace Yamigisa
             if (!CanDoAction(slot))
                 return;
 
-            PlaceableSystem.instance.InitializeBuilding(slot.ItemData.itemPrefab);
-            Inventory.Instance.ReduceSlotAmount(slot);
+            // IMPORTANT: do NOT consume item here.
+            PlaceableSystem.instance.InitializeBuilding(slot.ItemData.itemPrefab, slot);
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Yamigisa
 
         [Header("Streaming")]
         [SerializeField] private int loadRadius = 1;
+        [SerializeField] private int editorExpansionRadius = 1;
 
         [Header("Unified Chunk World Size (FOR BOTH PREFAB & TILEMAP)")]
         [SerializeField] private Vector2 fixedChunkWorldSize = new Vector2(25f, 14.4f);
@@ -128,6 +129,9 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveChunks)
+                return;
+
             if (data.chunks == null)
                 data.chunks = new List<ChunkSaveData>();
             else
@@ -235,6 +239,7 @@ namespace Yamigisa
     }
 #endif
 
+            editorExpansionRadius = loadRadius;
             chunkMap.Clear();
         }
 
@@ -262,14 +267,43 @@ namespace Yamigisa
         // Editor
         public void EditorCreateWorld()
         {
-            ClearWorld();
-
             Vector2Int center = Vector2Int.zero;
 
             if (Character.instance != null)
                 center = WorldToChunkCoord(Character.instance.transform.position);
 
-            SpawnAround(center, false); // ← false means DO NOT spawn content
+            // FIRST CLICK → spawn full square
+            if (chunkMap.Count == 0)
+            {
+                SpawnAround(center, false);
+                editorExpansionRadius = loadRadius + 1;
+                return;
+            }
+
+            // NEXT CLICKS → spawn only outer ring
+            SpawnRing(center, editorExpansionRadius);
+            editorExpansionRadius++;
+        }
+
+        private void SpawnRing(Vector2Int center, int radius)
+        {
+            // Spawn only the OUTER RING
+            for (int x = -radius; x <= radius; x++)
+            {
+                for (int y = -radius; y <= radius; y++)
+                {
+                    bool isBorder =
+                        x == -radius ||
+                        x == radius ||
+                        y == -radius ||
+                        y == radius;
+
+                    if (!isBorder)
+                        continue;
+
+                    SpawnChunkAt(center + new Vector2Int(x, y), false);
+                }
+            }
         }
 
         public void EditorDeleteWorld()
@@ -293,6 +327,31 @@ namespace Yamigisa
                 if (kv.Value != null)
                     kv.Value.ClearSpawnedObjects();
             }
+        }
+
+        public void EditorRefreshWorld()
+        {
+            Vector2Int center = Vector2Int.zero;
+
+            if (Character.instance != null)
+                center = WorldToChunkCoord(Character.instance.transform.position);
+
+            // Store current expansion radius BEFORE clearing
+            int currentRadius = editorExpansionRadius - 1;
+
+            ClearWorld();
+
+            // Rebuild full square using current radius
+            for (int x = -currentRadius; x <= currentRadius; x++)
+            {
+                for (int y = -currentRadius; y <= currentRadius; y++)
+                {
+                    SpawnChunkAt(center + new Vector2Int(x, y), false);
+                }
+            }
+
+            // Restore expansion state
+            editorExpansionRadius = currentRadius + 1;
         }
 
         [System.Serializable]

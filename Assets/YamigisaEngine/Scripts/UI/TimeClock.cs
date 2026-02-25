@@ -184,6 +184,9 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveWorldTime)
+                return;
+
             data.day = Day;
             data.hour = Hour;
             data.minute = Minute;

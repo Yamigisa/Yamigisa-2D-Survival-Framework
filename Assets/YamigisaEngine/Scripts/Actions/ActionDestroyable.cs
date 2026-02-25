@@ -9,6 +9,7 @@ namespace Yamigisa
         public override void DoAction(Character character, Component context)
         {
             if (character == null) return;
+            if (!CanDoAction(context)) return;
 
             InteractiveObject interactiveObject = context as InteractiveObject;
             if (interactiveObject == null) return;
@@ -18,6 +19,17 @@ namespace Yamigisa
 
             CharacterCombat combat = character.GetComponent<CharacterCombat>();
             if (combat == null) return;
+
+            combat.StartAutoAttack(destroyable);
+        }
+
+        public override bool CanDoAction(Component context)
+        {
+            InteractiveObject interactiveObject = context as InteractiveObject;
+            if (interactiveObject == null) return false;
+
+            Destroyable destroyable = interactiveObject.GetComponent<Destroyable>();
+            if (destroyable == null) return false;
 
             ItemData equippedQuickItem = Inventory.Instance != null
                 ? Inventory.Instance.GetSelectedQuickItemData()
@@ -33,11 +45,7 @@ namespace Yamigisa
                 destroyable.requiredItems != null &&
                 equippedQuickItem.groups.Any(g => destroyable.requiredItems.Contains(g));
 
-            if (!canAttackBareHand && !canAttackWithTool)
-                return;
-
-            // Damage is now handled internally by CharacterCombat
-            combat.StartAutoAttack(destroyable);
+            return canAttackBareHand || canAttackWithTool;
         }
     }
 }

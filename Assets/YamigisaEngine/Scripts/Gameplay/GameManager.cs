@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,7 @@ namespace Yamigisa
 
         // Pause 
         private bool isPaused;
+        private bool canPause = true;
 
         [Header("Death Settings")]
         [SerializeField] private GameObject deathPanel;
@@ -69,17 +71,34 @@ namespace Yamigisa
         {
             var controls = Character.instance.characterControls;
 
-            // If cancel (ESC) is pressed, do nothing here.
-            // Let whoever needs cancel handle it.
-            if (controls.IsPressedDown(controls.cancel))
-                return;
-
-            // Only pause if pause was pressed and character is not busy
-            if (controls.IsPressedDown(controls.pause) &&
-                !Character.instance.CharacterIsBusy())
+            if (controls.IsPressedDown(controls.pause) && canPause)
             {
+                if (deathPanel.activeSelf) return; // jangan allow pause saat mati
+
                 TogglePause();
             }
+        }
+
+        private Coroutine pauseCoroutine;
+
+        public void SetCanPause(bool value, float delay = 0.2f)
+        {
+            if (pauseCoroutine != null)
+                StopCoroutine(pauseCoroutine);
+
+            if (delay <= 0f)
+            {
+                canPause = value;
+                return;
+            }
+
+            pauseCoroutine = StartCoroutine(SetCanPauseAfterDelay(value, delay));
+        }
+
+        private IEnumerator SetCanPauseAfterDelay(bool value, float delay)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            canPause = value;
         }
 
         private void StartGame()
@@ -134,12 +153,20 @@ namespace Yamigisa
 
             if (isPaused)
             {
-                Time.timeScale = 0;
+                Time.timeScale = 0f;
+
+                if (Character.instance != null)
+                    Character.instance.SetCharacterBusy(true);
+
                 pausePanel.SetActive(true);
             }
             else
             {
-                Time.timeScale = 1;
+                Time.timeScale = 1f;
+
+                if (Character.instance != null)
+                    Character.instance.SetCharacterBusy(false);
+
                 pausePanel.SetActive(false);
             }
         }

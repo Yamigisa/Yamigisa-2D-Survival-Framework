@@ -160,6 +160,8 @@ namespace Yamigisa
 
         public void Save(ref SaveGameData data)
         {
+            if (!data.saveManager.SaveInteractiveObjects)
+                return;
             data.interactiveObjects.Add(new InteractiveObjectSaveData
             {
                 id = id,
