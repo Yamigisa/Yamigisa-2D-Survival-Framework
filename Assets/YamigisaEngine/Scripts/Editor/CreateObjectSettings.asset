@@ -31,7 +31,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
   defaultAnimalActions:
   - {fileID: 11400000, guid: 0c65265a311c2e148a73ef05b7a89250, type: 2}
+  globalPlaceableItemDataActions:
+  - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
   defaultPlaceableActions:
   - type: 0
     actions:
     - {fileID: 11400000, guid: 42f815feffefabe429463cb3e996c868, type: 2}
+  - type: 1
+    actions:
+    - {fileID: 11400000, guid: 4bed04256b4ab0842ae3c0f6ff129cd6, type: 2}
+  - type: 2
+    actions:
+    - {fileID: 11400000, guid: 7d9527cbcf4a5ea499fc32965d324e02, type: 2}

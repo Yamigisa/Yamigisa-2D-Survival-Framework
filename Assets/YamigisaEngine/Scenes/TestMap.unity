@@ -2167,6 +2167,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Clock
       objectReference: {fileID: 0}
+    - target: {fileID: 1958017048751818893, guid: 4507758c28d82ab48b698039c285c5e9, type: 3}
+      propertyPath: startingHour
+      value: 21
+      objectReference: {fileID: 0}
     - target: {fileID: 7201333699345784019, guid: 4507758c28d82ab48b698039c285c5e9, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -4863,12 +4867,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[0].item
       value: 
-      objectReference: {fileID: 11400000, guid: 3b9b4c70beb103047b0e1c36ea17ea43, type: 2}
+      objectReference: {fileID: 11400000, guid: 9de1d400922ba6f4ea93580f8862e00a, type: 2}
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[1].item
       value: 

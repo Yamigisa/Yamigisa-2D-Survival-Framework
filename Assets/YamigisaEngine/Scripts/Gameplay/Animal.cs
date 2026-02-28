@@ -87,6 +87,8 @@ public class Animal : MonoBehaviour
     private float cachedActiveRange;
     private float cachedCosHalfAngle;
     private float cachedAngle;
+
+    public static bool GlobalFreeze = false;
     private void OnEnable()
     {
         destroyable = GetComponent<Destroyable>();
@@ -168,6 +170,12 @@ public class Animal : MonoBehaviour
 
     private void Update()
     {
+        if (GlobalFreeze)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (isDead) return;
         if (animalData == null || Character.instance == null) return;
 

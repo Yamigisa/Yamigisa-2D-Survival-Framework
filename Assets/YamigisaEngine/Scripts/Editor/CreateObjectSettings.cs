@@ -37,8 +37,11 @@ namespace Yamigisa
 
         [Header("Default Animal Interactive Actions")]
         public ActionBase[] defaultAnimalActions;
+        [Header("Global Placeable ItemData Actions")]
+        [Tooltip("These actions will be injected into ItemData when creating ANY Placeable.")]
+        public ActionBase[] globalPlaceableItemDataActions;
 
-        [Header("Default Placeable Actions")]
+        [Header("Specific Placeable Actions")]
         public PlaceableDefaultActions[] defaultPlaceableActions;
     }
 

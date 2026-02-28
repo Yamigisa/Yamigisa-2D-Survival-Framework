@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 namespace Yamigisa
 {
+    [RequireComponent(typeof(InteractiveObject), typeof(Placeable))]
     public class Storage : MonoBehaviour, ISavable
     {
         [SerializeField] private string storageId;

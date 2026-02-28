@@ -17,6 +17,8 @@ namespace Yamigisa
     public enum PlaceableType
     {
         Storage,
+        CraftingPlaceable,
+        Bed
     }
 
     public class CreateObjectWindow : EditorWindow
@@ -275,8 +277,290 @@ namespace Yamigisa
         // EXISTING METHODS (UNCHANGED)
         // ===============================
 
-        private void CreatePlaceable() { /* UNCHANGED */ }
-        private void CreateAnimal() { /* UNCHANGED */ }
+        private void CreatePlaceable()
+        {
+            EnsureFolder(settings.prefabItemsFolder);
+            EnsureFolder(settings.itemsFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+
+            // =====================================================
+            // 1️⃣ CREATE ITEM DATA (FOR BUILDING)
+            // =====================================================
+
+            var so = CreateInstance<ItemData>();
+            so.itemName = objectName;
+            so.iconWorld = iconWorld;
+            so.iconInventory = iconInventory;
+            so.itemType = ItemType.Placeable;
+            // =====================================================
+            // ACTION ORDER (STRICT ORDER CONTROL)
+            // =====================================================
+
+            so.itemActions = new List<ActionBase>();
+
+            // 1️⃣ Insert placeable inventory actions at index 0
+            if (settings.globalPlaceableItemDataActions != null)
+            {
+                for (int i = settings.globalPlaceableItemDataActions.Length - 1; i >= 0; i--)
+                {
+                    var action = settings.globalPlaceableItemDataActions[i];
+
+                    if (action != null && !so.itemActions.Contains(action))
+                        so.itemActions.Insert(0, action);
+                }
+            }
+
+            // 2️⃣ Add generic item actions AFTER
+            if (settings.defaultItemActions != null)
+            {
+                foreach (var action in settings.defaultItemActions)
+                {
+                    if (action != null && !so.itemActions.Contains(action))
+                        so.itemActions.Add(action);
+                }
+            }
+
+            string soFolder = $"{settings.itemsFolder}/Placeable";
+            EnsureFolder(soFolder);
+
+            string soPath = $"{soFolder}/{safeName}.asset";
+            AssetDatabase.CreateAsset(so, soPath);
+
+            // =====================================================
+            // 2️⃣ CREATE PREFAB (WORLD OBJECT)
+            // =====================================================
+
+            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+
+            GameObject root = new GameObject(objectName);
+            root.layer = Mathf.RoundToInt(Mathf.Log(settings.interactiveObjectLayer.value, 2));
+
+            var collider = root.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            var interactive = root.AddComponent<InteractiveObject>();
+            root.AddComponent<Placeable>();
+
+            // Add Item component to placeable
+            var item = root.AddComponent<Item>();
+            item.itemData = so;
+            item.quantity = 1;
+            // =====================================================
+            // APPLY INTERACTIVE ACTIONS (PLACEABLE FIRST)
+            // =====================================================
+
+            interactive.Actions = new List<ActionBase>();
+
+            // 1️⃣ Add placeable-specific actions FIRST
+            if (settings.defaultPlaceableActions != null)
+            {
+                foreach (var entry in settings.defaultPlaceableActions)
+                {
+                    if (entry.type != placeableType || entry.actions == null)
+                        continue;
+
+                    for (int i = 0; i < entry.actions.Length; i++)
+                    {
+                        var action = entry.actions[i];
+                        if (action != null && !interactive.Actions.Contains(action))
+                            interactive.Actions.Add(action);
+                    }
+
+                    break;
+                }
+            }
+
+            // 2️⃣ THEN add default interactive actions AFTER (Pick etc.)
+            if (settings.defaultInteractiveObjectActions != null)
+            {
+                foreach (var action in settings.defaultInteractiveObjectActions)
+                {
+                    if (action != null && !interactive.Actions.Contains(action))
+                        interactive.Actions.Add(action);
+                }
+            }
+
+            // Add specific components
+            switch (placeableType)
+            {
+                case PlaceableType.CraftingPlaceable:
+                    root.AddComponent<CraftingPlaceable>();
+                    break;
+
+                case PlaceableType.Bed:
+                    root.AddComponent<Bed>();
+                    break;
+            }
+
+            // =====================================================
+            // 4️⃣ VISUAL
+            // =====================================================
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(root.transform, false);
+
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = iconWorld;
+            sr.sortingLayerName = "Object";
+            sr.sortingOrder = 0;
+
+            if (iconWorld != null)
+            {
+                collider.size = iconWorld.bounds.size;
+                collider.offset = iconWorld.bounds.center;
+            }
+
+            // =====================================================
+            // OUTLINE (MATCH OTHER PREFABS)
+            // =====================================================
+
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(root.transform, false);
+            outline.transform.localScale = Vector3.one * 1.3f;
+
+            var osr = outline.AddComponent<SpriteRenderer>();
+            osr.sprite = iconWorld;
+            osr.color = Color.black;
+            osr.sortingLayerName = "Object";
+            osr.sortingOrder = -1;
+            outline.SetActive(false);
+
+            SerializedObject sio = new SerializedObject(interactive);
+            sio.FindProperty("outlineObject").objectReferenceValue = outline;
+            sio.ApplyModifiedPropertiesWithoutUndo();
+
+            // =====================================================
+            // 5️⃣ SAVE PREFAB
+            // =====================================================
+
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            DestroyImmediate(root);
+
+            // Link prefab back to ItemData
+            so.itemPrefab = prefab;
+            EditorUtility.SetDirty(so);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+
+        private void CreateAnimal()
+        {
+            // ==========================
+            // ENSURE FOLDERS
+            // ==========================
+
+            EnsureFolder(settings.prefabAnimalsFolder);
+            EnsureFolder(settings.animalDataFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+
+            // ==========================
+            // CREATE ANIMAL DATA (SO)
+            // ==========================
+
+            var animalData = CreateInstance<AnimalData>();
+            animalData.behaviour = animalBehaviour;
+
+            string dataPath = $"{settings.animalDataFolder}/{safeName}.asset";
+            AssetDatabase.CreateAsset(animalData, dataPath);
+
+            // ==========================
+            // CREATE PREFAB ROOT
+            // ==========================
+
+            GameObject root = new GameObject(objectName);
+            root.layer = Mathf.RoundToInt(
+                Mathf.Log(settings.interactiveObjectLayer.value, 2)
+            );
+
+            var rb = root.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+            var collider = root.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            var destroyable = root.AddComponent<Destroyable>();
+            destroyable.hp = destroyableHP;
+
+            var interactive = root.AddComponent<InteractiveObject>();
+
+            // Apply default animal interactive actions
+            if (settings.defaultAnimalActions != null &&
+                settings.defaultAnimalActions.Length > 0)
+            {
+                interactive.Actions = new List<ActionBase>(
+                    settings.defaultAnimalActions
+                );
+            }
+            else
+            {
+                interactive.Actions = new List<ActionBase>();
+            }
+
+            var animal = root.AddComponent<Animal>();
+            animal.animalData = animalData;
+
+            // ==========================
+            // VISUAL
+            // ==========================
+
+            GameObject visual = new GameObject("Visual");
+            visual.transform.SetParent(root.transform, false);
+
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = animalSprite;
+            sr.sortingLayerName = "Object";
+            sr.sortingOrder = 0;
+
+            if (animalSprite != null)
+            {
+                collider.size = animalSprite.bounds.size;
+                collider.offset = animalSprite.bounds.center;
+            }
+
+            // ==========================
+            // OUTLINE (MATCH OTHER PREFABS)
+            // ==========================
+
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(root.transform, false);
+            outline.transform.localScale = Vector3.one * 1.3f;
+
+            var osr = outline.AddComponent<SpriteRenderer>();
+            osr.sprite = animalSprite;
+            osr.color = Color.black;
+            osr.sortingLayerName = "Object";
+            osr.sortingOrder = -1;
+            outline.SetActive(false);
+
+            SerializedObject sio = new SerializedObject(interactive);
+            sio.FindProperty("outlineObject").objectReferenceValue = outline;
+            sio.ApplyModifiedPropertiesWithoutUndo();
+
+            // ==========================
+            // SAVE PREFAB
+            // ==========================
+
+            string prefabPath =
+                $"{settings.prefabAnimalsFolder}/{safeName}.prefab";
+
+            GameObject prefab =
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+
+            DestroyImmediate(root);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
 
         private void CreateItemOrDestroyable()
         {
@@ -347,6 +631,7 @@ namespace Yamigisa
             GameObject root = new GameObject(objectName);
             root.layer = Mathf.RoundToInt(Mathf.Log(settings.interactiveObjectLayer.value, 2));
             var collider = root.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
 
             var interactive = root.AddComponent<InteractiveObject>();
 

@@ -120,6 +120,9 @@ namespace Yamigisa
             Minute++;
             OnMinuteChanged?.Invoke();
 
+            if (changeEveryMinute)
+                ApplyLightingByMinute();
+
             if (Minute >= 60)
             {
                 Minute = 0;
@@ -180,6 +183,15 @@ namespace Yamigisa
             dayNightLight.color = dayNightGradient.Evaluate(t);
         }
 
+        public void ForceRefreshVisual()
+        {
+            if (changeEveryMinute)
+                ApplyLightingByMinute();
+            else
+                ApplyLightingByHour();
+
+            UpdateUIAndFill();
+        }
         // ===================== SAVE =====================
 
         public void Save(ref SaveGameData data)
@@ -195,8 +207,16 @@ namespace Yamigisa
         public void Load(SaveGameData data)
         {
             SetTime(data.minute, data.hour, data.day);
-            RefreshVisuals();
-            ticking = StartCoroutine(Tick());
+
+            // Force refresh lighting explicitly
+            if (changeEveryMinute)
+                ApplyLightingByMinute();
+            else
+                ApplyLightingByHour();
+
+            UpdateUIAndFill();
+
+            StartSystem();
         }
     }
 }

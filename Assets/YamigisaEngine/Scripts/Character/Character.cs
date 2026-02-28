@@ -149,7 +149,7 @@ namespace Yamigisa
             }
         }
 
-        private IEnumerator ApplyOverTime(ConsumableEffect effect)
+        public IEnumerator ApplyOverTime(ConsumableEffect effect)
         {
             float elapsed = 0f;
 

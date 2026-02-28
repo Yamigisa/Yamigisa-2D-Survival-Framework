@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
+    [RequireComponent(typeof(InteractiveObject), typeof(Placeable))]
     public class CraftingPlaceable : MonoBehaviour
     {
         [SerializeField] private GroupData additionalCraftGroup;

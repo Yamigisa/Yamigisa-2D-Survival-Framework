@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Bed
+  m_EditorClassIdentifier: 
+  id: 19ff9114-b7fc-4026-9ffb-49ed1162856b
+  itemPrefab: {fileID: 8321296589641774730, guid: 6b25cb6bae9dfc84fafa86cdaefb4897, type: 3}
+  itemName: Bed
+  iconWorld: {fileID: -1607882866, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconInventory: {fileID: -1607882866, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  description: 
+  itemType: 3
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions:
+  - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
+  - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
+  consumableEffects: []
+  equipmentSlotType: 0
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1
