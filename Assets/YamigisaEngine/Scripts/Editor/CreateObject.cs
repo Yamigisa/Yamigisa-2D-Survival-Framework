@@ -12,7 +12,8 @@ namespace Yamigisa
         Destroyable,
         Animal,
         Placeable,
-        Biome
+        Biome,
+        Character
     }
 
     public enum PlaceableType
@@ -45,6 +46,10 @@ namespace Yamigisa
         private Sprite biomeSprite;
         private bool biomeUseCustom = false;
         private BiomeData selectedBiomeData;
+
+        // Character
+        private Sprite characterIcon;
+
         public CreateObjectSettings settings;
 
         [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
@@ -89,6 +94,17 @@ namespace Yamigisa
             EditorGUILayout.Space(6);
 
             objectName = EditorGUILayout.TextField("Object Name", objectName);
+
+            if (objectType == ObjectType.Character)
+            {
+                characterIcon = (Sprite)EditorGUILayout.ObjectField(
+                    "Character Icon",
+                    characterIcon,
+                    typeof(Sprite),
+                    false
+                );
+            }
+
             objectType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", objectType);
 
             if (objectType == ObjectType.Item)
@@ -143,7 +159,8 @@ namespace Yamigisa
                 }
             }
 
-            if (objectType != ObjectType.Animal)
+            if (objectType != ObjectType.Animal &&
+        objectType != ObjectType.Character)
             {
                 iconWorld = (Sprite)EditorGUILayout.ObjectField("Icon (World)", iconWorld, typeof(Sprite), false);
                 iconInventory = (Sprite)EditorGUILayout.ObjectField("Icon (Inventory)", iconInventory, typeof(Sprite), false);
@@ -165,11 +182,105 @@ namespace Yamigisa
                     CreatePlaceable();
                 else if (objectType == ObjectType.Biome)
                     CreateBiome(); // 🔥 NEW
+                else if (objectType == ObjectType.Character)
+                    CreateCharacter(); // 🔥 NEW
                 else
                     CreateItemOrDestroyable();
             }
         }
 
+        private void CreateCharacter()
+        {
+            EnsureFolder(settings.prefabItemsFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+
+            // ==========================
+            // ROOT
+            // ==========================
+
+            GameObject root = new GameObject(objectName);
+
+            root.layer = Mathf.RoundToInt(
+                Mathf.Log(settings.interactiveObjectLayer.value, 2)
+            );
+
+            // ==========================
+            // COMPONENTS ON ROOT
+            // ==========================
+
+            var rb = root.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+            root.AddComponent<Animator>();
+
+            root.AddComponent<CharacterMovement>();
+            root.AddComponent<CharacterAttribute>();
+            root.AddComponent<CharacterControls>();
+            root.AddComponent<CharacterAnimation>();
+            root.AddComponent<Character>();
+            root.AddComponent<CharacterCombat>();
+            root.AddComponent<CharacterBiome>();
+
+            // ==========================
+            // CHILD: Visual
+            // ==========================
+
+            GameObject visual = new GameObject("Visual");
+            visual.transform.SetParent(root.transform, false);
+
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = characterIcon; // 🔥 APPLY ICON HERE
+            sr.sortingLayerName = "Character";
+            sr.sortingOrder = 0;
+
+            // ==========================
+            // CHILD: Collider
+            // ==========================
+
+            GameObject colliderObj = new GameObject("Collider");
+            colliderObj.transform.SetParent(root.transform, false);
+
+            var collider = colliderObj.AddComponent<BoxCollider2D>();
+            collider.isTrigger = false;
+
+            // 🔥 Auto size collider to sprite
+            if (characterIcon != null)
+            {
+                collider.size = characterIcon.bounds.size;
+                collider.offset = characterIcon.bounds.center;
+            }
+
+            // ==========================
+            // CHILD: Main Camera
+            // ==========================
+
+            GameObject cameraObj = new GameObject("Main Camera");
+            cameraObj.transform.SetParent(root.transform, false);
+
+            var cam = cameraObj.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.tag = "MainCamera";
+
+            cameraObj.transform.position = new Vector3(0, 0, -10);
+
+            // ==========================
+            // SAVE PREFAB
+            // ==========================
+
+            GameObject prefab =
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+
+            DestroyImmediate(root);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
 
         // ===============================
         // FILTER ITEM TYPE (Remove Placeable)

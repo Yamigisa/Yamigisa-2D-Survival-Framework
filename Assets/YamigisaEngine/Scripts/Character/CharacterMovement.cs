@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Yamigisa
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(CharacterControls))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class CharacterMovement : MonoBehaviour
     {
         [Header("Movements Bool")]
@@ -11,10 +11,10 @@ namespace Yamigisa
         public bool canJump;
         public bool canCrouch;
 
-        [Header("Player Components")]
-        [SerializeField] private Rigidbody2D rb;
-        [SerializeField] private SpriteRenderer spriteRenderer;
-        [SerializeField] private Collider2D playerCollider;
+        // Player Components
+        private Rigidbody2D rb;
+        private SpriteRenderer spriteRenderer;
+        private Collider2D playerCollider;
         private CharacterControls characterControls;
 
         [Header("Movement Variables")]
@@ -82,6 +82,10 @@ namespace Yamigisa
                 sprintRemaining = sprintDuration;
                 sprintCooldownReset = sprintCooldown;
             }
+
+            rb = GetComponent<Rigidbody2D>();
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            playerCollider = GetComponent<Collider2D>();
         }
 
         private void Update()

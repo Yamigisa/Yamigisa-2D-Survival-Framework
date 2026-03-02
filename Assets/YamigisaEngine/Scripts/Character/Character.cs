@@ -15,7 +15,7 @@ namespace Yamigisa
 
         private InteractiveObject pendingInteraction;
 
-        public LayerMask interactObjectLayer;
+        public LayerMask interactObjectLayer = 1 << 7; // Default to layer 6 (InteractiveObject)
         public static Character instance { get; private set; }
 
         private Coroutine busyDelayRoutine;
