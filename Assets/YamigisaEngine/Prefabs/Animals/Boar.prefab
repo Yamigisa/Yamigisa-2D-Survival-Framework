@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8073560765061973972}
   - component: {fileID: 7453550711937702083}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7911215424683965433}
   - component: {fileID: 8144261710960756651}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Outline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   - component: {fileID: 4203889378457474418}
   - component: {fileID: 4478897300359991376}
   - component: {fileID: 5622156170617938120}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Boar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -299,8 +299,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animalData: {fileID: 11400000, guid: 11d29a396930f7740b8e55c623dd4d07, type: 2}
-  spriteRenderer: {fileID: 7453550711937702083}
-  animator: {fileID: 5622156170617938120}
   idleFront: IdleFront
   idleBack: IdleBack
   idleSide: IdleSide
@@ -331,10 +329,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 
   interactRange: 5
   Actions:
   - {fileID: 11400000, guid: 0c65265a311c2e148a73ef05b7a89250, type: 2}
-  Groups: []
   outlineObject: {fileID: 7831348635722371633}
 --- !u!114 &4478897300359991376
 MonoBehaviour:
@@ -348,6 +346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c09a60755e14664b85eea375ed38623, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 7599d90d-66e3-4f32-b962-59c288d12f7a
   hp: 100
   requiredItems: []
   loots:
@@ -355,6 +354,9 @@ MonoBehaviour:
     quantity: 1
   dropLootOnKill: 1
   lootScatterRadius: 0.5
+  flashOnDamage: 1
+  damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
+  damageFlashDuration: 0.1
 --- !u!95 &5622156170617938120
 Animator:
   serializedVersion: 7

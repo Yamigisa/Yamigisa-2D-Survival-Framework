@@ -11,7 +11,8 @@ namespace Yamigisa
         Item,
         Destroyable,
         Animal,
-        Placeable
+        Placeable,
+        Biome
     }
 
     public enum PlaceableType
@@ -40,6 +41,10 @@ namespace Yamigisa
         private List<ConsumableEffect> tempConsumableEffects = new();
         private List<EquipmentStatModifier> tempEquipmentStats = new();
 
+        // Biome
+        private Sprite biomeSprite;
+        private bool biomeUseCustom = false;
+        private BiomeData selectedBiomeData;
         public CreateObjectSettings settings;
 
         [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
@@ -109,6 +114,34 @@ namespace Yamigisa
                     placeableType
                 );
             }
+            else if (objectType == ObjectType.Biome)
+            {
+                biomeSprite = (Sprite)EditorGUILayout.ObjectField(
+                    "Biome Sprite",
+                    biomeSprite,
+                    typeof(Sprite),
+                    false
+                );
+
+                EditorGUILayout.Space(6);
+
+                EditorGUILayout.LabelField("Biome Assignment", EditorStyles.boldLabel);
+
+                biomeUseCustom = EditorGUILayout.Toggle(
+                    "Use Custom Biome",
+                    biomeUseCustom
+                );
+
+                if (biomeUseCustom)
+                {
+                    selectedBiomeData = (BiomeData)EditorGUILayout.ObjectField(
+                        "Biome Data",
+                        selectedBiomeData,
+                        typeof(BiomeData),
+                        false
+                    );
+                }
+            }
 
             if (objectType != ObjectType.Animal)
             {
@@ -130,6 +163,8 @@ namespace Yamigisa
                     CreateAnimal();
                 else if (objectType == ObjectType.Placeable)
                     CreatePlaceable();
+                else if (objectType == ObjectType.Biome)
+                    CreateBiome(); // 🔥 NEW
                 else
                     CreateItemOrDestroyable();
             }
@@ -474,9 +509,7 @@ namespace Yamigisa
             // ==========================
 
             GameObject root = new GameObject(objectName);
-            root.layer = Mathf.RoundToInt(
-                Mathf.Log(settings.interactiveObjectLayer.value, 2)
-            );
+            root.layer = Mathf.RoundToInt(Mathf.Log(settings.interactiveObjectLayer.value, 2));
 
             var rb = root.AddComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
@@ -696,6 +729,72 @@ namespace Yamigisa
 
             tempConsumableEffects.Clear();
             tempEquipmentStats.Clear();
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+
+        private void CreateBiome()
+        {
+            EnsureFolder(settings.prefabItemsFolder);
+
+            string safeName = MakeSafeFileName(objectName);
+            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+
+            GameObject root = new GameObject(objectName);
+
+            root.layer = Mathf.RoundToInt(
+                Mathf.Log(settings.interactiveObjectLayer.value, 2)
+            );
+
+            // ==========================
+            // COLLIDER
+            // ==========================
+
+            var collider = root.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+
+            // ==========================
+            // SPRITE
+            // ==========================
+
+            var sr = root.AddComponent<SpriteRenderer>();
+            sr.sprite = biomeSprite;
+            sr.sortingLayerName = "Object";
+            sr.sortingOrder = -5;
+
+            if (biomeSprite != null)
+            {
+                collider.size = biomeSprite.bounds.size;
+                collider.offset = biomeSprite.bounds.center;
+            }
+
+            // ==========================
+            // BIOME TRIGGER
+            // ==========================
+
+            var trigger = root.AddComponent<BiomeTrigger>();
+
+            SerializedObject so = new SerializedObject(trigger);
+
+            so.FindProperty("useCustomBiome").boolValue = biomeUseCustom;
+
+            if (biomeUseCustom)
+                so.FindProperty("customBiomeData").objectReferenceValue = selectedBiomeData;
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            // ==========================
+            // SAVE PREFAB
+            // ==========================
+
+            GameObject prefab =
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+
+            DestroyImmediate(root);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

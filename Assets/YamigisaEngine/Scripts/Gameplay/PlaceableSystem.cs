@@ -209,6 +209,7 @@ namespace Yamigisa
         {
             sourceBuildSlot = sourceSlot;  // remember which slot triggered build
             InitializeBuilding(Placeable); // call your existing method
+            GameManager.instance.SetCanPause(false);
         }
 
         private void ConsumeBuildItemIfNeeded()
@@ -367,8 +368,6 @@ namespace Yamigisa
 
         public void ExitBuildMode()
         {
-            Character.instance.SetCharacterBusy(false);
-            GameManager.instance.SetCanPause(true);
             buildMode = false;
 
             // If not using grid -> just ensure maps are off and reset vars
@@ -392,6 +391,8 @@ namespace Yamigisa
             prevArea = new BoundsInt();
 
             interactionBlockTimer = interactionBlockDuration;
+            GameManager.instance.SetCanPause(true);
+            Character.instance.SetCharacterBusy(false);
         }
 
         public void ReleaseArea(BoundsInt area)

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4203247925903194134}
   - component: {fileID: 6189504491974255686}
   - component: {fileID: 6808170125875552953}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Deer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,8 +147,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animalData: {fileID: 11400000, guid: 1855b1d4b9885164fb830fd462d7d593, type: 2}
-  spriteRenderer: {fileID: 4447415389447719226}
-  animator: {fileID: 3012701767845872427}
   idleFront: IdleFront
   idleBack: IdleBack
   idleSide: IdleSide
@@ -179,10 +177,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b18a63f9931244fbc54c6b65048abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 
   interactRange: 2
   Actions:
   - {fileID: 11400000, guid: 0c65265a311c2e148a73ef05b7a89250, type: 2}
-  Groups: []
   outlineObject: {fileID: 7254187847702824904}
 --- !u!114 &6808170125875552953
 MonoBehaviour:
@@ -196,6 +194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c09a60755e14664b85eea375ed38623, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: ce8225ee-8d5c-46a6-b4bc-5f94c83dfcf2
   hp: 3
   requiredItems: []
   loots:
@@ -203,6 +202,9 @@ MonoBehaviour:
     quantity: 1
   dropLootOnKill: 1
   lootScatterRadius: 0.5
+  flashOnDamage: 1
+  damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
+  damageFlashDuration: 0.1
 --- !u!1 &7254187847702824904
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +215,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4191582719901256416}
   - component: {fileID: 2171539315712240011}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Outline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -300,7 +302,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5157597972645651110}
   - component: {fileID: 4447415389447719226}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

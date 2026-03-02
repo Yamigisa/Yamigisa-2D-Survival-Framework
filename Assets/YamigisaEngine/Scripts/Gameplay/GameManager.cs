@@ -73,18 +73,19 @@ namespace Yamigisa
 
             if (controls.IsPressedDown(controls.pause) && canPause)
             {
-                if (deathPanel.activeSelf) return; // jangan allow pause saat mati
-
+                if (deathPanel.activeSelf) return;
                 TogglePause();
             }
         }
 
         private Coroutine pauseCoroutine;
 
-        public void SetCanPause(bool value, float delay = 0.2f)
+        public void SetCanPause(bool value, float delay = 1f)
         {
             if (pauseCoroutine != null)
+            {
                 StopCoroutine(pauseCoroutine);
+            }
 
             if (delay <= 0f)
             {
@@ -97,8 +98,12 @@ namespace Yamigisa
 
         private IEnumerator SetCanPauseAfterDelay(bool value, float delay)
         {
+            float startTime = Time.unscaledTime;
+
             yield return new WaitForSecondsRealtime(delay);
+
             canPause = value;
+
         }
 
         private void StartGame()
@@ -154,10 +159,8 @@ namespace Yamigisa
             if (isPaused)
             {
                 Time.timeScale = 0f;
-
                 if (Character.instance != null)
                     Character.instance.SetCharacterBusy(true);
-
                 pausePanel.SetActive(true);
             }
             else
