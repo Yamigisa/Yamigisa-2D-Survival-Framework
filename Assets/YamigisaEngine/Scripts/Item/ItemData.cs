@@ -80,6 +80,9 @@ namespace Yamigisa
         [Header("Equipment")]
         [Tooltip("Only used if ItemType = Equipment")]
         public EquipmentSlotType equipmentSlotType = EquipmentSlotType.None;
+        [Header("Bag Settings")]
+        [Tooltip("Only used if EquipmentSlotType = Bag")]
+        public int bagSizeIncrease = 5;
 
         [Header("Equipment Effects")]
         public List<EquipmentStatModifier> equipmentStats = new();
@@ -164,7 +167,8 @@ namespace Yamigisa
         Head,
         Chest,
         Legs,
-        Accessory
+        Accessory,
+        Bag
     }
 
     [System.Serializable]

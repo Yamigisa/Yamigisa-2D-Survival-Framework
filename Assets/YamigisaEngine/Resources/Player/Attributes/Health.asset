@@ -15,7 +15,7 @@ MonoBehaviour:
   type: 0
   MaxValue: 100
   CurrentValue: 100
-  BaseMaxValue: 0
+  BaseMaxValue: 100
   DepleteValuePerMinute: 0
   RegenerateValuePerMinute: 2
   triggerGameOver: 1

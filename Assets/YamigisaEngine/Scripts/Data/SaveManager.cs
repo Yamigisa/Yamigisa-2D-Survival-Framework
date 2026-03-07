@@ -7,6 +7,11 @@ namespace Yamigisa
         [Header("Save Settings")]
         [SerializeField] private bool saveGameOnQuit = true;
 
+        [Header("Auto Save")]
+        [SerializeField] private bool enableAutoSave = true;
+        [SerializeField] private float autoSaveInterval = 300f; // seconds
+        private float autoSaveTimer;
+
         [Header("Save Toggles")]
         [SerializeField] private bool saveWorldTime = true;
         [SerializeField] private bool savePlayer = true;
@@ -16,6 +21,7 @@ namespace Yamigisa
         [SerializeField] private bool saveChunks = true;
         [SerializeField] private bool saveStorages = true;
         [SerializeField] private bool saveEquipment = true;
+
         public bool SaveWorldTime => saveWorldTime;
         public bool SavePlayer => savePlayer;
         public bool SaveInventory => saveInventory;
@@ -24,6 +30,7 @@ namespace Yamigisa
         public bool SaveChunks => saveChunks;
         public bool SaveStorages => saveStorages;
         public bool SaveEquipment => saveEquipment;
+
         private string path => Application.persistentDataPath + "/save.json";
 
         public void SaveGame()
@@ -90,6 +97,18 @@ namespace Yamigisa
 
             if (Input.GetKeyDown(KeyCode.F9))
                 LoadGame();
+
+            // Auto Save
+            if (enableAutoSave)
+            {
+                autoSaveTimer += Time.deltaTime;
+
+                if (autoSaveTimer >= autoSaveInterval)
+                {
+                    SaveGame();
+                    autoSaveTimer = 0f;
+                }
+            }
         }
     }
 }

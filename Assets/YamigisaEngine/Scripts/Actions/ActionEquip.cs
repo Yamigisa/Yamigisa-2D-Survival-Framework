@@ -18,7 +18,7 @@ namespace Yamigisa
             if (slot.ItemData.itemType != ItemType.Equipment)
                 return equipTitle;
 
-            var equippedItem = EquipmentManager.instance.GetEquipped(slot.ItemData.equipmentSlotType);
+            var equippedItem = Inventory.Instance.equipmentManager.GetEquipped(slot.ItemData.equipmentSlotType);
 
             // If same item already equipped → show Unequip
             if (equippedItem == slot.ItemData)
@@ -35,14 +35,14 @@ namespace Yamigisa
             if (slot.ItemData.itemType != ItemType.Equipment)
                 return;
 
-            var equippedItem = EquipmentManager.instance.GetEquipped(slot.ItemData.equipmentSlotType);
+            var equippedItem = Inventory.Instance.equipmentManager.GetEquipped(slot.ItemData.equipmentSlotType);
 
             // ===== UNEQUIP =====
             // ===== UNEQUIP =====
             if (equippedItem == slot.ItemData)
             {
                 ItemData itemToReturn = slot.ItemData; // cache BEFORE unequip
-                EquipmentManager.instance.Unequip(slot.ItemData.equipmentSlotType);
+                Inventory.Instance.equipmentManager.Unequip(slot.ItemData.equipmentSlotType);
 
                 Inventory.Instance.AddItem(
                     itemToReturn,
@@ -54,7 +54,7 @@ namespace Yamigisa
             // ===== EQUIP =====
             ItemData previous = equippedItem;
 
-            bool equipped = EquipmentManager.instance.Equip(slot.ItemData);
+            bool equipped = Inventory.Instance.equipmentManager.Equip(slot.ItemData);
 
             if (equipped)
             {

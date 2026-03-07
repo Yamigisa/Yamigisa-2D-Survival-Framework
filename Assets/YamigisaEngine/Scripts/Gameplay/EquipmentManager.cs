@@ -6,16 +6,14 @@ namespace Yamigisa
     public class EquipmentManager : MonoBehaviour, ISavable
     {
         [SerializeField] private GameObject equipmentPanel;
-        [SerializeField] private List<EquipmentSlot> equipmentSlots;
+        [SerializeField] private List<EquipmentSlot> equipmentSlots; // armor, accessory etc
+        [SerializeField] private List<EquipmentSlot> bagSlots; // bag equipment
 
         private Dictionary<EquipmentSlotType, EquipmentSlot> slotLookup;
 
-        public static EquipmentManager instance { get; private set; }
 
         private void Awake()
         {
-            instance = this;
-
             slotLookup = new Dictionary<EquipmentSlotType, EquipmentSlot>();
 
             foreach (var slot in equipmentSlots)
@@ -23,7 +21,14 @@ namespace Yamigisa
                 slotLookup[slot.SlotType] = slot;
             }
 
+            // ❌ DO NOT ADD bagSlots TO slotLookup
+
             equipmentPanel.SetActive(false);
+        }
+        private bool IsBag(ItemData item)
+        {
+            if (item == null) return false;
+            return item.equipmentSlotType == EquipmentSlotType.Bag;
         }
 
         public bool Equip(ItemData item)
@@ -31,9 +36,26 @@ namespace Yamigisa
             if (item == null || item.itemType != ItemType.Equipment)
                 return false;
 
-            if (!slotLookup.TryGetValue(item.equipmentSlotType, out var slot))
+            EquipmentSlot slot = null;
+
+            if (item.equipmentSlotType == EquipmentSlotType.Bag)
             {
-                return false;
+                foreach (var s in bagSlots)
+                {
+                    if (s.GetEquippedItem() == null)
+                    {
+                        slot = s;
+                        break;
+                    }
+                }
+
+                if (slot == null)
+                    return false;
+            }
+            else
+            {
+                if (!slotLookup.TryGetValue(item.equipmentSlotType, out slot))
+                    return false;
             }
 
             ItemData previous = slot.GetEquippedItem();
@@ -49,13 +71,131 @@ namespace Yamigisa
             return true;
         }
 
-        public void Unequip(EquipmentSlotType type)
+        public bool Unequip(EquipmentSlotType type)
         {
-            if (!slotLookup.TryGetValue(type, out var slot))
-                return;
+            EquipmentSlot slot = null;
+
+            if (type == EquipmentSlotType.Bag)
+            {
+                foreach (var s in bagSlots)
+                {
+                    if (s.GetEquippedItem() != null)
+                    {
+                        slot = s;
+                        break;
+                    }
+                }
+
+                if (slot == null)
+                    return false;
+            }
+            else
+            {
+                if (!slotLookup.TryGetValue(type, out slot))
+                    return false;
+            }
+
+            ItemData equipped = slot.GetEquippedItem();
+            if (equipped == null)
+                return false;
+
+            // BAG CAPACITY CHECK
+            if (IsBag(equipped))
+            {
+                int bagSize = equipped.bagSizeIncrease;
+
+                int itemsInInventory = Inventory.Instance.TotalItemCount();
+                int newCapacity = Inventory.Instance.GetBaseCapacity() + (GetCurrentBagBonus() - bagSize);
+
+                if (itemsInInventory > newCapacity)
+                {
+                    return false;
+                }
+            }
+
+            // REMOVE FROM SLOT
+            slot.Unequip();
+
+            // ADD BACK TO INVENTORY (THIS WAS MISSING)
+            Inventory.Instance.AddItem(equipped, 1);
+
+            // UPDATE BAG SIZE
+            RecalculateBagSize();
+
+            // UPDATE STATS
+            RecalculateStats();
+
+            return true;
+        }
+
+        private int GetCurrentBagBonus()
+        {
+            int bonus = 0;
+
+            foreach (var slot in bagSlots)
+            {
+                var item = slot.GetEquippedItem();
+                if (item != null)
+                    bonus += item.bagSizeIncrease;
+            }
+
+            return bonus;
+        }
+
+        public bool TryUnequip(EquipmentSlotType type)
+        {
+            EquipmentSlot slot = null;
+
+            if (type == EquipmentSlotType.Bag)
+            {
+                foreach (var s in bagSlots)
+                {
+                    if (s.GetEquippedItem() != null)
+                    {
+                        slot = s;
+                        break;
+                    }
+                }
+
+                if (slot == null)
+                    return false;
+            }
+            else
+            {
+                if (!slotLookup.TryGetValue(type, out slot))
+                    return false;
+            }
+
+            ItemData item = slot.GetEquippedItem();
+            if (item == null)
+                return false;
+
+            if (item.equipmentSlotType == EquipmentSlotType.Bag)
+            {
+                int bagBonus = item.bagSizeIncrease;
+
+                int itemsUsed = Inventory.Instance.GetUsedSlotCount();
+                int newCapacity = Inventory.Instance.GetCurrentCapacity() - bagBonus;
+
+                if (itemsUsed > newCapacity)
+                {
+                    return false;
+                }
+            }
 
             slot.Unequip();
+
+            // 🔥 ADD BACK TO INVENTORY
+            Inventory.Instance.AddItem(item, 1);
+
+            // 🔥 FORCE BAG SIZE UPDATE
+            RecalculateBagSize();
+
+            // 🔥 RECALCULATE STATS
             RecalculateStats();
+
+
+            return true;
         }
 
         public ItemData GetEquipped(EquipmentSlotType type)
@@ -69,6 +209,13 @@ namespace Yamigisa
         public IEnumerable<ItemData> GetAllEquippedItems()
         {
             foreach (var slot in equipmentSlots)
+            {
+                var item = slot.GetEquippedItem();
+                if (item != null)
+                    yield return item;
+            }
+
+            foreach (var slot in bagSlots)
             {
                 var item = slot.GetEquippedItem();
                 if (item != null)
@@ -155,6 +302,9 @@ namespace Yamigisa
                 attributeAdditive,
                 attributePercent
             );
+
+
+            RecalculateBagSize();
         }
 
         public void Save(ref SaveGameData data)
@@ -196,6 +346,25 @@ namespace Yamigisa
             }
 
             RecalculateStats();
+        }
+
+        private void RecalculateBagSize()
+        {
+            int bagBonus = 0;
+
+            foreach (var slot in bagSlots)
+            {
+                var item = slot.GetEquippedItem();
+                if (item == null) continue;
+
+                bagBonus += item.bagSizeIncrease;
+            }
+
+            if (Inventory.Instance != null)
+            {
+                Inventory.Instance.SetEquipmentBagBonus(bagBonus);
+                Debug.Log("Bag bonus recalculated: " + bagBonus);
+            }
         }
 
         public void ShowEquipmentPanel()

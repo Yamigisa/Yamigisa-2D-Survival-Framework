@@ -37,6 +37,7 @@ namespace Yamigisa
         public void Unequip()
         {
             if (itemSlot == null) return;
+            Debug.Log("unequip called on slot: " + slotType);
             itemSlot.ResetSlot();
         }
 

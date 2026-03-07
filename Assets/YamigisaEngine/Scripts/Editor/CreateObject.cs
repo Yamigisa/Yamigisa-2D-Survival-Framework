@@ -95,6 +95,8 @@ namespace Yamigisa
 
             objectName = EditorGUILayout.TextField("Object Name", objectName);
 
+            objectType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", objectType);
+
             if (objectType == ObjectType.Character)
             {
                 characterIcon = (Sprite)EditorGUILayout.ObjectField(
@@ -104,8 +106,6 @@ namespace Yamigisa
                     false
                 );
             }
-
-            objectType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", objectType);
 
             if (objectType == ObjectType.Item)
             {
@@ -160,10 +160,22 @@ namespace Yamigisa
             }
 
             if (objectType != ObjectType.Animal &&
-        objectType != ObjectType.Character)
+      objectType != ObjectType.Character &&
+      objectType != ObjectType.Biome)
             {
-                iconWorld = (Sprite)EditorGUILayout.ObjectField("Icon (World)", iconWorld, typeof(Sprite), false);
-                iconInventory = (Sprite)EditorGUILayout.ObjectField("Icon (Inventory)", iconInventory, typeof(Sprite), false);
+                iconWorld = (Sprite)EditorGUILayout.ObjectField(
+                    "Icon (World)",
+                    iconWorld,
+                    typeof(Sprite),
+                    false
+                );
+
+                iconInventory = (Sprite)EditorGUILayout.ObjectField(
+                    "Icon (Inventory)",
+                    iconInventory,
+                    typeof(Sprite),
+                    false
+                );
             }
 
             EditorGUILayout.Space(10);
@@ -371,7 +383,7 @@ namespace Yamigisa
         // ===============================
 
         private EquipmentSlotType selectedEquipmentSlot = EquipmentSlotType.None;
-
+        private int bagInventoryIncrease = 5;
         private void DrawEquipmentSection()
         {
             EditorGUILayout.Space(10);
@@ -382,6 +394,27 @@ namespace Yamigisa
                 EditorGUILayout.EnumPopup("Slot Type", selectedEquipmentSlot);
 
             EditorGUILayout.Space(6);
+
+            // =========================
+            // BAG TYPE
+            // =========================
+
+            if (selectedEquipmentSlot == EquipmentSlotType.Bag)
+            {
+                EditorGUILayout.LabelField("Bag Settings", EditorStyles.boldLabel);
+
+                bagInventoryIncrease = EditorGUILayout.IntField(
+                    "Inventory Size Increase",
+                    bagInventoryIncrease
+                );
+
+                return;
+            }
+
+            // =========================
+            // NORMAL EQUIPMENT
+            // =========================
+
             EditorGUILayout.LabelField("Stat Modifiers", EditorStyles.boldLabel);
 
             if (GUILayout.Button("Add Modifier"))
@@ -407,7 +440,6 @@ namespace Yamigisa
                 stat.valueType = (StatValueType)
                     EditorGUILayout.EnumPopup("Value Type", stat.valueType);
 
-                stat.value = EditorGUILayout.FloatField("Value", stat.value);
 
                 if (GUILayout.Button("Remove Modifier"))
                     removeIndex = i;
@@ -720,8 +752,16 @@ namespace Yamigisa
             if (itemType == ItemType.Equipment)
             {
                 so.equipmentSlotType = selectedEquipmentSlot;
-                so.equipmentStats = new List<EquipmentStatModifier>(tempEquipmentStats);
                 so.isStackable = false;
+
+                if (selectedEquipmentSlot == EquipmentSlotType.Bag)
+                {
+                    so.bagSizeIncrease = bagInventoryIncrease;
+                }
+                else
+                {
+                    so.equipmentStats = new List<EquipmentStatModifier>(tempEquipmentStats);
+                }
             }
             else
             {

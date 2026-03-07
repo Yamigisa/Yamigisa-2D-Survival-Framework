@@ -73,6 +73,7 @@ namespace Yamigisa
         {
             characterControls = Character.instance.characterControls;
 
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             defaultLayer = gameObject.layer;
             baseSpriteOffset = spriteRenderer.transform.localPosition;
             originalSpriteScale = spriteRenderer.transform.localScale;

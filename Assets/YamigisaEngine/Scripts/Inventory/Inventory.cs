@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using Unity.VisualScripting;
 
 namespace Yamigisa
 {
@@ -26,7 +25,7 @@ namespace Yamigisa
         [SerializeField] private Transform quickInventoryContent;
 
         [Header("Max Item Count")]
-        public int maxItems = 32;
+        [SerializeField] private int baseInventorySize = 32;
 
         [Header("Starting Items")]
         public List<StartingItem> startingItems;
@@ -81,6 +80,9 @@ namespace Yamigisa
         private bool isUsingSlot;
         [HideInInspector] public Storage currentStorage;
 
+        public EquipmentManager equipmentManager { get; private set; }
+        private int equipmentBagBonus = 0;
+        private int currentInventorySize;
         public static event System.Action OnChanged;
         private static void NotifyChanged()
         {
@@ -93,6 +95,8 @@ namespace Yamigisa
         {
             if (Instance == null) Instance = this;
             else { Destroy(gameObject); return; }
+
+            equipmentManager = GetComponentInChildren<EquipmentManager>();
         }
 
         public void Setup()
@@ -113,7 +117,9 @@ namespace Yamigisa
             itemSlots.Clear();
 
             // Main inventory slots
-            for (int i = 0; i < maxItems; i++)
+            currentInventorySize = baseInventorySize + equipmentBagBonus;
+
+            for (int i = 0; i < currentInventorySize; i++)
             {
                 ItemSlot slot = Instantiate(
                     ItemSlotPrefab,
@@ -349,7 +355,7 @@ namespace Yamigisa
             GameManager.instance.SetCanPause(false);
 
             mainInventoryPanel.gameObject.SetActive(true);
-            EquipmentManager.instance.ShowEquipmentPanel();
+            equipmentManager.ShowEquipmentPanel();
         }
 
         public void HideInventory()
@@ -358,7 +364,7 @@ namespace Yamigisa
             GameManager.instance.SetCanPause(true);
 
             mainInventoryPanel.gameObject.SetActive(false);
-            EquipmentManager.instance.HideEquipmentPanel();
+            equipmentManager.HideEquipmentPanel();
         }
 
 
@@ -430,10 +436,22 @@ namespace Yamigisa
             for (int i = 0; i < targetList.Count; i++)
             {
                 ItemSlot slot = targetList[i];
+
                 if (!slot.HasItem)
                 {
-                    slot.SetItem(data, remaining);
-                    return true;
+                    if (data.isStackable)
+                    {
+                        slot.SetItem(data, remaining);
+                        return true;
+                    }
+                    else
+                    {
+                        slot.SetItem(data, 1);
+                        remaining--;
+
+                        if (remaining <= 0)
+                            return true;
+                    }
                 }
             }
 
@@ -460,7 +478,7 @@ namespace Yamigisa
             for (int i = 0; i < list.Count; i++)
             {
                 ItemSlot slot = list[i];
-                if (slot.HasItem && slot.ItemData == data && data.isStackable)
+                if (data.isStackable && slot.HasItem && slot.ItemData == data)
                 {
                     int cap = Mathf.Max(1, data.maxAmount);
                     int space = cap - slot.Amount;
@@ -665,6 +683,7 @@ namespace Yamigisa
 
         private void CompleteDragAtCursor()
         {
+            EquipmentSlot originEquipSlot = dragOrigin.GetComponentInParent<EquipmentSlot>();
             ItemSlot target = RaycastItemSlotAtMouse();
             bool success = false;
 
@@ -689,7 +708,7 @@ namespace Yamigisa
                         return;
                     }
 
-                    if (EquipmentManager.instance == null)
+                    if (equipmentManager == null)
                     {
                         CancelDragState();
                         return;
@@ -698,7 +717,7 @@ namespace Yamigisa
                     // If slot already has equipment → return it to inventory
                     ItemData previouslyEquipped = equipSlot.GetEquippedItem();
 
-                    bool equipped = EquipmentManager.instance.Equip(dragData);
+                    bool equipped = equipmentManager.Equip(dragData);
 
                     if (equipped)
                     {
@@ -718,9 +737,24 @@ namespace Yamigisa
                 {
                     if (!target.HasItem)
                     {
-                        target.SetItem(dragData, dragAmount);
-                        dragOrigin.ResetSlot();
-                        success = true;
+                        if (originEquipSlot != null)
+                        {
+                            bool removed = equipmentManager.Unequip(originEquipSlot.SlotType);
+                            if (!removed)
+                            {
+                                CancelDragState();
+                                return;
+                            }
+
+                            // Unequip already returns item to inventory
+                            success = true;
+                        }
+                        else
+                        {
+                            target.SetItem(dragData, dragAmount);
+                            dragOrigin.ResetSlot();
+                            success = true;
+                        }
                     }
                     else if (target.ItemData == dragData && dragData.isStackable)
                     {
@@ -757,8 +791,38 @@ namespace Yamigisa
             }
             else
             {
+                EquipmentSlot equipSlot = null;
+
+                Transform t = dragOrigin.transform;
+                while (t != null)
+                {
+                    equipSlot = t.GetComponent<EquipmentSlot>();
+                    if (equipSlot != null)
+                        break;
+
+                    t = t.parent;
+                }
+
+                if (equipSlot != null)
+                {
+                    // Attempt unequip
+                    bool removed = equipmentManager.Unequip(equipSlot.SlotType);
+
+                    if (!removed)
+                    {
+                        CancelDragState();
+                        return;
+                    }
+                }
+
                 dragOrigin.DropItem(Character.transform.position, dragAmount);
-                dragOrigin.ResetSlot();
+
+                // Only reset if NOT equipment slot
+                if (dragOrigin.GetComponentInParent<EquipmentSlot>() == null)
+                {
+                    dragOrigin.ResetSlot();
+                }
+
                 success = true;
             }
 
@@ -771,6 +835,20 @@ namespace Yamigisa
             }
         }
 
+        public int GetUsedSlotCount()
+        {
+            int count = 0;
+
+            foreach (var slot in itemSlots)
+                if (slot.HasItem)
+                    count++;
+
+            return count;
+        }
+        public int GetCurrentCapacity()
+        {
+            return baseInventorySize + equipmentBagBonus;
+        }
         private void CancelDragState()
         {
             DestroyDragIcon();
@@ -864,7 +942,7 @@ namespace Yamigisa
                 if (slot == null) continue;
 
                 // PRIORITY: Equipment slot
-                if (slot.GetComponent<EquipmentSlot>() != null)
+                if (slot.GetComponentInParent<EquipmentSlot>() != null)
                     return slot;
 
                 if (normalSlot == null)
@@ -1076,6 +1154,121 @@ namespace Yamigisa
             }
         }
 
+        public void SetEquipmentBagBonus(int value)
+        {
+            equipmentBagBonus = value;
+            RefreshInventorySize();
+        }
+
+        private void RefreshInventorySize()
+        {
+            int newSize = baseInventorySize + equipmentBagBonus;
+
+            if (newSize == itemSlots.Count)
+                return;
+
+            // EXPAND inventory
+            if (newSize > itemSlots.Count)
+            {
+                int toAdd = newSize - itemSlots.Count;
+
+                for (int i = 0; i < toAdd; i++)
+                {
+                    ItemSlot slot = Instantiate(
+                        ItemSlotPrefab,
+                        mainInventoryPanel.inventoryContent
+                    );
+
+                    itemSlots.Add(slot);
+                    slot.MarkAsQuickSlot(false);
+                    slot.HideQuickSlotIndex();
+                }
+            }
+            else
+            {
+                int targetSize = newSize;
+
+                // STEP 1 — collect items from bag slots
+                List<(ItemData data, int amount)> displacedItems = new();
+
+                for (int i = targetSize; i < itemSlots.Count; i++)
+                {
+                    ItemSlot slot = itemSlots[i];
+
+                    if (slot.HasItem)
+                    {
+                        displacedItems.Add((slot.ItemData, slot.Amount));
+                    }
+                }
+
+                // STEP 2 — remove bag slots
+                for (int i = itemSlots.Count - 1; i >= targetSize; i--)
+                {
+                    Destroy(itemSlots[i].gameObject);
+                    itemSlots.RemoveAt(i);
+                }
+
+                // STEP 3 — reinsert displaced items
+                foreach (var entry in displacedItems)
+                {
+                    ItemData data = entry.data;
+                    int amount = entry.amount;
+
+                    bool placed = false;
+
+                    // 1️⃣ Quick inventory first
+                    for (int q = 0; q < quickItemSlot.Count; q++)
+                    {
+                        ItemSlot qSlot = quickItemSlot[q];
+
+                        if (!qSlot.HasItem)
+                        {
+                            qSlot.SetItem(data, amount);
+                            placed = true;
+                            break;
+                        }
+                    }
+
+                    // 2️⃣ Main inventory
+                    if (!placed)
+                    {
+                        for (int i = 0; i < itemSlots.Count; i++)
+                        {
+                            ItemSlot slot = itemSlots[i];
+
+                            if (!slot.HasItem)
+                            {
+                                slot.SetItem(data, amount);
+                                placed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            currentInventorySize = newSize;
+
+            NotifyChanged();
+        }
+
+        public int TotalItemCount()
+        {
+            int count = 0;
+
+            foreach (var slot in itemSlots)
+            {
+                if (slot.HasItem)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int GetBaseCapacity()
+        {
+            return baseInventorySize;
+        }
         public void Save(ref SaveGameData data)
         {
             if (!data.saveManager.SaveInventory)

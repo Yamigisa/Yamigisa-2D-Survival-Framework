@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Bag
+  m_EditorClassIdentifier: 
+  id: e15e6cce-ebb5-42c3-b9ed-c10765d443f9
+  itemPrefab: {fileID: 1598569617479400458, guid: f244f4f83b584a64ab2e67c49794d152, type: 3}
+  itemName: Bag
+  iconWorld: {fileID: -667022295125873936, guid: 46c7bb5a5fd681c4fabe621f214bc88a, type: 3}
+  iconInventory: {fileID: -667022295125873936, guid: 46c7bb5a5fd681c4fabe621f214bc88a, type: 3}
+  description: 
+  itemType: 1
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 0
+  groups: []
+  itemActions:
+  - {fileID: 11400000, guid: 1f51a7742fc3fff4bb302c22f041d896, type: 2}
+  - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
+  consumableEffects: []
+  equipmentSlotType: 5
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1
