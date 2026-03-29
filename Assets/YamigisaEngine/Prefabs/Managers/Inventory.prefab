@@ -467,10 +467,8 @@ MonoBehaviour:
   quickInventoryTransform: {fileID: 5511236176414431412}
   quickSlotCount: 10
   quickInventoryContent: {fileID: 6746653596176202143}
-  baseInventorySize: 32
-  startingItems:
-  - item: {fileID: 11400000, guid: b6592f0618dd1f24b9f12ee0fe9a08b8, type: 2}
-    amount: 1
+  baseInventorySize: 40
+  startingItems: []
   CanScrollUsingScrollWheel: 1
   inventorySortOrder: 010000000200000000000000
   holdToPickSeconds: 0.25

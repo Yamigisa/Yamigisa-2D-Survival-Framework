@@ -67,6 +67,7 @@ MonoBehaviour:
   greenTile: {fileID: 11400000, guid: 7d037f23c9e7ac8438afeb54ddda2ade, type: 2}
   redTile: {fileID: 11400000, guid: 8ebe9dd3b168350459bb37c95c43e9ca, type: 2}
   buildGridSize: {x: 10, y: 10}
+  interactionBlockDuration: 0.2
 --- !u!1 &3644900762998533384
 GameObject:
   m_ObjectHideFlags: 0

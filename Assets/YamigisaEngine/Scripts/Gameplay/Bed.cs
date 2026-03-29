@@ -62,7 +62,6 @@ namespace Yamigisa
             Character.instance.DisableMovements();
             Character.instance.SetCharacterBusy(true);
 
-            // ✅ THIS is your sleep delay
             yield return new WaitForSeconds(interactionDelay);
 
             bool froze = false;
@@ -75,10 +74,12 @@ namespace Yamigisa
             int hoursSlept = CalculateHoursSlept();
             ApplySleepEffects(hoursSlept);
 
-            // ✅ Advance time (day + hour) correctly
             AdvanceToMorning();
 
-            // ✅ Force lighting refresh AFTER SetTime
+            // AUTO SAVE SAAT TIDUR
+            if (SaveManager.Instance != null)
+                SaveManager.Instance.TriggerSleepAutoSave();
+
             if (TimeClock.Instance != null)
                 TimeClock.Instance.ForceRefreshVisual();
 
@@ -156,9 +157,6 @@ namespace Yamigisa
             int currentHour = TimeClock.Instance.Hour;
             int wakeHour = sleepEndHour;
 
-            // ✅ If wake hour is "tomorrow" relative to current hour → day + 1
-            // Example: current 22, wake 6 => next day
-            // Example: current 2, wake 6 => same day
             if (wakeHour <= currentHour)
                 currentDay++;
 

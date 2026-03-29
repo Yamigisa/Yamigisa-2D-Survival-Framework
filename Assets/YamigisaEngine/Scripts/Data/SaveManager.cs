@@ -4,12 +4,15 @@ namespace Yamigisa
 {
     public class SaveManager : MonoBehaviour
     {
+        public static SaveManager Instance { get; private set; }
+
         [Header("Save Settings")]
         [SerializeField] private bool saveGameOnQuit = true;
 
         [Header("Auto Save")]
         [SerializeField] private bool enableAutoSave = true;
         [SerializeField] private float autoSaveInterval = 300f; // seconds
+        [SerializeField] private bool autoSaveOnSleep = true;
         private float autoSaveTimer;
 
         [Header("Save Toggles")]
@@ -32,6 +35,17 @@ namespace Yamigisa
         public bool SaveEquipment => saveEquipment;
 
         private string path => Application.persistentDataPath + "/save.json";
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
 
         public void SaveGame()
         {
@@ -83,6 +97,15 @@ namespace Yamigisa
             Debug.Log("Load game");
         }
 
+        public void TriggerSleepAutoSave()
+        {
+            if (!autoSaveOnSleep)
+                return;
+
+            SaveGame();
+            autoSaveTimer = 0f;
+        }
+
         private void OnApplicationQuit()
         {
             if (!saveGameOnQuit) return;
@@ -98,7 +121,6 @@ namespace Yamigisa
             if (Input.GetKeyDown(KeyCode.F9))
                 LoadGame();
 
-            // Auto Save
             if (enableAutoSave)
             {
                 autoSaveTimer += Time.deltaTime;

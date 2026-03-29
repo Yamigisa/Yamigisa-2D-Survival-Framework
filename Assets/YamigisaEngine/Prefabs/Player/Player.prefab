@@ -361,9 +361,6 @@ MonoBehaviour:
   canSprint: 1
   canJump: 1
   canCrouch: 1
-  rb: {fileID: 4202189188480381823}
-  spriteRenderer: {fileID: 6926324322210759816}
-  playerCollider: {fileID: 6136506362100289820}
   walkSpeed: 3
   unlimitedSprint: 0
   sprintSpeed: 5
@@ -389,6 +386,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttributeData:
   - {fileID: 11400000, guid: 6f3f887e7f385604e801153293b12e1c, type: 2}
+  - {fileID: 11400000, guid: 4b8c20c2806899b418b2fac035a8ca71, type: 2}
+  - {fileID: 11400000, guid: 9ffefb1527e11e84ab4f554aa231e7da, type: 2}
 --- !u!114 &714083658698003909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -415,31 +414,31 @@ MonoBehaviour:
     gamepadButtons: 03000000
   sprint:
     keyboardKeys: 30010000
-    gamepadButtons: 0e000000
+    gamepadButtons: 08000000
   jump:
-    keyboardKeys: 6a000000
-    gamepadButtons: 0f000000
+    keyboardKeys: 20000000
+    gamepadButtons: 06000000
   crouch:
     keyboardKeys: 32010000
-    gamepadButtons: 0a000000
-  interaction1:
-    keyboardKeys: 43010000
-    gamepadButtons: 04000000
-  interaction2:
-    keyboardKeys: 44010000
     gamepadButtons: 05000000
+  interaction1:
+    keyboardKeys: 65000000
+    gamepadButtons: 07000000
+  interaction2:
+    keyboardKeys: 66000000
+    gamepadButtons: 04000000
   inventory:
     keyboardKeys: 69000000
-    gamepadButtons: 06000000
+    gamepadButtons: 0c000000
   useItem:
-    keyboardKeys: 
-    gamepadButtons: 
+    keyboardKeys: 43010000
+    gamepadButtons: 21000000
   crafting:
-    keyboardKeys: 75000000
-    gamepadButtons: 0f000000
+    keyboardKeys: 63000000
+    gamepadButtons: 0d000000
   cancel:
     keyboardKeys: 1b000000
-    gamepadButtons: 08000000
+    gamepadButtons: 05000000
   pause:
     keyboardKeys: 1b000000
     gamepadButtons: 0c000000

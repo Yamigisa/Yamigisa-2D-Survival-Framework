@@ -94,7 +94,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minuteToRealTimeSeconds: 5
   startingMinute: 0
-  startingHour: 9
+  startingHour: 12
   startingDay: 1
   timeText: {fileID: 2355384889276448845}
   dayText: {fileID: 6814036023032763680}

@@ -19,7 +19,10 @@ MonoBehaviour:
   - prefab: {fileID: 2358930305471353791, guid: 3249a26d51e8c924c9c572acb8920888, type: 3}
     minSpawn: 1
     maxSpawn: 1
-  creatureSpawns: []
+  creatureSpawns:
+  - prefab: {fileID: 0}
+    minSpawn: 0
+    maxSpawn: 0
   speedAddition: 1
   attributeModifiers:
   - type: 0
