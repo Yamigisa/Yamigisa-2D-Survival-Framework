@@ -17,8 +17,6 @@ namespace Yamigisa
         public string prefabAnimalsFolder = "Assets/YamigisaEngine/Prefabs/Animals";
         public string animalDataFolder = "Assets/YamigisaEngine/Resources/Animals";
 
-        // -------------------------------------------------------
-
         [Header("Layer Settings")]
         [Tooltip("All Interactive Objects will use this layer")]
         public LayerMask interactiveObjectLayer;
@@ -35,8 +33,12 @@ namespace Yamigisa
         [Header("Default Interactive Object Actions")]
         public ActionBase[] defaultInteractiveObjectActions;
 
+        [Header("Default Destroyable Interactive Actions")]
+        public ActionBase[] defaultDestroyableActions;
+
         [Header("Default Animal Interactive Actions")]
         public ActionBase[] defaultAnimalActions;
+
         [Header("Global Placeable ItemData Actions")]
         [Tooltip("These actions will be injected into ItemData when creating ANY Placeable.")]
         public ActionBase[] globalPlaceableItemDataActions;

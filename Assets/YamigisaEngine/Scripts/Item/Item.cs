@@ -6,6 +6,6 @@ namespace Yamigisa
     {
         [Header("Item")]
         public ItemData itemData;
-        public int quantity = 1;
+
     }
 }

@@ -29,6 +29,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1f51a7742fc3fff4bb302c22f041d896, type: 2}
   defaultInteractiveObjectActions:
   - {fileID: 11400000, guid: ed2b2418ec26b5142ba7fa62cb2dda25, type: 2}
+  defaultDestroyableActions:
+  - {fileID: 11400000, guid: 1118ff21da5ebfe4486e45e026c6eb1b, type: 2}
   defaultAnimalActions:
   - {fileID: 11400000, guid: 0c65265a311c2e148a73ef05b7a89250, type: 2}
   globalPlaceableItemDataActions:

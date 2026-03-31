@@ -10,6 +10,11 @@ namespace Yamigisa
         public Quaternion rotation;
         public bool active;
         public bool pickedUp;
-    }
 
+        // Resource regrowth save data
+        public bool isRegrowing;
+        public int currentGrowthStageIndex;
+        public float remainingRealSeconds;
+        public int remainingGameMinutes;
+    }
 }

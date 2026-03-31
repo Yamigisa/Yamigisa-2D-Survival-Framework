@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2f93dde061471546ad2871a4336cee0, type: 3}
-  m_Name: Chop
+  m_Name: Destroy
   m_EditorClassIdentifier: 
   title: Chop
   choppableItems:

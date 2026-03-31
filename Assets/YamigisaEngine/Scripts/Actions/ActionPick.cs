@@ -11,7 +11,7 @@ namespace Yamigisa
 
             Item item = InteractiveObject.gameObject.GetComponent<Item>();
 
-            Inventory.Instance.AddItem(item.itemData, item.quantity);
+            Inventory.Instance.AddItem(item.itemData);
 
             InteractiveObject.MarkPickedUp();
 
@@ -29,12 +29,11 @@ namespace Yamigisa
             if (item == null) return false;
 
             if (item.itemData == null) return false;
-            if (item.quantity <= 0) return false;
 
             if (Inventory.Instance == null) return false;
 
             // 🔥 Important: Check if inventory has space
-            if (!Inventory.Instance.CanAddItem(item.itemData, item.quantity))
+            if (!Inventory.Instance.CanAddItem(item.itemData))
                 return false;
 
             return true;

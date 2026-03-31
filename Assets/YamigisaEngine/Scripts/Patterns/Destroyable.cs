@@ -13,6 +13,7 @@ namespace Yamigisa
 
         [Header("Stats")]
         public int hp = 100;
+        [SerializeField] private int maxHp = 100;
 
         [Header("Group Items Required")]
         public List<GroupData> requiredItems;
@@ -37,6 +38,7 @@ namespace Yamigisa
         private SpriteRenderer spriteRenderer;
         private Color originalColor;
         private Coroutine flashRoutine;
+        private InteractiveObject interactiveObject;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -46,15 +48,27 @@ namespace Yamigisa
                 id = System.Guid.NewGuid().ToString();
                 UnityEditor.EditorUtility.SetDirty(this);
             }
+
+            if (maxHp < 1)
+                maxHp = 1;
+
+            if (hp > maxHp)
+                hp = maxHp;
         }
 #endif
 
         private void Awake()
         {
+            interactiveObject = GetComponent<InteractiveObject>();
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
             if (spriteRenderer != null)
                 originalColor = spriteRenderer.color;
+
+            if (maxHp <= 0)
+                maxHp = Mathf.Max(1, hp);
+
+            hp = Mathf.Clamp(hp, 0, maxHp);
         }
 
         public void TakeDamage(int damage)
@@ -116,8 +130,20 @@ namespace Yamigisa
 
             GetLoot();
 
-            // IMPORTANT: disable, NOT destroy
-            gameObject.SetActive(false);
+            if (interactiveObject != null)
+            {
+                hp = maxHp;
+                isDying = false;
+                deathAnimFinished = false;
+
+                interactiveObject.HandleHarvested();
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+
+            Character.instance.characterCombat.StopAttack();
         }
 
         private void GetLoot()
@@ -146,6 +172,16 @@ namespace Yamigisa
                     Inventory.Instance?.AddItem(loot.itemLoot, loot.quantity);
                 }
             }
+        }
+
+        public void ResetDestroyableStateAfterRegrow()
+        {
+            hp = maxHp;
+            isDying = false;
+            deathAnimFinished = false;
+
+            if (spriteRenderer != null)
+                spriteRenderer.color = originalColor;
         }
 
         public void Save(ref SaveGameData data)
@@ -179,6 +215,7 @@ namespace Yamigisa
             {
                 gameObject.SetActive(true);
                 isDying = false;
+                deathAnimFinished = false;
             }
         }
     }

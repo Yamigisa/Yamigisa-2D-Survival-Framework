@@ -1356,7 +1356,7 @@ namespace Yamigisa
             NotifyChanged();
         }
 
-        public bool CanAddItem(ItemData data, int amount)
+        public bool CanAddItem(ItemData data, int amount = 1)
         {
             if (data == null) return false;
 

@@ -6,12 +6,10 @@ namespace Yamigisa
     [CreateAssetMenu(menuName = "Yamigisa/Item")]
     public class ItemData : ScriptableObject
     {
-        // ===================== SAVE ID =====================
         [Header("Save ID (DO NOT CHANGE)")]
-        [SerializeField] private string id;
+        [HideInInspector][SerializeField] private string id;
         public string Id => id;
 
-        // ===================== STATIC DATABASE =====================
         private static Dictionary<string, ItemData> lookup;
 
         public static ItemData Get(string id)
@@ -51,8 +49,6 @@ namespace Yamigisa
         }
 #endif
 
-        // ===================== EXISTING DATA =====================
-
         [Header("Item Prefab")]
         public GameObject itemPrefab;
 
@@ -73,6 +69,17 @@ namespace Yamigisa
 
         [Header("Item Actions")]
         public List<ActionBase> itemActions;
+        [Header("Resource Regrowth")]
+        [Tooltip("Only used if ItemType = Resource. If empty, the object is destroyed instantly when picked.")]
+        public List<ResourceGrowthStage> growthStages = new();
+
+        [Tooltip("Use in-game time or real seconds for stage duration.")]
+        public GrowthTimeMode growthTimeMode = GrowthTimeMode.GameMinutes;
+
+        public bool HasGrowthStages =>
+            itemType == ItemType.Resource &&
+            growthStages != null &&
+            growthStages.Count > 0;
 
         [Header("Consumable Effects")]
         public List<ConsumableEffect> consumableEffects = new List<ConsumableEffect>();
@@ -80,6 +87,7 @@ namespace Yamigisa
         [Header("Equipment")]
         [Tooltip("Only used if ItemType = Equipment")]
         public EquipmentSlotType equipmentSlotType = EquipmentSlotType.None;
+
         [Header("Bag Settings")]
         [Tooltip("Only used if EquipmentSlotType = Bag")]
         public int bagSizeIncrease = 5;
@@ -102,6 +110,22 @@ namespace Yamigisa
         Equipment,
         Consumable,
         Placeable,
+    }
+
+    public enum GrowthTimeMode
+    {
+        GameMinutes,
+        RealSeconds
+    }
+
+    [System.Serializable]
+    public class ResourceGrowthStage
+    {
+        public Sprite sprite;
+
+        [Min(0f)]
+        [Tooltip("Duration to move from this stage to the next stage.")]
+        public float duration = 5f;
     }
 
     [System.Serializable]
@@ -139,8 +163,8 @@ namespace Yamigisa
 
         [Header("Over Time")]
         public int amountPerTick;
-        public float tickInterval;     // seconds between ticks
-        public float duration;         // total duration
+        public float tickInterval;
+        public float duration;
 
         [Header("Buff Settings")]
         public BuffType buffType;
@@ -180,7 +204,6 @@ namespace Yamigisa
         public AttributeType attributeType;
 
         public StatValueType valueType;
-
         public float value;
     }
 
@@ -193,7 +216,7 @@ namespace Yamigisa
 
     public enum StatValueType
     {
-        Additive,   // +10
-        Percent     // +20%
+        Additive,
+        Percent
     }
 }

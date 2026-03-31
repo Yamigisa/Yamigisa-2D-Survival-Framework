@@ -27,6 +27,7 @@ namespace Yamigisa
         {
             InteractiveObject interactiveObject = context as InteractiveObject;
             if (interactiveObject == null) return false;
+            if (interactiveObject.IsRegrowing) return false;
 
             Destroyable destroyable = interactiveObject.GetComponent<Destroyable>();
             if (destroyable == null) return false;

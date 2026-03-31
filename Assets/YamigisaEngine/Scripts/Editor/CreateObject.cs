@@ -50,6 +50,9 @@ namespace Yamigisa
         // Character
         private Sprite characterIcon;
 
+        private GroupData destroyRequiredGroup;
+        private List<DestroyableLoot> tempDestroyableLoots = new();
+
         public CreateObjectSettings settings;
 
         [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
@@ -122,6 +125,13 @@ namespace Yamigisa
             else if (objectType == ObjectType.Destroyable || objectType == ObjectType.Animal)
             {
                 destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
+                destroyRequiredGroup = (GroupData)EditorGUILayout.ObjectField(
+                    "Required Group To Destroy",
+                    destroyRequiredGroup,
+                    typeof(GroupData),
+                    false
+                );
+                DrawDestroyableLootEditor();
             }
             else if (objectType == ObjectType.Placeable)
             {
@@ -163,6 +173,7 @@ namespace Yamigisa
       objectType != ObjectType.Character &&
       objectType != ObjectType.Biome)
             {
+                // ALWAYS show world icon
                 iconWorld = (Sprite)EditorGUILayout.ObjectField(
                     "Icon (World)",
                     iconWorld,
@@ -170,12 +181,21 @@ namespace Yamigisa
                     false
                 );
 
-                iconInventory = (Sprite)EditorGUILayout.ObjectField(
-                    "Icon (Inventory)",
-                    iconInventory,
-                    typeof(Sprite),
-                    false
-                );
+                // ONLY show inventory icon if NOT destroyable
+                if (objectType != ObjectType.Destroyable)
+                {
+                    iconInventory = (Sprite)EditorGUILayout.ObjectField(
+                        "Icon (Inventory)",
+                        iconInventory,
+                        typeof(Sprite),
+                        false
+                    );
+                }
+                else
+                {
+                    // Force null so no leftover data
+                    iconInventory = null;
+                }
             }
 
             EditorGUILayout.Space(10);
@@ -199,6 +219,41 @@ namespace Yamigisa
                 else
                     CreateItemOrDestroyable();
             }
+        }
+
+        private void DrawDestroyableLootEditor()
+        {
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Destroyable Loots", EditorStyles.boldLabel);
+
+            if (GUILayout.Button("Add Loot"))
+                tempDestroyableLoots.Add(new DestroyableLoot());
+
+            int removeIndex = -1;
+
+            for (int i = 0; i < tempDestroyableLoots.Count; i++)
+            {
+                var loot = tempDestroyableLoots[i];
+
+                EditorGUILayout.BeginVertical("box");
+
+                loot.itemLoot = (ItemData)EditorGUILayout.ObjectField(
+                    "Item",
+                    loot.itemLoot,
+                    typeof(ItemData),
+                    false
+                );
+
+                loot.quantity = EditorGUILayout.IntField("Quantity", loot.quantity);
+
+                if (GUILayout.Button("Remove"))
+                    removeIndex = i;
+
+                EditorGUILayout.EndVertical();
+            }
+
+            if (removeIndex >= 0 && removeIndex < tempDestroyableLoots.Count)
+                tempDestroyableLoots.RemoveAt(removeIndex);
         }
 
         private void CreateCharacter()
@@ -523,7 +578,6 @@ namespace Yamigisa
             // Add Item component to placeable
             var item = root.AddComponent<Item>();
             item.itemData = so;
-            item.quantity = 1;
             // =====================================================
             // APPLY INTERACTIVE ACTIONS (PLACEABLE FIRST)
             // =====================================================
@@ -662,7 +716,7 @@ namespace Yamigisa
             collider.isTrigger = true;
 
             var destroyable = root.AddComponent<Destroyable>();
-            destroyable.hp = destroyableHP;
+            ApplyDestroyableSetup(destroyable);
 
             var interactive = root.AddComponent<InteractiveObject>();
 
@@ -736,6 +790,8 @@ namespace Yamigisa
 
             Selection.activeObject = prefab;
             EditorGUIUtility.PingObject(prefab);
+
+            tempDestroyableLoots.Clear();
         }
 
         private void CreateItemOrDestroyable()
@@ -818,30 +874,50 @@ namespace Yamigisa
             collider.isTrigger = true;
 
             var interactive = root.AddComponent<InteractiveObject>();
-
-            // Only items get default interactive actions
-            if (objectType == ObjectType.Item &&
-                settings.defaultInteractiveObjectActions != null &&
-                settings.defaultInteractiveObjectActions.Length > 0)
-            {
-                interactive.Actions = new List<ActionBase>(
-                    settings.defaultInteractiveObjectActions);
-            }
-            else
-            {
-                interactive.Actions = new List<ActionBase>();
-            }
+            interactive.Actions = new List<ActionBase>();
 
             if (objectType == ObjectType.Item)
             {
-                var item = root.AddComponent<Item>();
-                item.itemData = so;
-                item.quantity = 1;
+                if (settings.defaultInteractiveObjectActions != null &&
+                    settings.defaultInteractiveObjectActions.Length > 0)
+                {
+                    interactive.Actions.AddRange(settings.defaultInteractiveObjectActions);
+                }
             }
-            else
+            else if (objectType == ObjectType.Destroyable)
+            {
+                if (settings.defaultDestroyableActions != null &&
+                    settings.defaultDestroyableActions.Length > 0)
+                {
+                    interactive.Actions.AddRange(settings.defaultDestroyableActions);
+                }
+            }
+
+            var item = root.AddComponent<Item>();
+            item.itemData = so;
+
+            if (objectType == ObjectType.Destroyable)
             {
                 var destroyable = root.AddComponent<Destroyable>();
-                destroyable.hp = destroyableHP;
+                ApplyDestroyableSetup(destroyable);
+
+                SerializedObject destroyableSO = new SerializedObject(destroyable);
+                destroyableSO.FindProperty("maxHp").intValue = destroyableHP;
+
+                SerializedProperty requiredItemsProp =
+                    destroyableSO.FindProperty("requiredItems");
+
+                requiredItemsProp.ClearArray();
+
+
+                if (destroyRequiredGroup != null)
+                {
+                    requiredItemsProp.arraySize = 1;
+                    requiredItemsProp.GetArrayElementAtIndex(0).objectReferenceValue =
+                        destroyRequiredGroup;
+                }
+
+                destroyableSO.ApplyModifiedPropertiesWithoutUndo();
             }
 
             var visual = new GameObject("Visual");
@@ -886,6 +962,61 @@ namespace Yamigisa
 
             Selection.activeObject = prefab;
             EditorGUIUtility.PingObject(prefab);
+
+            tempDestroyableLoots.Clear();
+        }
+
+        private void ApplyDestroyableSetup(Destroyable destroyable)
+        {
+            if (destroyable == null)
+                return;
+
+            destroyable.hp = destroyableHP;
+
+            SerializedObject so = new SerializedObject(destroyable);
+
+            // ======================
+            // MAX HP
+            // ======================
+            so.FindProperty("maxHp").intValue = destroyableHP;
+
+            // ======================
+            // REQUIRED GROUP
+            // ======================
+            SerializedProperty requiredItemsProp = so.FindProperty("requiredItems");
+            requiredItemsProp.ClearArray();
+
+            if (destroyRequiredGroup != null)
+            {
+                requiredItemsProp.arraySize = 1;
+                requiredItemsProp.GetArrayElementAtIndex(0).objectReferenceValue =
+                    destroyRequiredGroup;
+            }
+
+            // ======================
+            // DESTROYED LOOTS (THIS WAS MISSING)
+            // ======================
+            SerializedProperty lootsProp = so.FindProperty("loots");
+            lootsProp.ClearArray();
+
+            if (tempDestroyableLoots != null && tempDestroyableLoots.Count > 0)
+            {
+                lootsProp.arraySize = tempDestroyableLoots.Count;
+
+                for (int i = 0; i < tempDestroyableLoots.Count; i++)
+                {
+                    var loot = tempDestroyableLoots[i];
+                    var element = lootsProp.GetArrayElementAtIndex(i);
+
+                    element.FindPropertyRelative("itemLoot").objectReferenceValue =
+                        loot.itemLoot;
+
+                    element.FindPropertyRelative("quantity").intValue =
+                        Mathf.Max(1, loot.quantity);
+                }
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private void CreateBiome()
