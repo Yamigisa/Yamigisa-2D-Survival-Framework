@@ -43,11 +43,6 @@ namespace Yamigisa
             {
                 ItemData itemToReturn = slot.ItemData; // cache BEFORE unequip
                 Inventory.Instance.equipmentManager.Unequip(slot.ItemData.equipmentSlotType);
-
-                Inventory.Instance.AddItem(
-                    itemToReturn,
-                    1
-                );
                 return;
             }
 
@@ -62,7 +57,7 @@ namespace Yamigisa
 
                 if (previous != null)
                 {
-                    Inventory.Instance.AddItem(previous, 1);
+                    // Inventory.Instance.AddItem(previous, 1);
                 }
             }
         }

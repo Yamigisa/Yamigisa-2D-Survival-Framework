@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Rock Mine
+  m_EditorClassIdentifier: 
+  id: 9f094203-c008-4e60-a521-ddb957fa8a47
+  itemPrefab: {fileID: 5575712793539522632, guid: 10085508efa9c654abbbffe444b18703, type: 3}
+  itemName: Rock Mine
+  iconWorld: {fileID: -855298285791758126, guid: 7ac18d219a5e09b418d7af7d8d216a50, type: 3}
+  iconInventory: {fileID: 0}
+  description: 
+  itemType: 0
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions: []
+  growthStages:
+  - sprite: {fileID: 3465286685962602723, guid: 5857cbfc5c96b844db87a46be53c9984, type: 3}
+    duration: 5
+  - sprite: {fileID: 4130640169021434097, guid: c90965fe925742c45b312045660426d4, type: 3}
+    duration: 5
+  - sprite: {fileID: -4178046375966092550, guid: daacf511bbfd0d347a39772d5c1aaab1, type: 3}
+    duration: 5
+  - sprite: {fileID: -6470460504253458178, guid: 9166aa6dde984d340aac2929216688d7, type: 3}
+    duration: 5
+  - sprite: {fileID: 6937817954938267909, guid: da8cb1c617efd5643ba75d4eee308bf6, type: 3}
+    duration: 5
+  growthTimeMode: 0
+  consumableEffects: []
+  equipmentSlotType: 0
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

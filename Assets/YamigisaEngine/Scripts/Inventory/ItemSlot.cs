@@ -122,7 +122,7 @@ namespace Yamigisa
             if (index < 0 || index >= buttonContainer.childCount) return;
 
             Transform child = buttonContainer.GetChild(index);
-            child.gameObject.SetActive(true);
+            child.gameObject.SetActive(false);
 
             ButtonInteractiveObject interactiveButton = child.GetComponent<ButtonInteractiveObject>();
             if (interactiveButton == null) return;
@@ -183,6 +183,20 @@ namespace Yamigisa
                 return;
             }
 
+            StartCoroutine(ShowButtonsNextFrame());
+        }
+
+        private System.Collections.IEnumerator ShowButtonsNextFrame()
+        {
+            blockNextClick = true;
+
+            // hide all first
+            for (int i = 0; i < buttonContainer.childCount; i++)
+                buttonContainer.GetChild(i).gameObject.SetActive(false);
+
+            // wait one frame so the original slot click is finished
+            yield return null;
+
             buttonContainer.gameObject.SetActive(true);
             currentlyOpenSlot = this;
 
@@ -192,6 +206,11 @@ namespace Yamigisa
 
             for (int i = 0; i < buttonContainer.childCount; i++)
                 buttonContainer.GetChild(i).gameObject.SetActive(i < count);
+
+            // wait one more frame so action buttons don't consume the same click
+            yield return null;
+
+            blockNextClick = false;
         }
 
         private void HideButton()

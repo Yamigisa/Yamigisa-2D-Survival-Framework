@@ -196,10 +196,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: ce8225ee-8d5c-46a6-b4bc-5f94c83dfcf2
   hp: 3
+  maxHp: 3
   requiredItems: []
   loots:
-  - itemLoot: {fileID: 11400000, guid: 7b2410fbb683fb3488b06e330b02b474, type: 2}
-    quantity: 1
+  - itemLoot: {fileID: 11400000, guid: e250a2ce63d8ee443b762fd3747d4fbc, type: 2}
+    quantity: 3
+  - itemLoot: {fileID: 11400000, guid: 7683eec9ec3254c40a2a5419958c93e0, type: 2}
+    quantity: 2
   dropLootOnKill: 1
   lootScatterRadius: 0.5
   flashOnDamage: 1

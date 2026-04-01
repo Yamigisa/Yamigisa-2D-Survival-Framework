@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Bed
+  m_EditorClassIdentifier: 
+  id: 32c0952a-fed8-4c8d-bed1-fbed4af993d2
+  itemPrefab: {fileID: 7979254680462166883, guid: 6b25cb6bae9dfc84fafa86cdaefb4897, type: 3}
+  itemName: Bed
+  iconWorld: {fileID: -6560350073662957545, guid: 2ac6eaf0578e2284195969dfebc066c1, type: 3}
+  iconInventory: {fileID: -6560350073662957545, guid: 2ac6eaf0578e2284195969dfebc066c1, type: 3}
+  description: 
+  itemType: 3
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions:
+  - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
+  - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
+  growthStages: []
+  growthTimeMode: 0
+  consumableEffects: []
+  equipmentSlotType: 0
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

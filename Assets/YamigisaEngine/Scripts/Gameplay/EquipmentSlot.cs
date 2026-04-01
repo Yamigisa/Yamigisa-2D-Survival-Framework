@@ -8,10 +8,14 @@ namespace Yamigisa
         private ItemSlot itemSlot;
 
         public EquipmentSlotType SlotType => slotType;
+        public ItemData ItemData => GetEquippedItem();
 
-        private void Awake()   // ← CHANGE FROM Start TO Awake
+        private void Awake()
         {
             itemSlot = GetComponent<ItemSlot>();
+
+            if (itemSlot == null)
+                itemSlot = GetComponentInChildren<ItemSlot>();
         }
 
         public bool CanEquip(ItemData item)
@@ -29,15 +33,21 @@ namespace Yamigisa
 
         public ItemData GetEquippedItem()
         {
-            if (itemSlot == null) return null;   // safety
-            if (!itemSlot.HasItem) return null;
+            if (itemSlot == null)
+            {
+                return null;
+            }
+
+            if (!itemSlot.HasItem)
+            {
+                return null;
+            }
             return itemSlot.ItemData;
         }
 
         public void Unequip()
         {
             if (itemSlot == null) return;
-            Debug.Log("unequip called on slot: " + slotType);
             itemSlot.ResetSlot();
         }
 
@@ -46,7 +56,17 @@ namespace Yamigisa
             if (!CanEquip(item))
                 return false;
 
-            itemSlot.SetItem(item, 1);
+            if (itemSlot == null)
+                itemSlot = GetComponent<ItemSlot>();
+
+            if (itemSlot == null)
+                itemSlot = GetComponentInChildren<ItemSlot>();
+
+            if (itemSlot == null)
+                return false;
+
+            itemSlot.ResetSlot();      // clear old visual/data first
+            itemSlot.SetItem(item, 1); // equipment should always be 1
             return true;
         }
     }

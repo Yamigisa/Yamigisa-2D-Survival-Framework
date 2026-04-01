@@ -1,9 +1,9 @@
-namespace Yamigisa
-{
-
-    public interface ISavable
+    namespace Yamigisa
     {
-        void Save(ref SaveGameData data);
-        void Load(SaveGameData data);
+
+        public interface ISavable
+        {
+            void Save(ref SaveGameData data);
+            void Load(SaveGameData data);
+        }
     }
-}

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Autumn Tree
+  m_EditorClassIdentifier: 
+  id: 3498b2af-322e-43b9-9f4b-cf7d03654d6c
+  itemPrefab: {fileID: 3580295204913554859, guid: 08765c4607d17784f92f7d884f035461, type: 3}
+  itemName: Autumn Tree
+  iconWorld: {fileID: -5250674258423014874, guid: 088a8037d2399114e93007bd5d48bb7f, type: 3}
+  iconInventory: {fileID: 0}
+  description: 
+  itemType: 0
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions: []
+  growthStages:
+  - sprite: {fileID: -5573939471161964187, guid: f058a123919a82d4a8c37a831b144f7f, type: 3}
+    duration: 20
+  - sprite: {fileID: 1023104535718222865, guid: 06fde80fbacb56c4b9cb0e20b8c8b3ab, type: 3}
+    duration: 20
+  growthTimeMode: 0
+  consumableEffects: []
+  equipmentSlotType: 0
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

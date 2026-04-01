@@ -26,27 +26,63 @@ namespace Yamigisa
         public override bool CanDoAction(Component context)
         {
             InteractiveObject interactiveObject = context as InteractiveObject;
-            if (interactiveObject == null) return false;
-            if (interactiveObject.IsRegrowing) return false;
+            if (interactiveObject == null)
+            {
+                return false;
+            }
+
+            if (interactiveObject.IsRegrowing)
+            {
+                return false;
+            }
 
             Destroyable destroyable = interactiveObject.GetComponent<Destroyable>();
-            if (destroyable == null) return false;
+            if (destroyable == null)
+            {
+                return false;
+            }
 
-            ItemData equippedQuickItem = Inventory.Instance != null
-                ? Inventory.Instance.GetSelectedQuickItemData()
-                : null;
+            ItemData weaponItem = GetCurrentWeaponItem();
 
             bool canAttackBareHand =
                 destroyable.requiredItems == null ||
                 destroyable.requiredItems.Count == 0;
 
-            bool canAttackWithTool =
-                equippedQuickItem != null &&
-                equippedQuickItem.groups != null &&
+            bool hasMatchingGroup =
+                weaponItem != null &&
+                weaponItem.groups != null &&
                 destroyable.requiredItems != null &&
-                equippedQuickItem.groups.Any(g => destroyable.requiredItems.Contains(g));
+                weaponItem.groups.Any(weaponGroup =>
+                    weaponGroup != null &&
+                    destroyable.requiredItems.Any(requiredGroup =>
+                        requiredGroup != null && requiredGroup == weaponGroup));
+
+            Debug.Log("hasMatchingGroup = " + hasMatchingGroup);
+
+            bool canAttackWithTool =
+                weaponItem != null &&
+                weaponItem.itemType == ItemType.Equipment &&
+                weaponItem.equipmentSlotType == EquipmentSlotType.Weapon &&
+                hasMatchingGroup;
+
 
             return canAttackBareHand || canAttackWithTool;
+        }
+
+        private ItemData GetCurrentWeaponItem()
+        {
+            Character player = Character.instance;
+            if (player == null) return null;
+
+            EquipmentManager equipmentManager = Inventory.Instance.equipmentManager;
+            if (equipmentManager == null) return null;
+
+            EquipmentSlot weaponSlot = equipmentManager.GetSlot(EquipmentSlotType.Weapon);
+            if (weaponSlot == null) return null;
+
+            ItemData item = weaponSlot.GetEquippedItem();
+
+            return item;
         }
     }
 }

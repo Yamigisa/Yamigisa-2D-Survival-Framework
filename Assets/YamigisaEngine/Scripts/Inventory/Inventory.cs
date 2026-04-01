@@ -715,19 +715,11 @@ namespace Yamigisa
                     }
 
                     // If slot already has equipment → return it to inventory
-                    ItemData previouslyEquipped = equipSlot.GetEquippedItem();
-
                     bool equipped = equipmentManager.Equip(dragData);
 
                     if (equipped)
                     {
                         dragOrigin.ResetSlot();
-
-                        if (previouslyEquipped != null)
-                        {
-                            AddItem(previouslyEquipped, 1);
-                        }
-
                         success = true;
                     }
                 }
@@ -791,39 +783,27 @@ namespace Yamigisa
             }
             else
             {
-                EquipmentSlot equipSlot = null;
-
-                Transform t = dragOrigin.transform;
-                while (t != null)
-                {
-                    equipSlot = t.GetComponent<EquipmentSlot>();
-                    if (equipSlot != null)
-                        break;
-
-                    t = t.parent;
-                }
+                EquipmentSlot equipSlot = dragOrigin.GetComponentInParent<EquipmentSlot>();
 
                 if (equipSlot != null)
                 {
-                    // Attempt unequip
-                    bool removed = equipmentManager.Unequip(equipSlot.SlotType);
-
-                    if (!removed)
+                    ItemData equippedItem = equipSlot.GetEquippedItem();
+                    if (equippedItem == null)
                     {
                         CancelDragState();
                         return;
                     }
+
+                    equipSlot.Unequip();
+                    dragOrigin.DropItem(Character.transform.position, 1);
+                    success = true;
                 }
-
-                dragOrigin.DropItem(Character.transform.position, dragAmount);
-
-                // Only reset if NOT equipment slot
-                if (dragOrigin.GetComponentInParent<EquipmentSlot>() == null)
+                else
                 {
+                    dragOrigin.DropItem(Character.transform.position, dragAmount);
                     dragOrigin.ResetSlot();
+                    success = true;
                 }
-
-                success = true;
             }
 
             CancelDragState();
@@ -1314,7 +1294,6 @@ namespace Yamigisa
         {
             if (itemSlots.Count == 0 || quickItemSlot.Count == 0)
             {
-                Debug.LogError("Inventory.Load called before Setup()");
                 return;
             }
 

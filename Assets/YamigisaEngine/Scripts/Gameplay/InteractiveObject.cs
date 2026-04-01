@@ -9,7 +9,7 @@ namespace Yamigisa
         [Header("Save ID (DO NOT CHANGE FOR PLACED OBJECTS)")]
         [HideInInspector][SerializeField] private string id;
 
-        public float interactRange = 2f;
+        public float interactRange = 0.1f;
 
         [Header("Actions")]
         public List<ActionBase> Actions = new();

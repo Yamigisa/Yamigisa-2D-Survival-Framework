@@ -31,7 +31,7 @@ namespace Yamigisa
         private Sprite iconWorld;
         private Sprite iconInventory;
         private ItemType itemType = ItemType.Resource;
-        private int destroyableHP = 100;
+        private int destroyableHP = 3;
 
         private AnimalBehaviour animalBehaviour = AnimalBehaviour.Passive;
         private Sprite animalSprite;
@@ -493,8 +493,10 @@ namespace Yamigisa
                 }
 
                 stat.valueType = (StatValueType)
-                    EditorGUILayout.EnumPopup("Value Type", stat.valueType);
+      EditorGUILayout.EnumPopup("Value Type", stat.valueType);
 
+                // ✅ ADD THIS
+                stat.value = EditorGUILayout.FloatField("Value", stat.value);
 
                 if (GUILayout.Button("Remove Modifier"))
                     removeIndex = i;
@@ -616,6 +618,10 @@ namespace Yamigisa
             // Add specific components
             switch (placeableType)
             {
+                case PlaceableType.Storage:
+                    root.AddComponent<Storage>(); // ✅ ADD THIS
+                    break;
+
                 case PlaceableType.CraftingPlaceable:
                     root.AddComponent<CraftingPlaceable>();
                     break;

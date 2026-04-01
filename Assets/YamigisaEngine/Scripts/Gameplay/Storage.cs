@@ -7,7 +7,7 @@ namespace Yamigisa
     [RequireComponent(typeof(InteractiveObject), typeof(Placeable))]
     public class Storage : MonoBehaviour, ISavable
     {
-        [SerializeField] private string storageId;
+        [HideInInspector][SerializeField] private string storageId;
 
         [Header("Storage Settings")]
         [SerializeField] private List<Inventory.StartingItem> startingItems;

@@ -81,11 +81,7 @@ namespace Yamigisa
             if (chunkMap.ContainsKey(coord))
                 return;
 
-            Vector3 worldPos = new Vector3(
-                coord.x * fixedChunkWorldSize.x,
-                coord.y * fixedChunkWorldSize.y,
-                0f
-            );
+            Vector3 worldPos = ChunkToWorldPos(coord);
 
             BiomeGroup group = GetBiomeGroupByChunkCoord(coord);
             if (group == null || group.biomes == null || group.biomes.Count == 0)
@@ -96,17 +92,27 @@ namespace Yamigisa
 
             WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
 
-            // IMPORTANT: pass spawnObjects into the chunk
+            // keep your original initialize call intact
             chunk.Initialize(biome, chunk.size, seed, spawnObjects);
 
             if (!chunkMap.ContainsKey(coord))
                 chunkMap.Add(coord, chunk);
         }
 
+        private Vector2 GetActualChunkWorldSize()
+        {
+            if (chunkPrefab != null)
+                return chunkPrefab.GetWorldSize();
+
+            return fixedChunkWorldSize;
+        }
+
         private Vector2Int WorldToChunkCoord(Vector3 worldPos)
         {
-            int x = Mathf.FloorToInt(worldPos.x / fixedChunkWorldSize.x);
-            int y = Mathf.FloorToInt(worldPos.y / fixedChunkWorldSize.y);
+            Vector2 chunkWorldSize = GetActualChunkWorldSize();
+
+            int x = Mathf.RoundToInt(worldPos.x / chunkWorldSize.x);
+            int y = Mathf.RoundToInt(worldPos.y / chunkWorldSize.y);
 
             return new Vector2Int(x, y);
         }
@@ -195,9 +201,11 @@ namespace Yamigisa
 
         private Vector3 ChunkToWorldPos(Vector2Int coord)
         {
+            Vector2 chunkWorldSize = GetActualChunkWorldSize();
+
             return new Vector3(
-                coord.x * fixedChunkWorldSize.x,
-                coord.y * fixedChunkWorldSize.y,
+                coord.x * chunkWorldSize.x,
+                coord.y * chunkWorldSize.y,
                 0f
             );
         }
@@ -205,10 +213,11 @@ namespace Yamigisa
         // ✅ SAFE conversion for legacy saves only (no FloorToInt)
         private Vector2Int WorldToChunkCoordSafe(Vector3 worldPos)
         {
-            float fx = worldPos.x / fixedChunkWorldSize.x;
-            float fy = worldPos.y / fixedChunkWorldSize.y;
+            Vector2 chunkWorldSize = GetActualChunkWorldSize();
 
-            // Round, not floor (floor is the reason your bottom shifts)
+            float fx = worldPos.x / chunkWorldSize.x;
+            float fy = worldPos.y / chunkWorldSize.y;
+
             int x = Mathf.RoundToInt(fx);
             int y = Mathf.RoundToInt(fy);
 

@@ -13,16 +13,10 @@ MonoBehaviour:
   m_Name: Forest 2
   m_EditorClassIdentifier: 
   biomeName: Forest
-  groundTile: {fileID: 0}
-  biomePrefab: {fileID: 6773550762760936033, guid: d3e1606c0d95f5a499aa549b0f643427, type: 3}
-  resourceSpawns:
-  - prefab: {fileID: 2358930305471353791, guid: 3249a26d51e8c924c9c572acb8920888, type: 3}
-    minSpawn: 1
-    maxSpawn: 1
-  creatureSpawns:
-  - prefab: {fileID: 2092437481071958072, guid: 58e7f5fb2222cb442b19960658ccc1ba, type: 3}
-    minSpawn: 1
-    maxSpawn: 1
+  groundTile: {fileID: 11400000, guid: 97b25e67da5ca124f98d97b9c2fa34c9, type: 2}
+  biomePrefab: {fileID: 0}
+  resourceSpawns: []
+  creatureSpawns: []
   speedAddition: 1
   attributeModifiers:
   - type: 0

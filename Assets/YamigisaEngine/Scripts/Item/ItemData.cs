@@ -188,6 +188,7 @@ namespace Yamigisa
     public enum EquipmentSlotType
     {
         None,
+        Weapon,
         Head,
         Chest,
         Legs,

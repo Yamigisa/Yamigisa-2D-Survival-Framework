@@ -12,6 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2f93dde061471546ad2871a4336cee0, type: 3}
   m_Name: Destroy
   m_EditorClassIdentifier: 
-  title: Chop
-  choppableItems:
-  - {fileID: 11400000, guid: e252f35e241493643b5b5d0e8a7545b0, type: 2}
+  title: Destroy

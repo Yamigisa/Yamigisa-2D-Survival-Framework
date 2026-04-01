@@ -1,46 +1,46 @@
-using UnityEngine;
+    using UnityEngine;
 
-namespace Yamigisa
-{
-    public class BiomeTrigger : MonoBehaviour
+    namespace Yamigisa
     {
-        [Header("If Customized Regions")]
-        [SerializeField] private bool useCustomBiome = false;
-
-        [SerializeField] private BiomeData customBiomeData;
-
-        private BiomeData biomeData;
-
-        void Start()
+        public class BiomeTrigger : MonoBehaviour
         {
-            if (useCustomBiome)
-            {
-                biomeData = customBiomeData;
-            }
-            else
-            {
-                WorldChunk chunk = GetComponentInParent<WorldChunk>();
+            [Header("If Customized Regions")]
+            [SerializeField] private bool useCustomBiome = false;
 
-                if (chunk != null)
-                    biomeData = chunk.biome;
+            [SerializeField] private BiomeData customBiomeData;
+
+            private BiomeData biomeData;
+
+            void Start()
+            {
+                if (useCustomBiome)
+                {
+                    biomeData = customBiomeData;
+                }
                 else
-                    Debug.LogWarning($"BiomeTrigger on {name} has no WorldChunk parent.");
+                {
+                    WorldChunk chunk = GetComponentInParent<WorldChunk>();
+
+                    if (chunk != null)
+                        biomeData = chunk.biome;
+                    else
+                        Debug.LogWarning($"BiomeTrigger on {name} has no WorldChunk parent.");
+                }
             }
-        }
 
-        void OnTriggerEnter2D(Collider2D other)
-        {
-            if (biomeData == null)
-                return;
-
-            if (other.CompareTag("Player"))
+            void OnTriggerEnter2D(Collider2D other)
             {
-                CharacterBiome currentCharacterBiome =
-                    other.GetComponentInParent<CharacterBiome>();
+                if (biomeData == null)
+                    return;
 
-                if (currentCharacterBiome != null)
-                    currentCharacterBiome.SetBiome(biomeData);
+                if (other.CompareTag("Player"))
+                {
+                    CharacterBiome currentCharacterBiome =
+                        other.GetComponentInParent<CharacterBiome>();
+
+                    if (currentCharacterBiome != null)
+                        currentCharacterBiome.SetBiome(biomeData);
+                }
             }
         }
     }
-}

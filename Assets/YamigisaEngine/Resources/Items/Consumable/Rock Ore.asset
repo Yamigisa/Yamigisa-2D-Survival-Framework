@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Rock Ore
+  m_EditorClassIdentifier: 
+  id: c8b05487-551d-4d05-9466-89313d62a2aa
+  itemPrefab: {fileID: 3120585652245863348, guid: 426a79df234afa1428b764fcbbeff0a3, type: 3}
+  itemName: Rock Ore
+  iconWorld: {fileID: -8855606410056893495, guid: 45e20e5818efacb40ab2835c3d483951, type: 3}
+  iconInventory: {fileID: 0}
+  description: 
+  itemType: 2
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions: []
+  growthStages:
+  - sprite: {fileID: -3518438232023175874, guid: b65d375518e079e47b8608be0b64f117, type: 3}
+    duration: 20
+  - sprite: {fileID: -1827954403707261899, guid: 0e67e324b8e5f114a8c5625f277f6316, type: 3}
+    duration: 20
+  growthTimeMode: 0
+  consumableEffects: []
+  equipmentSlotType: 0
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
+  m_Name: Wood
+  m_EditorClassIdentifier: 
+  id: 00d45b8d-b6af-4354-98ad-b0945b0627eb
+  itemPrefab: {fileID: 1977637342601640347, guid: df8b1b851a9ac9f4a918354ec357ef9b, type: 3}
+  itemName: Wood
+  iconWorld: {fileID: 4082595788848827377, guid: 4f141bfcc57658b4789c7490e1a94e05, type: 3}
+  iconInventory: {fileID: 4082595788848827377, guid: 4f141bfcc57658b4789c7490e1a94e05, type: 3}
+  description: 
+  itemType: 0
+  maxAmount: 99
+  isDroppable: 1
+  isStackable: 1
+  groups: []
+  itemActions:
+  - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
+  - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
+  growthStages: []
+  growthTimeMode: 0
+  consumableEffects: []
+  equipmentSlotType: 0
+  bagSizeIncrease: 5
+  equipmentStats: []
+  isCraftable: 0
+  craftGroupsNeeded: []
+  craftItemsNeeded: []
+  craftResultAmount: 1

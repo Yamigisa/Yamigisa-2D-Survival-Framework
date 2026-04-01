@@ -15,4 +15,3 @@ MonoBehaviour:
   groupName: Forest Group
   biomes:
   - {fileID: 11400000, guid: 840441c9912c69448b227ee7b0110227, type: 2}
-  - {fileID: 11400000, guid: a4b65d21f13c76d45a7c62be10873f24, type: 2}

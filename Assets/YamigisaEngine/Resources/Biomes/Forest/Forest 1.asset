@@ -16,13 +16,28 @@ MonoBehaviour:
   groundTile: {fileID: 11400000, guid: 182ebfcecc3105a4bb80a67f4c29c05c, type: 2}
   biomePrefab: {fileID: 0}
   resourceSpawns:
-  - prefab: {fileID: 2358930305471353791, guid: 3249a26d51e8c924c9c572acb8920888, type: 3}
+  - prefab: {fileID: 9042773330347772050, guid: 4f892b4efd9f021449fc068090c68622, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 937925811710560234, guid: 0bb0b5333c3b18a4490f560d62de3be0, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 3580295204913554859, guid: 08765c4607d17784f92f7d884f035461, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 5575712793539522632, guid: 10085508efa9c654abbbffe444b18703, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 3120585652245863348, guid: 426a79df234afa1428b764fcbbeff0a3, type: 3}
     minSpawn: 1
     maxSpawn: 1
   creatureSpawns:
-  - prefab: {fileID: 0}
-    minSpawn: 0
-    maxSpawn: 0
+  - prefab: {fileID: 9115497323104225838, guid: 7c1172f36943f5d4d9cf2e951204da5c, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 2092437481071958072, guid: 58e7f5fb2222cb442b19960658ccc1ba, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
   speedAddition: 1
   attributeModifiers:
   - type: 0
