@@ -80,7 +80,10 @@ namespace Yamigisa
             {
                 if (PlaceableSystem.instance.IsInBuildMode ||
                     PlaceableSystem.instance.IsInteractionBlocked)
+                {
+                    Debug.Log("[Hover] Blocked by PlaceableSystem");
                     return;
+                }
             }
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -90,14 +93,31 @@ namespace Yamigisa
                 Character.instance.interactObjectLayer
             );
 
+            if (hit.collider != null)
+            {
+                Debug.Log("[Hover] Hit collider: " + hit.collider.name);
+            }
+            else
+            {
+                Debug.Log("[Hover] No collider hit");
+            }
+
             InteractiveObject current =
                 hit.collider ? hit.collider.GetComponent<InteractiveObject>() : null;
+
+            if (current == null && hit.collider != null)
+            {
+                current = hit.collider.GetComponentInParent<InteractiveObject>();
+                if (current != null)
+                    Debug.Log("[Hover] Found InteractiveObject in parent: " + current.name);
+            }
 
             if (hovered == current)
                 return;
 
             if (hovered != null)
             {
+                Debug.Log("[Hover] Removing hover from: " + hovered.name);
                 hovered.SetOutline(false);
                 TextTooltip.Instance.CloseInteractiveObjectTexts();
             }
@@ -106,6 +126,7 @@ namespace Yamigisa
 
             if (hovered != null && !Character.instance.IsBusy)
             {
+                Debug.Log("[Hover] Now hovering: " + hovered.name);
                 hovered.SetOutline(true);
                 TextTooltip.Instance.ShowInteractiveObjectText(hovered);
             }
@@ -117,51 +138,52 @@ namespace Yamigisa
             {
                 if (PlaceableSystem.instance.IsInBuildMode ||
                     PlaceableSystem.instance.IsInteractionBlocked)
+                {
                     return;
+                }
             }
 
-            if (hovered == null) return;
-            if (Character.instance.IsBusy) return;
-            if (IsPointerOverAnyUI()) return;
-            if (hovered.isRegrowing) return;
+            if (hovered == null)
+                return;
+
+            if (Character.instance.IsBusy)
+                return;
+
+            if (IsPointerOverAnyUI())
+                return;
+
+            if (hovered.isRegrowing)
+                return;
 
             Character character = Character.instance.GetCharacter();
             CharacterControls controls = Character.instance.characterControls;
 
-            for (int i = 0; i < hovered.Actions.Count && i < 4; i++)
-            {
-                bool triggered = false;
-
-                switch (i)
-                {
-                    case 0:
-                        triggered = controls.IsPressedDown(controls.interaction1);
-                        break;
-
-                    case 1:
-                        triggered = controls.IsPressedDown(controls.interaction2);
-                        break;
-                }
-
-                if (!triggered) continue;
-
-                if (hovered.IsCharacterInRange(character))
-                {
-                    hovered.Actions[i].DoAction(character, hovered);
-                }
-                else
-                {
-                    character.characterMovement.MoveTo(
-                        hovered.transform.position,
-                        hovered.interactRange
-                    );
-
-                    character.SetPendingInteraction(hovered);
-                }
-
-                TextTooltip.Instance.CloseInteractiveObjectTexts();
+            int actionIndex = controls.GetPressedInteractionActionIndexDown();
+            if (actionIndex < 0)
                 return;
+
+            if (hovered.Actions == null || actionIndex >= hovered.Actions.Count)
+                return;
+
+            ActionBase action = hovered.Actions[actionIndex];
+            if (action == null)
+                return;
+
+            if (hovered.IsCharacterInRange(character))
+            {
+                action.DoAction(character, hovered);
             }
+            else
+            {
+                character.characterMovement.MoveTo(
+                    hovered.transform.position,
+                    hovered.interactRange
+                );
+
+                character.SetPendingInteraction(hovered, actionIndex);
+            }
+
+            TextTooltip.Instance.CloseInteractiveObjectTexts();
         }
 
         public bool IsCharacterInRange(Character character)
@@ -169,22 +191,59 @@ namespace Yamigisa
             float sqrDistance =
                 (character.transform.position - transform.position).sqrMagnitude;
 
-            return sqrDistance <= interactRange * interactRange;
+            float range = interactRange * interactRange;
+
+            Debug.Log($"[Range] Distance: {sqrDistance} | Required: {range}");
+
+            return sqrDistance <= range;
         }
 
-        public void InteractObject(Character character)
+        public void InteractObject(Character character, int actionIndex = 0)
         {
             if (Actions == null || Actions.Count == 0 || isRegrowing)
                 return;
 
-            Actions[0].DoAction(character, this);
+            if (actionIndex < 0 || actionIndex >= Actions.Count)
+                return;
 
+            if (Actions[actionIndex] == null)
+                return;
+
+            Actions[actionIndex].DoAction(character, this);
             TextTooltip.Instance.CloseInteractiveObjectTexts();
         }
 
         private bool IsPointerOverAnyUI()
         {
-            return EventSystem.current.IsPointerOverGameObject();
+            if (EventSystem.current == null)
+            {
+                Debug.Log("[UI Check] No EventSystem");
+                return false;
+            }
+
+            PointerEventData eventData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, results);
+
+            if (results.Count == 0)
+            {
+                Debug.Log("[UI Check] No UI hit");
+                return false;
+            }
+
+            Debug.Log("[UI Check] UI hits count: " + results.Count);
+
+            for (int i = 0; i < results.Count; i++)
+            {
+                var r = results[i];
+                Debug.Log("[UI Check] Hit: " + r.gameObject.name);
+            }
+
+            return results.Count > 0;
         }
 
         public void SetOutline(bool on)

@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 1
   MaxValue: 100
-  CurrentValue: 100
+  CurrentValue: 0
+  BaseMaxValue: 100
   DepleteValuePerMinute: -38
   RegenerateValuePerMinute: 0
-  HealthLossValue: -5
-  MoveSpeedLossValue: -1
+  triggerGameOver: 0
+  DepletedModifiers: []
+  MoveSpeedLossValue: 0
   FillImage: {fileID: -5466495415059239149, guid: b6d4e7ee9c709594b8e493d1e45a449a, type: 3}
   BackgroundImage: {fileID: 1150933373218395779, guid: 138fbac6aa8b51b4c83dfeb0aaee1c65, type: 3}

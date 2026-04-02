@@ -42,14 +42,12 @@ namespace Yamigisa
 
         public bool IsPressed(InputBinding binding)
         {
-            // Keyboard
             foreach (var key in binding.keyboardKeys)
             {
                 if (Input.GetKey(key))
                     return true;
             }
 
-            // Gamepad
             if (gamepad != null)
             {
                 foreach (var button in binding.gamepadButtons)
@@ -64,14 +62,12 @@ namespace Yamigisa
 
         public bool IsPressedDown(InputBinding binding)
         {
-            // Keyboard
             foreach (var key in binding.keyboardKeys)
             {
                 if (Input.GetKeyDown(key))
                     return true;
             }
 
-            // Gamepad
             if (gamepad != null)
             {
                 foreach (var button in binding.gamepadButtons)
@@ -92,7 +88,6 @@ namespace Yamigisa
                     return true;
             }
 
-            Gamepad gamepad = Gamepad.current;
             if (gamepad != null)
             {
                 foreach (var button in binding.gamepadButtons)
@@ -105,6 +100,27 @@ namespace Yamigisa
             return false;
         }
 
+        public int GetPressedInteractionActionIndexDown()
+        {
+            if (IsPressedDown(interaction1))
+                return 0;
+
+            if (IsPressedDown(interaction2))
+                return 1;
+
+            return -1;
+        }
+
+        public bool IsInteractionIndexPressedDown(int index)
+        {
+            switch (index)
+            {
+                case 0: return IsPressedDown(interaction1);
+                case 1: return IsPressedDown(interaction2);
+                default: return false;
+            }
+        }
+
         public Ray GetMouseCameraRay()
         {
             return Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -112,7 +128,6 @@ namespace Yamigisa
 
         private void Reset()
         {
-            // MOVEMENT
             moveUp = new InputBinding(KeyCode.W, GamepadButton.DpadUp);
             moveDown = new InputBinding(KeyCode.S, GamepadButton.DpadDown);
             moveLeft = new InputBinding(KeyCode.A, GamepadButton.DpadLeft);
@@ -122,21 +137,16 @@ namespace Yamigisa
             jump = new InputBinding(KeyCode.Space, GamepadButton.South);
             crouch = new InputBinding(KeyCode.LeftControl, GamepadButton.East);
 
-            // INTERACTION
-            interaction1 = new InputBinding(KeyCode.E, GamepadButton.West);
+            interaction1 = new InputBinding(KeyCode.Mouse0, GamepadButton.West);
             interaction2 = new InputBinding(KeyCode.F, GamepadButton.North);
 
-            // INVENTORY
             inventory = new InputBinding(KeyCode.I, GamepadButton.Start);
-            useItem = new InputBinding(KeyCode.Mouse0, GamepadButton.RightTrigger);
+            useItem = new InputBinding(KeyCode.E, GamepadButton.RightTrigger);
 
-            // CRAFTING
             crafting = new InputBinding(KeyCode.C, GamepadButton.Select);
 
-            // CANCEL
             cancel = new InputBinding(KeyCode.Escape, GamepadButton.B);
 
-            // PAUSE
             pause = new InputBinding(KeyCode.Escape, GamepadButton.Start);
         }
     }

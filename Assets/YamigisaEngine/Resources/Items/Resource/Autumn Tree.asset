@@ -22,7 +22,8 @@ MonoBehaviour:
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
-  groups: []
+  groups:
+  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
   itemActions: []
   growthStages:
   - sprite: {fileID: -5573939471161964187, guid: f058a123919a82d4a8c37a831b144f7f, type: 3}

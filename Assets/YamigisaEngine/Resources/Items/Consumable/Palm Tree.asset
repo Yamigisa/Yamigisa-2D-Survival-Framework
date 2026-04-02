@@ -18,11 +18,12 @@ MonoBehaviour:
   iconWorld: {fileID: 2000782240349640884, guid: 6093487f98e207a44a71cd1e67d3ead5, type: 3}
   iconInventory: {fileID: 0}
   description: 
-  itemType: 2
+  itemType: 0
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
-  groups: []
+  groups:
+  - {fileID: 11400000, guid: 3a0ecf98981c42049bad8c873434ed26, type: 2}
   itemActions: []
   growthStages:
   - sprite: {fileID: 5614660715887065897, guid: 2c1fdc5af70269241aa75cf32cadce20, type: 3}

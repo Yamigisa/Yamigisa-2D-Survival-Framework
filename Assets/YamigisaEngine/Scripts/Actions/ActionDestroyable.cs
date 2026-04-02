@@ -57,8 +57,6 @@ namespace Yamigisa
                     destroyable.requiredItems.Any(requiredGroup =>
                         requiredGroup != null && requiredGroup == weaponGroup));
 
-            Debug.Log("hasMatchingGroup = " + hasMatchingGroup);
-
             bool canAttackWithTool =
                 weaponItem != null &&
                 weaponItem.itemType == ItemType.Equipment &&

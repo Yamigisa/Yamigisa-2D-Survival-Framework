@@ -33,6 +33,9 @@ namespace Yamigisa
                 area = new BoundsInt(Vector3Int.zero, Vector3Int.one);
             }
 
+            // temporary force for chest-sized placeables
+            area = new BoundsInt(Vector3Int.zero, new Vector3Int(1, 1, 1));
+
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
 
@@ -62,13 +65,24 @@ namespace Yamigisa
             BoundsInt areaTemp = area;
             areaTemp.position = positionInt;
 
-            Vector3 worldPos =
-      PlaceableSystem.instance.gridLayout.CellToWorld(positionInt)
-      + new Vector3(
-          PlaceableSystem.instance.gridLayout.cellSize.x * area.size.x * 0.5f,
-          PlaceableSystem.instance.gridLayout.cellSize.y * area.size.y * 0.5f,
-          0f
-      );
+            Vector3 worldPos = PlaceableSystem.instance.gridLayout.CellToWorld(positionInt);
+
+            if (area.size.x <= 1 && area.size.y <= 1)
+            {
+                worldPos += new Vector3(
+                    PlaceableSystem.instance.gridLayout.cellSize.x * 0.5f,
+                    PlaceableSystem.instance.gridLayout.cellSize.y * 0.5f,
+                    0f
+                );
+            }
+            else
+            {
+                worldPos += new Vector3(
+                    PlaceableSystem.instance.gridLayout.cellSize.x * area.size.x * 0.5f,
+                    PlaceableSystem.instance.gridLayout.cellSize.y * area.size.y * 0.5f,
+                    0f
+                );
+            }
 
             transform.position = worldPos;
 
@@ -80,54 +94,13 @@ namespace Yamigisa
 
         public void SetSpriteColor(bool canPlace)
         {
-            if (canPlace)
-            {
-                spriteRenderer.color = defaultColor;
-            }
-            else
-            {
-                spriteRenderer.color = cantPlaceColor;
-            }
-        }
+            if (spriteRenderer == null)
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
-        private void OnDrawGizmos()
-        {
-            if (area.size == Vector3Int.zero) return;
+            if (spriteRenderer == null)
+                return;
 
-            GridLayout grid = null;
-
-            // Play mode → use singleton
-            if (Application.isPlaying && PlaceableSystem.instance != null)
-            {
-                grid = PlaceableSystem.instance.gridLayout;
-            }
-            // Edit mode → find grid in scene
-            else
-            {
-                grid = FindAnyObjectByType<GridLayout>();
-            }
-
-            if (grid == null) return;
-
-            Vector3Int baseCell = grid.WorldToCell(transform.position);
-
-            Gizmos.color = Color.cyan;
-
-            for (int x = 0; x < area.size.x; x++)
-            {
-                for (int y = 0; y < area.size.y; y++)
-                {
-                    Vector3Int cell = baseCell + new Vector3Int(x, y, 0);
-
-                    Vector3 cellWorld = grid.CellToWorld(cell);
-                    Vector3 cellSize = grid.cellSize;
-
-                    Gizmos.DrawWireCube(
-                        cellWorld + cellSize * 0.5f,
-                        cellSize
-                    );
-                }
-            }
+            spriteRenderer.color = canPlace ? defaultColor : cantPlaceColor;
         }
     }
 }

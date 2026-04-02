@@ -1975,7 +1975,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2133,7 +2133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2849,7 +2849,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3296,7 +3296,8 @@ MonoBehaviour:
   - {fileID: 1560584483}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   disabledColor: {r: 0.2754717, g: 0.2754717, b: 0.2754717, a: 0.28627452}
-  screenOffset: {x: 0, y: 100, z: 0}
+  topMargin: 16
+  extraScreenOffset: {x: 0, y: 100, z: 0}
 --- !u!1001 &966785172931110836
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4036,7 +4037,7 @@ PrefabInstance:
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[2].item
       value: 
-      objectReference: {fileID: 11400000, guid: b344f699060a2a342966b972780dab59, type: 2}
+      objectReference: {fileID: 11400000, guid: 3ea8ddf29ada88949a8d06d460a30cb9, type: 2}
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[3].item
       value: 
@@ -4056,7 +4057,7 @@ PrefabInstance:
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[7].item
       value: 
-      objectReference: {fileID: 11400000, guid: 4b877e51d9a603b4fae7dc5b9a591043, type: 2}
+      objectReference: {fileID: 11400000, guid: b2a5a2f2eba09b243ad6b57f3727915d, type: 2}
     - target: {fileID: 4693832569098602529, guid: 1f298afdb189c6441862d953e7f69e03, type: 3}
       propertyPath: startingItems.Array.data[8].item
       value: 
@@ -4960,6 +4961,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 398612402662416744, guid: c2929af977952ef41a34e98fb672d443, type: 3}
+      propertyPath: m_CameraType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 714083658698003909, guid: c2929af977952ef41a34e98fb672d443, type: 3}
+      propertyPath: 'useItem.keyboardKeys.Array.data[0]'
+      value: 101
+      objectReference: {fileID: 0}
+    - target: {fileID: 3645157260260038297, guid: c2929af977952ef41a34e98fb672d443, type: 3}
+      propertyPath: m_ClearFlags
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3662977993977089539, guid: c2929af977952ef41a34e98fb672d443, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

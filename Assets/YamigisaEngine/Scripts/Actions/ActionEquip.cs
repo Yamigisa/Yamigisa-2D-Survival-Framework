@@ -18,9 +18,12 @@ namespace Yamigisa
             if (slot.ItemData.itemType != ItemType.Equipment)
                 return equipTitle;
 
-            var equippedItem = Inventory.Instance.equipmentManager.GetEquipped(slot.ItemData.equipmentSlotType);
+            var equipmentManager = Inventory.Instance?.equipmentManager;
+            if (equipmentManager == null)
+                return equipTitle;
 
-            // If same item already equipped → show Unequip
+            var equippedItem = equipmentManager.GetEquipped(slot.ItemData.equipmentSlotType);
+
             if (equippedItem == slot.ItemData)
                 return unequipTitle;
 
@@ -32,33 +35,41 @@ namespace Yamigisa
             if (slot == null || slot.ItemData == null)
                 return;
 
-            if (slot.ItemData.itemType != ItemType.Equipment)
+            ItemData clickedItem = slot.ItemData;
+
+            if (clickedItem.itemType != ItemType.Equipment)
                 return;
 
-            var equippedItem = Inventory.Instance.equipmentManager.GetEquipped(slot.ItemData.equipmentSlotType);
+            var inventory = Inventory.Instance;
+            if (inventory == null || inventory.equipmentManager == null)
+                return;
+
+            var equipmentManager = inventory.equipmentManager;
+            var equippedItem = equipmentManager.GetEquipped(clickedItem.equipmentSlotType);
 
             // ===== UNEQUIP =====
-            // ===== UNEQUIP =====
-            if (equippedItem == slot.ItemData)
+            if (equippedItem == clickedItem)
             {
-                ItemData itemToReturn = slot.ItemData; // cache BEFORE unequip
-                Inventory.Instance.equipmentManager.Unequip(slot.ItemData.equipmentSlotType);
+                bool removed = equipmentManager.Unequip(clickedItem.equipmentSlotType);
+
+                if (removed)
+                {
+                    inventory.AddItem(clickedItem, 1);
+                }
+
                 return;
             }
 
-            // ===== EQUIP =====
-            ItemData previous = equippedItem;
-
-            bool equipped = Inventory.Instance.equipmentManager.Equip(slot.ItemData);
+            // ===== EQUIP / SWAP =====
+            bool equipped = equipmentManager.Equip(clickedItem);
 
             if (equipped)
             {
-                Inventory.Instance.ReduceSlotAmount(slot, 1);
+                // remove ONLY the clicked item from inventory
+                inventory.ReduceSlotAmount(slot, 1);
 
-                if (previous != null)
-                {
-                    // Inventory.Instance.AddItem(previous, 1);
-                }
+                // DO NOT add previous item here
+                // EquipmentManager.Equip() already returns old item to inventory
             }
         }
 
