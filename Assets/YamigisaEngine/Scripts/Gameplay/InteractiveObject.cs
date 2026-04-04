@@ -81,7 +81,6 @@ namespace Yamigisa
                 if (PlaceableSystem.instance.IsInBuildMode ||
                     PlaceableSystem.instance.IsInteractionBlocked)
                 {
-                    Debug.Log("[Hover] Blocked by PlaceableSystem");
                     return;
                 }
             }
@@ -93,23 +92,12 @@ namespace Yamigisa
                 Character.instance.interactObjectLayer
             );
 
-            if (hit.collider != null)
-            {
-                Debug.Log("[Hover] Hit collider: " + hit.collider.name);
-            }
-            else
-            {
-                Debug.Log("[Hover] No collider hit");
-            }
-
             InteractiveObject current =
                 hit.collider ? hit.collider.GetComponent<InteractiveObject>() : null;
 
             if (current == null && hit.collider != null)
             {
                 current = hit.collider.GetComponentInParent<InteractiveObject>();
-                if (current != null)
-                    Debug.Log("[Hover] Found InteractiveObject in parent: " + current.name);
             }
 
             if (hovered == current)
@@ -117,7 +105,6 @@ namespace Yamigisa
 
             if (hovered != null)
             {
-                Debug.Log("[Hover] Removing hover from: " + hovered.name);
                 hovered.SetOutline(false);
                 TextTooltip.Instance.CloseInteractiveObjectTexts();
             }
@@ -126,7 +113,6 @@ namespace Yamigisa
 
             if (hovered != null && !Character.instance.IsBusy)
             {
-                Debug.Log("[Hover] Now hovering: " + hovered.name);
                 hovered.SetOutline(true);
                 TextTooltip.Instance.ShowInteractiveObjectText(hovered);
             }
@@ -193,8 +179,6 @@ namespace Yamigisa
 
             float range = interactRange * interactRange;
 
-            Debug.Log($"[Range] Distance: {sqrDistance} | Required: {range}");
-
             return sqrDistance <= range;
         }
 
@@ -217,7 +201,6 @@ namespace Yamigisa
         {
             if (EventSystem.current == null)
             {
-                Debug.Log("[UI Check] No EventSystem");
                 return false;
             }
 
@@ -231,16 +214,7 @@ namespace Yamigisa
 
             if (results.Count == 0)
             {
-                Debug.Log("[UI Check] No UI hit");
                 return false;
-            }
-
-            Debug.Log("[UI Check] UI hits count: " + results.Count);
-
-            for (int i = 0; i < results.Count; i++)
-            {
-                var r = results[i];
-                Debug.Log("[UI Check] Hit: " + r.gameObject.name);
             }
 
             return results.Count > 0;
@@ -259,7 +233,6 @@ namespace Yamigisa
             }
             else
             {
-                Debug.Log("No regrowth for " + gameObject.name);
                 MarkPickedUp();
                 Destroy(gameObject);
             }
@@ -279,8 +252,6 @@ namespace Yamigisa
         {
             if (!CanStartRegrowth())
                 return;
-
-            Debug.Log("starting regrowth for " + gameObject.name);
 
             isRegrowing = true;
             pickedUp = false;
@@ -338,8 +309,6 @@ namespace Yamigisa
 
             if (remainingGameMinutes <= 0)
                 AdvanceGrowthStage();
-
-            Debug.Log("remaining game minutes for " + gameObject.name + ": " + remainingGameMinutes);
         }
 
         private void AdvanceGrowthStage()
@@ -352,7 +321,6 @@ namespace Yamigisa
                 return;
             }
 
-            Debug.Log("Current stage growth" + currentGrowthStageIndex);
             ApplyCurrentGrowthStage();
         }
 
@@ -378,8 +346,6 @@ namespace Yamigisa
             Destroyable destroyable = GetComponent<Destroyable>();
             if (destroyable != null)
                 destroyable.ResetDestroyableStateAfterRegrow();
-
-            Debug.Log("finished regrowth for " + gameObject.name);
         }
 
         private void DisableHarvestInteraction()

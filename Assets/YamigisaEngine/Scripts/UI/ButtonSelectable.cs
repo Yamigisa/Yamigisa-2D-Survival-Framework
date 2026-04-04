@@ -1,13 +1,16 @@
 using UnityEngine.UI;
 using UnityEngine;
 
-public class ButtonInteractiveObject : MonoBehaviour
+namespace Yamigisa
 {
-    public Button Button;
-    [SerializeField] private Text label;
-
-    public void SetText(string newText)
+    public class ButtonInteractiveObject : MonoBehaviour
     {
-        if (label) label.text = newText;
+        public Button Button;
+        [SerializeField] private Text label;
+
+        public void SetText(string newText)
+        {
+            if (label) label.text = newText;
+        }
     }
 }

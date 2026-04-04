@@ -2,49 +2,52 @@
 using UnityEditor;
 using UnityEngine;
 using System.IO;
-using Yamigisa;
 
-[CustomEditor(typeof(SaveManager))]
-public class SaveManagerEditor : Editor
+namespace Yamigisa
 {
-    public override void OnInspectorGUI()
+
+    [CustomEditor(typeof(SaveManager))]
+    public class SaveManagerEditor : Editor
     {
-        DrawDefaultInspector();
-
-        GUILayout.Space(15);
-        GUILayout.Label("Save Controls", EditorStyles.boldLabel);
-
-        SaveManager saveManager = (SaveManager)target;
-
-        GUILayout.Space(5);
-
-        if (GUILayout.Button("Save Game"))
+        public override void OnInspectorGUI()
         {
-            if (Application.isPlaying)
-                saveManager.SaveGame();
-            else
-                Debug.LogWarning("Enter Play Mode to save.");
-        }
+            DrawDefaultInspector();
 
-        if (GUILayout.Button("Load Game"))
-        {
-            saveManager.LoadGame();
-        }
+            GUILayout.Space(15);
+            GUILayout.Label("Save Controls", EditorStyles.boldLabel);
 
-        GUILayout.Space(10);
+            SaveManager saveManager = (SaveManager)target;
 
-        if (GUILayout.Button("Delete Save"))
-        {
-            string path = Application.persistentDataPath + "/save.json";
+            GUILayout.Space(5);
 
-            if (File.Exists(path))
+            if (GUILayout.Button("Save Game"))
             {
-                File.Delete(path);
-                Debug.Log("Save file deleted: " + path);
+                if (Application.isPlaying)
+                    saveManager.SaveGame();
+                else
+                    Debug.LogWarning("Enter Play Mode to save.");
             }
-            else
+
+            if (GUILayout.Button("Load Game"))
             {
-                Debug.LogWarning("No save file found to delete.");
+                saveManager.LoadGame();
+            }
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("Delete Save"))
+            {
+                string path = Application.persistentDataPath + "/save.json";
+
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    Debug.Log("Save file deleted: " + path);
+                }
+                else
+                {
+                    Debug.LogWarning("No save file found to delete.");
+                }
             }
         }
     }
