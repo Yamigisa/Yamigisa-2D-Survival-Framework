@@ -5088,11 +5088,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8116096909202778776, guid: fc5bd7cd0a6ba2d4f89c98989010bb93, type: 3}
       propertyPath: m_CellSize.x
-      value: 0.01
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8116096909202778776, guid: fc5bd7cd0a6ba2d4f89c98989010bb93, type: 3}
       propertyPath: m_CellSize.y
-      value: 0.01
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
