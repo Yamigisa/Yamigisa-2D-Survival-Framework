@@ -28,7 +28,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -44,14 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbc01cab6a96c45408f743c7defc3762, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  generateOnStart: 1
+  generateProcedurally: 1
   chunkPrefab: {fileID: 5714733488464941041, guid: c24a02e868a7ac04394dd169fdda3e8a, type: 3}
   biomeZones:
   - zoneName: Forest
     minDistance: 0
     biomeGroup: {fileID: 11400000, guid: 6cacda48b184c5b4eaad87cbc538ddf8, type: 2}
-  - zoneName: Meadow
-    minDistance: 5
-    biomeGroup: {fileID: 11400000, guid: 1e1dbc92e61f1ca44a21c4d3ef36fc81, type: 2}
   loadRadius: 1
-  autoDetectChunkSize: 1
-  manualChunkWorldSize: {x: 25, y: 14.4}
+  editorExpansionRadius: 1
+  fixedChunkWorldSize: {x: 15, y: 15}

@@ -10,33 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
-  m_Name: Ring
+  m_Name: Grass
   m_EditorClassIdentifier: 
-  id: 662ed226-1f25-4936-9e4c-db85ece90378
-  itemPrefab: {fileID: 6658562176767162819, guid: fa9023cdf37e17d47ac8373ad662791a, type: 3}
-  itemName: Ring
-  iconWorld: {fileID: -5439441341514661981, guid: 018d6ca6f0b3e6b40842aef0cb8074a8, type: 3}
-  iconInventory: {fileID: -5439441341514661981, guid: 018d6ca6f0b3e6b40842aef0cb8074a8, type: 3}
+  id: 1c96dbe7-49a6-4590-b9ea-a218bcf1d267
+  itemPrefab: {fileID: 9051195908127952612, guid: 35b7898a2a99393409fd432c51a476a9, type: 3}
+  itemName: Grass
+  iconWorld: {fileID: -1618667294, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  iconInventory: {fileID: -1618667294, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
   description: 
-  itemType: 1
+  itemType: 0
   maxAmount: 99
   isDroppable: 1
-  isStackable: 0
-  groups:
-  - {fileID: 11400000, guid: e7d1f0de51634e540aaff003b64a6b63, type: 2}
+  isStackable: 1
+  groups: []
   itemActions:
-  - {fileID: 11400000, guid: 1f51a7742fc3fff4bb302c22f041d896, type: 2}
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
   - {fileID: 11400000, guid: 837589e8a5dce714bbef90dc5b0b8928, type: 2}
   growthStages: []
   growthTimeMode: 0
   consumableEffects: []
-  equipmentSlotType: 5
+  equipmentSlotType: 0
   bagSizeIncrease: 5
   equipmentStats: []
-  isCraftable: 1
+  isCraftable: 0
   craftGroupsNeeded: []
-  craftItemsNeeded:
-  - itemData: {fileID: 11400000, guid: 2c00d45d9db12ec48934cf70178a4b9c, type: 2}
-    Amount: 2
+  craftItemsNeeded: []
   craftResultAmount: 1

@@ -23,6 +23,7 @@ MonoBehaviour:
   isDroppable: 1
   isStackable: 0
   groups:
+  - {fileID: 11400000, guid: e7d1f0de51634e540aaff003b64a6b63, type: 2}
   - {fileID: 11400000, guid: c968cdc2e884b5b4293283a1ba70eeaf, type: 2}
   itemActions:
   - {fileID: 11400000, guid: 1f51a7742fc3fff4bb302c22f041d896, type: 2}
@@ -40,5 +41,9 @@ MonoBehaviour:
     value: 5
   isCraftable: 0
   craftGroupsNeeded: []
-  craftItemsNeeded: []
+  craftItemsNeeded:
+  - itemData: {fileID: 11400000, guid: a59c0dba6f2f2194d96c13f81adbff67, type: 2}
+    Amount: 1
+  - itemData: {fileID: 11400000, guid: 2c00d45d9db12ec48934cf70178a4b9c, type: 2}
+    Amount: 1
   craftResultAmount: 1

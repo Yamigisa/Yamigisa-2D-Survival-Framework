@@ -17,7 +17,7 @@ MonoBehaviour:
   CurrentValue: 100
   BaseMaxValue: 100
   DepleteValuePerMinute: 0
-  RegenerateValuePerMinute: 2
+  RegenerateValuePerMinute: 0
   triggerGameOver: 1
   DepletedModifiers: []
   MoveSpeedLossValue: 0

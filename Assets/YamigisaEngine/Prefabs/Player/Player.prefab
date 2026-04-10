@@ -364,6 +364,8 @@ MonoBehaviour:
   walkSpeed: 3
   unlimitedSprint: 0
   sprintSpeed: 5
+  sprintDuration: 5
+  sprintCooldown: 0.5
   jumpForce: 0.4
   jumpDuration: 0.35
   jumpDistance: 1.2
@@ -420,7 +422,7 @@ MonoBehaviour:
     keyboardKeys: 32010000
     gamepadButtons: 05000000
   interaction1:
-    keyboardKeys: 65000000
+    keyboardKeys: 43010000
     gamepadButtons: 07000000
   interaction2:
     keyboardKeys: 66000000
@@ -429,7 +431,7 @@ MonoBehaviour:
     keyboardKeys: 69000000
     gamepadButtons: 0c000000
   useItem:
-    keyboardKeys: 43010000
+    keyboardKeys: 65000000
     gamepadButtons: 21000000
   crafting:
     keyboardKeys: 63000000

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: CraftConsumables
   m_EditorClassIdentifier: 
   title: Craft Consumable
-  icon: {fileID: 366320403, guid: b631ed305dfd43c488e0f8edf5c829bc, type: 3}
+  icon: {fileID: -3726298092598412380, guid: 06de6eddf86a4354c84dfc23486f30cb, type: 3}

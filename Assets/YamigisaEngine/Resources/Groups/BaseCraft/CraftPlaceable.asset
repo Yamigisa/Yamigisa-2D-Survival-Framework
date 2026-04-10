@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb40ac6359aa01d4eb5c3085bce7fa9c, type: 3}
-  m_Name: CraftTools
+  m_Name: CraftPlaceable
   m_EditorClassIdentifier: 
-  title: Craft Tools
-  icon: {fileID: -9185522225806816756, guid: 06de6eddf86a4354c84dfc23486f30cb, type: 3}
+  title: CraftPlaceable
+  icon: {fileID: -5102134507766318963, guid: 92c36fc9ab5f56e40b1df6bfe24ddf64, type: 3}

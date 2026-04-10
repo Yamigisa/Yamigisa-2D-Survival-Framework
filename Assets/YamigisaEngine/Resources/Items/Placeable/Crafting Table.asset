@@ -22,7 +22,8 @@ MonoBehaviour:
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
-  groups: []
+  groups:
+  - {fileID: 11400000, guid: 930d96af94720a14d8a02d2722a3369a, type: 2}
   itemActions:
   - {fileID: 11400000, guid: a2198959cc46db94caa70f15f6da982f, type: 2}
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
@@ -33,7 +34,11 @@ MonoBehaviour:
   equipmentSlotType: 0
   bagSizeIncrease: 5
   equipmentStats: []
-  isCraftable: 0
+  isCraftable: 1
   craftGroupsNeeded: []
-  craftItemsNeeded: []
+  craftItemsNeeded:
+  - itemData: {fileID: 11400000, guid: a59c0dba6f2f2194d96c13f81adbff67, type: 2}
+    Amount: 2
+  - itemData: {fileID: 11400000, guid: 2c00d45d9db12ec48934cf70178a4b9c, type: 2}
+    Amount: 2
   craftResultAmount: 1

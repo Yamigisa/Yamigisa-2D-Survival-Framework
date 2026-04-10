@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c388561c6aa4b384ba5b9fda5153139c, type: 3}
   m_Name: Cheese
   m_EditorClassIdentifier: 
-  id: 
+  id: dc2f89a9-243e-4e20-b4e1-448a51c50476
   itemPrefab: {fileID: 2676166114392369376, guid: 9fe0fb5499babe348897322b4e1f9f8f, type: 3}
   itemName: Cheese
   iconWorld: {fileID: 44312295472614032, guid: 17144ee31c8653743889788f0f52a5bc, type: 3}
@@ -22,7 +22,8 @@ MonoBehaviour:
   maxAmount: 99
   isDroppable: 1
   isStackable: 1
-  groups: []
+  groups:
+  - {fileID: 11400000, guid: 63d7e6776f460684580410b7ff3a4e81, type: 2}
   itemActions:
   - {fileID: 11400000, guid: a828e9a68ecf5bc4d90176fc26071815, type: 2}
   - {fileID: 11400000, guid: 361ad1f64d04f4041b5822b77086d8d9, type: 2}
@@ -41,7 +42,9 @@ MonoBehaviour:
   equipmentSlotType: 0
   bagSizeIncrease: 5
   equipmentStats: []
-  isCraftable: 0
+  isCraftable: 1
   craftGroupsNeeded: []
-  craftItemsNeeded: []
+  craftItemsNeeded:
+  - itemData: {fileID: 11400000, guid: c21651d80d5598d4ca1eab3518e6af86, type: 2}
+    Amount: 2
   craftResultAmount: 1

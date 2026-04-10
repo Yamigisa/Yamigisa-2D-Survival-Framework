@@ -31,6 +31,18 @@ MonoBehaviour:
   - prefab: {fileID: 3120585652245863348, guid: 426a79df234afa1428b764fcbbeff0a3, type: 3}
     minSpawn: 1
     maxSpawn: 1
+  - prefab: {fileID: 4215366221962453354, guid: 5621074c7e9fb124696bab60f22ec131, type: 3}
+    minSpawn: 5
+    maxSpawn: 5
+  - prefab: {fileID: 1977637342601640347, guid: df8b1b851a9ac9f4a918354ec357ef9b, type: 3}
+    minSpawn: 5
+    maxSpawn: 5
+  - prefab: {fileID: 6255388806033804122, guid: e5d4e5f97288bde409b4e95513c98dcb, type: 3}
+    minSpawn: 1
+    maxSpawn: 1
+  - prefab: {fileID: 9051195908127952612, guid: 35b7898a2a99393409fd432c51a476a9, type: 3}
+    minSpawn: 5
+    maxSpawn: 5
   creatureSpawns:
   - prefab: {fileID: 9115497323104225838, guid: 7c1172f36943f5d4d9cf2e951204da5c, type: 3}
     minSpawn: 1
@@ -38,8 +50,5 @@ MonoBehaviour:
   - prefab: {fileID: 2092437481071958072, guid: 58e7f5fb2222cb442b19960658ccc1ba, type: 3}
     minSpawn: 1
     maxSpawn: 1
-  speedAddition: 1
-  attributeModifiers:
-  - type: 0
-    regenAddition: 5
-    depleteAddition: 0
+  speedAddition: 0
+  attributeModifiers: []

@@ -266,6 +266,7 @@ namespace Yamigisa
                 foreach (var g in item.craftGroupsNeeded)
                 {
                     if (g == null || g.GroupData == null) continue;
+
                     var s = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
                     s.BindGroup(g.GroupData, false);
                 }
@@ -276,8 +277,11 @@ namespace Yamigisa
                 foreach (var r in item.craftItemsNeeded)
                 {
                     if (r == null || r.itemData == null) continue;
+
                     var s = Instantiate(itemSelectionSlotPrefab, itemCraftingRequirementsTransform);
-                    s.BindItem(r.itemData, false);
+
+                    // Ganti "amount" di bawah kalau nama field quantity milikmu berbeda
+                    s.BindItem(r.itemData, false, r.Amount.ToString());
                 }
             }
 
