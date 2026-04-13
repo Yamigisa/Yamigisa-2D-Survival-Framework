@@ -6,10 +6,10 @@ namespace Yamigisa
     public class CharacterMovement : MonoBehaviour
     {
         [Header("Movements Bool")]
-        public bool canMove;
-        public bool canSprint;
-        public bool canJump;
-        public bool canCrouch;
+        public bool canMove = true;
+        public bool canSprint = true;
+        public bool canJump = true;
+        public bool canCrouch = true;
 
         // Player Components
         private Rigidbody2D rb;

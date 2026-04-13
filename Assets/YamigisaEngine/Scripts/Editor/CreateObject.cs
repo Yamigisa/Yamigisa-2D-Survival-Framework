@@ -53,6 +53,10 @@ namespace Yamigisa
         private GroupData destroyRequiredGroup;
         private List<DestroyableLoot> tempDestroyableLoots = new();
 
+        [Header("Optional Folder Overrides")]
+        private DefaultAsset customPrefabFolder;
+        private DefaultAsset customResourceFolder;
+
         public CreateObjectSettings settings;
 
         [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
@@ -100,8 +104,22 @@ namespace Yamigisa
 
             objectType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", objectType);
 
+            EditorGUILayout.Space(6); // 🔥 ini penting
+
+            // 🔥 Folder Override ALWAYS ON TOP
+            bool showResource = objectType != ObjectType.Biome && objectType != ObjectType.Character;
+
+            EditorGUILayout.LabelField(
+                "Optional: If folder left empty, will use default from settings",
+                EditorStyles.wordWrappedLabel
+            );
+
+            DrawFolderOverrideFields(showResource);
+
             if (objectType == ObjectType.Character)
             {
+                DrawSectionHeader("Character Settings");
+
                 characterIcon = (Sprite)EditorGUILayout.ObjectField(
                     "Character Icon",
                     characterIcon,
@@ -112,6 +130,7 @@ namespace Yamigisa
 
             if (objectType == ObjectType.Item)
             {
+                DrawSectionHeader("Item Settings");
                 DrawFilteredItemTypeDropdown();
 
                 if (itemType == ItemType.Consumable)
@@ -122,8 +141,23 @@ namespace Yamigisa
                     DrawEquipmentSection();
                 }
             }
-            else if (objectType == ObjectType.Destroyable || objectType == ObjectType.Animal)
+            else if (objectType == ObjectType.Destroyable)
             {
+                DrawSectionHeader("Destroyable Settings");
+
+                destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
+                destroyRequiredGroup = (GroupData)EditorGUILayout.ObjectField(
+                    "Required Group To Destroy",
+                    destroyRequiredGroup,
+                    typeof(GroupData),
+                    false
+                );
+                DrawDestroyableLootEditor();
+            }
+            else if (objectType == ObjectType.Animal)
+            {
+                DrawSectionHeader("Animal Settings");
+
                 destroyableHP = EditorGUILayout.IntField("Health (HP)", destroyableHP);
                 destroyRequiredGroup = (GroupData)EditorGUILayout.ObjectField(
                     "Required Group To Destroy",
@@ -135,6 +169,8 @@ namespace Yamigisa
             }
             else if (objectType == ObjectType.Placeable)
             {
+                DrawSectionHeader("Placeable Settings");
+
                 placeableType = (PlaceableType)EditorGUILayout.EnumPopup(
                     "Placeable Type",
                     placeableType
@@ -142,6 +178,8 @@ namespace Yamigisa
             }
             else if (objectType == ObjectType.Biome)
             {
+                DrawSectionHeader("Biome Settings");
+
                 biomeSprite = (Sprite)EditorGUILayout.ObjectField(
                     "Biome Sprite",
                     biomeSprite,
@@ -258,10 +296,12 @@ namespace Yamigisa
 
         private void CreateCharacter()
         {
-            EnsureFolder(settings.prefabItemsFolder);
-
             string safeName = MakeSafeFileName(objectName);
-            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+
+            string prefabFolder = ResolvePrefabFolder();
+            EnsureFolder(prefabFolder);
+
+            string prefabPath = $"{prefabFolder}/{safeName}.prefab";
 
             // ==========================
             // ROOT
@@ -300,7 +340,7 @@ namespace Yamigisa
 
             var sr = visual.AddComponent<SpriteRenderer>();
             sr.sprite = characterIcon; // 🔥 APPLY ICON HERE
-            sr.sortingLayerName = "Character";
+            sr.sortingLayerName = "Player";
             sr.sortingOrder = 0;
 
             // ==========================
@@ -514,10 +554,13 @@ namespace Yamigisa
 
         private void CreatePlaceable()
         {
-            EnsureFolder(settings.prefabItemsFolder);
-            EnsureFolder(settings.itemsFolder);
-
             string safeName = MakeSafeFileName(objectName);
+
+            string prefabFolder = ResolvePrefabFolder();
+            string resourceFolder = ResolveResourceFolder();
+
+            EnsureFolder(prefabFolder);
+            EnsureFolder(resourceFolder);
 
             // =====================================================
             // 1️⃣ CREATE ITEM DATA (FOR BUILDING)
@@ -556,17 +599,15 @@ namespace Yamigisa
                 }
             }
 
-            string soFolder = $"{settings.itemsFolder}/Placeable";
-            EnsureFolder(soFolder);
+            string soPath = $"{resourceFolder}/{safeName}.asset";
 
-            string soPath = $"{soFolder}/{safeName}.asset";
             AssetDatabase.CreateAsset(so, soPath);
 
             // =====================================================
             // 2️⃣ CREATE PREFAB (WORLD OBJECT)
             // =====================================================
 
-            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+            string prefabPath = $"{prefabFolder}/{safeName}.prefab";
 
             GameObject root = new GameObject(objectName);
             root.layer = Mathf.RoundToInt(Mathf.Log(settings.interactiveObjectLayer.value, 2));
@@ -688,14 +729,13 @@ namespace Yamigisa
 
         private void CreateAnimal()
         {
-            // ==========================
-            // ENSURE FOLDERS
-            // ==========================
-
-            EnsureFolder(settings.prefabAnimalsFolder);
-            EnsureFolder(settings.animalDataFolder);
-
             string safeName = MakeSafeFileName(objectName);
+
+            string prefabFolder = ResolvePrefabFolder();
+            string resourceFolder = ResolveResourceFolder();
+
+            EnsureFolder(prefabFolder);
+            EnsureFolder(resourceFolder);
 
             // ==========================
             // CREATE ANIMAL DATA (SO)
@@ -704,7 +744,7 @@ namespace Yamigisa
             var animalData = CreateInstance<AnimalData>();
             animalData.behaviour = animalBehaviour;
 
-            string dataPath = $"{settings.animalDataFolder}/{safeName}.asset";
+            string dataPath = $"{resourceFolder}/{safeName}.asset";
             AssetDatabase.CreateAsset(animalData, dataPath);
 
             // ==========================
@@ -783,8 +823,7 @@ namespace Yamigisa
             // SAVE PREFAB
             // ==========================
 
-            string prefabPath =
-                $"{settings.prefabAnimalsFolder}/{safeName}.prefab";
+            string prefabPath = $"{prefabFolder}/{safeName}.prefab";
 
             GameObject prefab =
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
@@ -802,8 +841,11 @@ namespace Yamigisa
 
         private void CreateItemOrDestroyable()
         {
-            EnsureFolder(settings.itemsFolder);
-            EnsureFolder(settings.prefabItemsFolder);
+            string prefabFolder = ResolvePrefabFolder();
+            string resourceFolder = ResolveResourceFolder();
+
+            EnsureFolder(prefabFolder);
+            EnsureFolder(resourceFolder);
 
             var so = CreateInstance<ItemData>();
             so.itemName = objectName;
@@ -866,11 +908,7 @@ namespace Yamigisa
             }
 
             string safeName = MakeSafeFileName(objectName);
-
-            EnsureItemTypeFolderExists(itemType);
-
-            string soFolder = GetItemDataFolderForType(itemType);
-            string soPath = $"{soFolder}/{safeName}.asset";
+            string soPath = $"{resourceFolder}/{safeName}.asset";
 
             AssetDatabase.CreateAsset(so, soPath);
 
@@ -953,7 +991,7 @@ namespace Yamigisa
             sio.FindProperty("outlineObject").objectReferenceValue = outline;
             sio.ApplyModifiedPropertiesWithoutUndo();
 
-            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+            string prefabPath = $"{prefabFolder}/{safeName}.prefab";
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             DestroyImmediate(root);
 
@@ -1027,10 +1065,12 @@ namespace Yamigisa
 
         private void CreateBiome()
         {
-            EnsureFolder(settings.prefabItemsFolder);
-
             string safeName = MakeSafeFileName(objectName);
-            string prefabPath = $"{settings.prefabItemsFolder}/{safeName}.prefab";
+
+            string prefabFolder = ResolvePrefabFolder();
+            EnsureFolder(prefabFolder);
+
+            string prefabPath = $"{prefabFolder}/{safeName}.prefab";
 
             GameObject root = new GameObject(objectName);
 
@@ -1104,6 +1144,33 @@ namespace Yamigisa
             }
         }
 
+        private void DrawFolderOverrideFields(bool showResourceFolder = true)
+        {
+            EditorGUILayout.Space(8);
+            EditorGUILayout.LabelField("Folder Placement", EditorStyles.boldLabel);
+
+            customPrefabFolder = (DefaultAsset)EditorGUILayout.ObjectField(
+                "Prefab Folder",
+                customPrefabFolder,
+                typeof(DefaultAsset),
+                false
+            );
+
+            if (showResourceFolder)
+            {
+                customResourceFolder = (DefaultAsset)EditorGUILayout.ObjectField(
+                    "Resource Folder",
+                    customResourceFolder,
+                    typeof(DefaultAsset),
+                    false
+                );
+            }
+            else
+            {
+                customResourceFolder = null;
+            }
+        }
+
         private static string MakeSafeFileName(string name)
         {
             foreach (char c in Path.GetInvalidFileNameChars())
@@ -1111,22 +1178,84 @@ namespace Yamigisa
             return name;
         }
 
-        private void EnsureItemTypeFolderExists(ItemType type)
+        private string GetFolderPath(DefaultAsset folderAsset)
         {
-            EnsureFolder(settings.itemsFolder);
+            if (folderAsset == null)
+                return null;
 
-            string targetFolder = GetItemDataFolderForType(type);
-            EnsureFolder(targetFolder);
+            string path = AssetDatabase.GetAssetPath(folderAsset);
+
+            if (string.IsNullOrEmpty(path) || !AssetDatabase.IsValidFolder(path))
+                return null;
+
+            return path;
         }
 
-        private string GetItemDataFolderForType(ItemType type)
+        private string GetDefaultPrefabFolder()
         {
-            string baseFolder = settings.itemsFolder;
+            switch (objectType)
+            {
+                case ObjectType.Item:
+                    return $"{settings.prefabFolder}/Items/{itemType}";
 
-            // Create subfolder based on enum name automatically
-            string subFolder = type.ToString();
+                case ObjectType.Destroyable:
+                    return $"{settings.prefabFolder}/Destroyables";
 
-            return $"{baseFolder}/{subFolder}";
+                case ObjectType.Animal:
+                    return $"{settings.prefabFolder}/Animals";
+
+                case ObjectType.Placeable:
+                    return $"{settings.prefabFolder}/Placeables/{placeableType}";
+
+                case ObjectType.Biome:
+                    return $"{settings.prefabFolder}/Biomes";
+
+                case ObjectType.Character:
+                    return $"{settings.prefabFolder}/Characters";
+
+                default:
+                    return settings.prefabFolder;
+            }
+        }
+
+        private string GetDefaultResourceFolder()
+        {
+            switch (objectType)
+            {
+                case ObjectType.Item:
+                    return $"{settings.resourceFolder}/Items/{itemType}";
+
+                case ObjectType.Destroyable:
+                    return $"{settings.resourceFolder}/Destroyables";
+
+                case ObjectType.Animal:
+                    return $"{settings.resourceFolder}/Animals";
+
+                case ObjectType.Placeable:
+                    return $"{settings.resourceFolder}/Placeables/{placeableType}";
+
+                default:
+                    return settings.resourceFolder;
+            }
+        }
+
+        private string ResolvePrefabFolder()
+        {
+            string customPath = GetFolderPath(customPrefabFolder);
+            return string.IsNullOrEmpty(customPath) ? GetDefaultPrefabFolder() : customPath;
+        }
+
+        private string ResolveResourceFolder()
+        {
+            string customPath = GetFolderPath(customResourceFolder);
+            return string.IsNullOrEmpty(customPath) ? GetDefaultResourceFolder() : customPath;
+        }
+
+        private void DrawSectionHeader(string title)
+        {
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            EditorGUILayout.Space(2);
         }
     }
 }

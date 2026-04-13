@@ -8,18 +8,22 @@ namespace Yamigisa
         order = 100)]
     public class CreateObjectSettings : ScriptableObject
     {
-        [Header("Save Folders")]
+        [Header("Base Save Folders")]
+        [Tooltip("Base folder for all generated prefabs")]
         public string prefabFolder = "Assets/YamigisaEngine/Prefabs";
-        public string prefabItemsFolder = "Assets/YamigisaEngine/Prefabs/Items";
-        public string itemsFolder = "Assets/YamigisaEngine/Resources/Items";
 
-        [Header("Animal Folders")]
-        public string prefabAnimalsFolder = "Assets/YamigisaEngine/Prefabs/Animals";
-        public string animalDataFolder = "Assets/YamigisaEngine/Resources/Animals";
+        [Tooltip("Base folder for all generated ScriptableObjects / resources")]
+        public string resourceFolder = "Assets/YamigisaEngine/Resources";
 
-        [Header("Layer Settings")]
-        [Tooltip("All Interactive Objects will use this layer")]
         public LayerMask interactiveObjectLayer;
+
+        private void OnEnable()
+        {
+            if (interactiveObjectLayer.value == 0)
+            {
+                interactiveObjectLayer = LayerMask.GetMask("Interactive");
+            }
+        }
 
         [Header("Default ItemData Actions (All Items)")]
         public ActionBase[] defaultItemActions;

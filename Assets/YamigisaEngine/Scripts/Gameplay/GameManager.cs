@@ -50,9 +50,12 @@ namespace Yamigisa
         private void Awake()
         {
             instance = this;
-            StartGame();
         }
 
+        private void Start()
+        {
+            StartGame();
+        }
         private void SetButtons()
         {
             // Pause Buttons
