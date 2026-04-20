@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Yamigisa
 {
     [CustomEditor(typeof(CharacterAttribute))]
-    public class CharacterAttributeEditor : Editor
+    public class CharacterAttributeEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

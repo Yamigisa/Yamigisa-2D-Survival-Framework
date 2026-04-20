@@ -7,7 +7,7 @@ namespace Yamigisa
 {
 
     [CustomEditor(typeof(SaveManager))]
-    public class SaveManagerEditor : Editor
+    public class SaveManagerEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

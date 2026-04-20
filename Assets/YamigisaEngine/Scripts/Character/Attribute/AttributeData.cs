@@ -41,14 +41,6 @@ namespace Yamigisa
     }
 
     [System.Serializable]
-    public enum AttributeType
-    {
-        Health,
-        Hunger,
-        Thirst,
-    }
-
-    [System.Serializable]
     public class DepletedAttributeModifier
     {
         public AttributeType targetType;
