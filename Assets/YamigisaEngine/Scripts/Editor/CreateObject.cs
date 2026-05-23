@@ -59,7 +59,7 @@ namespace Yamigisa
 
         public CreateObjectSettings settings;
 
-        [MenuItem("Yamigisa Engine/Create Object", priority = 0)]
+        [MenuItem("Tools/Yamigisa Engine/Create Object", false, 1)]
         public static void Open()
         {
             GetWindow<CreateObjectWindow>("Create Object");

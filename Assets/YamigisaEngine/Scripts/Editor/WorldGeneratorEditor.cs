@@ -5,7 +5,7 @@ namespace Yamigisa
 {
 
     [CustomEditor(typeof(WorldGenerator))]
-    public class WorldGeneratorEditor : UnityEditor.Editor
+    public class WorldGeneratorEditor : Editor
     {
         public override void OnInspectorGUI()
         {

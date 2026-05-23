@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 138fbac6aa8b51b4c83dfeb0aaee1c65
+guid: 20d53d34493666d4fb1080bf5684b3f6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1150933373218395779
-    second: Bar_empty_0
+      213: 5598347826341850838
+    second: Bar_empty_1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -139,13 +139,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Bar_empty_0
+      name: Bar_empty_1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 404
-        height: 88
+        width: 411
+        height: 71
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 38613d61ecfe8ff00800000000000000
-      internalID: 1150933373218395779
+      spriteID: 6deaf2ecfa351bd40800000000000000
+      internalID: 5598347826341850838
       vertices: []
       indices: 
       edges: []
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Bar_empty_0: 1150933373218395779
+      Bar_empty_1_0: 5598347826341850838
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

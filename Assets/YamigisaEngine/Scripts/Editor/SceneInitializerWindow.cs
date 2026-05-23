@@ -11,7 +11,7 @@ namespace Yamigisa
     {
         private InitializeSceneSettings settings;
 
-        [MenuItem("Yamigisa Engine/Scene Initializer", priority = 1)]
+        [MenuItem("Tools/Yamigisa Engine/Scene Initializer", false, 21)]
         public static void Open()
         {
             GetWindow<SceneInitializerWindow>("Scene Initializer");

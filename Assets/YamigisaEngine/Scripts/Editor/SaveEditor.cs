@@ -14,7 +14,7 @@ namespace Yamigisa
         // DELETE SAVE MENU ITEM
         // =============================
 
-        [MenuItem("Yamigisa Engine/Delete Save", false, 10000)]
+        [MenuItem("Tools/Yamigisa Engine/Delete Save", priority = 9999)]
         private static void DeleteSave()
         {
             if (File.Exists(SavePath))
@@ -28,7 +28,7 @@ namespace Yamigisa
         // VALIDATION (Enable/Disable)
         // =============================
 
-        [MenuItem("Yamigisa Engine/Delete Save", true)]
+        [MenuItem("Tools/Yamigisa Engine/Delete Save", true)]
         private static bool ValidateDeleteSave()
         {
             return File.Exists(SavePath);

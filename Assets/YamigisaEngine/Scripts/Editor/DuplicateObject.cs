@@ -21,7 +21,7 @@ namespace Yamigisa
 
         public bool retainItemInfo = true;
 
-        [MenuItem("Yamigisa Engine/Duplicate Object", priority = 0)]
+        [MenuItem("Tools/Yamigisa Engine/Duplicate Object", false, 2)]
         static void Open()
         {
             DisplayWizard<DuplicateObject>("Duplicate Object", "Duplicate");

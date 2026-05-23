@@ -11,7 +11,7 @@ namespace Yamigisa
         [SerializeField] private GameObject sourcePrefab;
         [SerializeField] private GameObject newPrefab;
 
-        [MenuItem("Yamigisa Engine/Replace Prefab In Scene", priority = 0)]
+        [MenuItem("Tools/Yamigisa Engine/Replace Prefab In Scene", false, 3)]
         public static void Open()
         {
             var w = GetWindow<ReplacePrefabInScene>("Replace Prefab Instances");

@@ -15,7 +15,7 @@ namespace Yamigisa
 
         private DefaultAsset sceneFolder;
 
-        [MenuItem("Yamigisa Engine/Create New Scene", priority = 2)]
+        [MenuItem("Tools/Yamigisa Engine/Create New Scene", false, 20)]
         public static void Open()
         {
             GetWindow<CreateNewSceneWindow>("Create New Scene");
