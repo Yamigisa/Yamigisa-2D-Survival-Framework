@@ -183,10 +183,14 @@ namespace Yamigisa
 
                     WorldChunk chunk = Instantiate(chunkPrefab, worldPos, Quaternion.identity, transform);
                     chunk.Initialize(biome, saved.size, saved.seed, false);
-                    chunk.SetSpawnFlags(saved.resourcesSpawned, saved.enemiesSpawned);
 
                     if (saved.resourcesSpawned || saved.enemiesSpawned)
-                        chunk.GenerateObjectsOnlyImmediate();
+                    {
+                        chunk.GenerateObjectsOnlyImmediate(
+                            saved.resourcesSpawned,
+                            saved.enemiesSpawned
+                        );
+                    }
 
                     if (!chunkMap.ContainsKey(coord))
                         chunkMap.Add(coord, chunk);

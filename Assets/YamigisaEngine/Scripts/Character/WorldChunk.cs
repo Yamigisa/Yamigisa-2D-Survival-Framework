@@ -98,6 +98,11 @@ namespace Yamigisa
 
         public void GenerateObjectsOnlyImmediate()
         {
+            GenerateObjectsOnlyImmediate(true, true);
+        }
+
+        public void GenerateObjectsOnlyImmediate(bool generateResources, bool generateEnemies)
+        {
             if (biome == null) return;
 
             EnsureSpawnParent();
@@ -109,13 +114,13 @@ namespace Yamigisa
                 _terrainBuilt = true;
             }
 
-            if (!resourcesSpawned)
+            if (generateResources && !resourcesSpawned)
             {
                 SpawnResourcesImmediate();
                 resourcesSpawned = true;
             }
 
-            if (!enemiesSpawned)
+            if (generateEnemies && !enemiesSpawned)
             {
                 SpawnEnemiesImmediate();
                 enemiesSpawned = true;
